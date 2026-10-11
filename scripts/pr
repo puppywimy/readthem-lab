@@ -1,0 +1,201 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# ─────────────────────────────────────────────
+# Requirements
+#   - git
+#   - gh
+#   - curl
+#   - jq
+#   - LINEAR_API_KEY
+# ─────────────────────────────────────────────
+
+if [[ -f ".env" ]]; then
+  set -a
+  source ".env"
+  set +a
+fi
+
+if ! command -v git >/dev/null 2>&1; then
+  echo "❌ git이 설치되어 있지 않습니다."
+  exit 1
+fi
+
+if ! command -v gh >/dev/null 2>&1; then
+  echo "❌ GitHub CLI(gh)가 설치되어 있지 않습니다."
+  echo "   brew install gh"
+  exit 1
+fi
+
+if ! command -v jq >/dev/null 2>&1; then
+  echo "❌ jq가 설치되어 있지 않습니다."
+  echo "   brew install jq"
+  exit 1
+fi
+
+if [[ -z "${LINEAR_API_KEY:-}" ]]; then
+  echo "❌ LINEAR_API_KEY가 설정되어 있지 않습니다."
+  exit 1
+fi
+
+
+# ─────────────────────────────────────────────
+# 1. 현재 브랜치
+# ─────────────────────────────────────────────
+
+BRANCH=$(git branch --show-current)
+
+if [[ -z "$BRANCH" ]]; then
+  echo "❌ 현재 Git 브랜치를 찾을 수 없습니다."
+  exit 1
+fi
+
+echo "🌿 Branch: $BRANCH"
+
+
+# ─────────────────────────────────────────────
+# 2. 브랜치명에서 Linear issue ID 추출
+#
+# 예:
+#   minseok/abc-123-login-error
+#   abc-123-login-error
+#   feature/ABC-123
+#
+# → ABC-123
+# ─────────────────────────────────────────────
+
+ISSUE_ID=$(echo "$BRANCH" \
+  | grep -Eo '[A-Za-z][A-Za-z0-9]*-[0-9]+' \
+  | head -1 \
+  | tr '[:lower:]' '[:upper:]' || true)
+
+if [[ -z "$ISSUE_ID" ]]; then
+  echo "❌ 브랜치명에서 Linear issue ID를 찾지 못했습니다."
+  echo ""
+  echo "예:"
+  echo "  feature/ABC-123"
+  echo "  abc-123-fix-login"
+  echo "  user/abc-123-fix-login"
+  exit 1
+fi
+
+echo "🎫 Linear: $ISSUE_ID"
+
+
+# ─────────────────────────────────────────────
+# 3. Linear API에서 이슈 조회
+# ─────────────────────────────────────────────
+
+QUERY='
+query Issue($id: String!) {
+  issue(id: $id) {
+    identifier
+    title
+    description
+    url
+  }
+}
+'
+
+PAYLOAD=$(jq -n \
+  --arg query "$QUERY" \
+  --arg id "$ISSUE_ID" \
+  '{
+    query: $query,
+    variables: {
+      id: $id
+    }
+  }')
+
+RESPONSE=$(curl -sS \
+  https://api.linear.app/graphql \
+  -X POST \
+  -H "Content-Type: application/json" \
+  -H "Authorization: $LINEAR_API_KEY" \
+  --data "$PAYLOAD")
+
+
+# ─────────────────────────────────────────────
+# 4. API 오류 확인
+# ─────────────────────────────────────────────
+
+ERROR=$(echo "$RESPONSE" | jq -r '.errors[0].message // empty')
+
+if [[ -n "$ERROR" ]]; then
+  echo "❌ Linear API 오류:"
+  echo "   $ERROR"
+  exit 1
+fi
+
+
+TITLE=$(echo "$RESPONSE" | jq -r '.data.issue.title // empty')
+DESCRIPTION=$(echo "$RESPONSE" | jq -r '.data.issue.description // empty')
+LINEAR_URL=$(echo "$RESPONSE" | jq -r '.data.issue.url // empty')
+
+
+if [[ -z "$TITLE" ]]; then
+  echo "❌ Linear 이슈를 찾지 못했습니다: $ISSUE_ID"
+  exit 1
+fi
+
+PR_TITLE="[${BRANCH}] ${TITLE}"
+
+
+# description이 없을 수도 있음
+if [[ -z "$DESCRIPTION" ]]; then
+  DESCRIPTION=""
+fi
+
+
+# ─────────────────────────────────────────────
+# 5. PR body 생성
+# ─────────────────────────────────────────────
+
+BODY="$DESCRIPTION"
+
+if [[ -n "$LINEAR_URL" ]]; then
+  BODY="${BODY}
+
+---
+Linear: ${LINEAR_URL}"
+fi
+
+
+echo ""
+echo "────────────────────────────────────"
+echo "PR Title"
+echo "────────────────────────────────────"
+echo "$PR_TITLE"
+echo ""
+echo "────────────────────────────────────"
+echo "PR Body"
+echo "────────────────────────────────────"
+echo "$BODY"
+echo ""
+echo "────────────────────────────────────"
+
+
+# ─────────────────────────────────────────────
+# 6. 원격에 branch push
+# ─────────────────────────────────────────────
+
+git push -u origin "$BRANCH"
+
+
+# ─────────────────────────────────────────────
+# 7. PR 생성 또는 수정
+# ─────────────────────────────────────────────
+
+PR_NUMBER=$(gh pr view "$BRANCH" --json number --jq '.number' 2>/dev/null || true)
+
+if [[ -n "$PR_NUMBER" ]]; then
+  echo "🔁 기존 PR 수정: #$PR_NUMBER"
+  gh pr edit "$PR_NUMBER" \
+    --title "$PR_TITLE" \
+    --body "$BODY"
+else
+  echo "🆕 새 PR 생성"
+  gh pr create \
+    --title "$PR_TITLE" \
+    --body "$BODY"
+fi

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Kotlin Migration"
+  short_description: "Convert selected Java files to Kotlin safely"
+  default_prompt: "Use $kotlin-migration to convert the specified Java files to Kotlin."

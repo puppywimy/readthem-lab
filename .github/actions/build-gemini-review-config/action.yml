@@ -1,0 +1,49 @@
+name: Build Gemini Review Config
+description: Append reference documents to a Gemini review config file.
+
+inputs:
+  output_config_path:
+    description: Gemini review config path to append documents to.
+    required: false
+    default: .github/gemini-review.generated.yml
+  heading:
+    description: Heading for appended reference documents.
+    required: false
+    default: 참고 문서
+  document_paths:
+    description: Newline-separated list of document paths to append.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Generate config
+      shell: bash
+      env:
+        OUTPUT_CONFIG_PATH: ${{ inputs.output_config_path }}
+        HEADING: ${{ inputs.heading }}
+        DOCUMENT_PATHS: ${{ inputs.document_paths }}
+      run: |
+        ruby <<'RUBY'
+        output_config_path = ENV.fetch("OUTPUT_CONFIG_PATH")
+        heading = ENV.fetch("HEADING")
+        document_paths = ENV.fetch("DOCUMENT_PATHS").lines.map(&:strip).reject(&:empty?)
+
+        File.open(output_config_path, "a") do |file|
+          document_paths.each do |document_path|
+            content = if File.exist?(document_path)
+              File.read(document_path)
+            else
+              "문서 없음: #{document_path}"
+            end
+
+            file.puts
+            file.puts "  [참고: #{heading}]"
+            file.puts "  문서: #{document_path}"
+            content.each_line do |line|
+              file.write "  #{line}"
+            end
+            file.puts unless content.end_with?("\n")
+          end
+        end
+        RUBY

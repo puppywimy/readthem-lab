@@ -1,0 +1,80 @@
+erDiagram
+    BOOK ||--o{ REVIEW : has
+    MEMBER ||--o{ REVIEW : writes
+    BOOK ||--o{ WISH : wished_in
+    MEMBER ||--o{ WISH : adds
+
+    REVIEW ||--o{ REVIEW_TAG : has
+    TAG ||--o{ REVIEW_TAG : used_in
+
+    BOOK {
+        Long id PK
+        string title
+        string description
+        string isbn
+        string authors
+        LocalDateTime publishedDate
+        string publisher
+        string imgUrl
+        LocalDateTime createdDate
+        LocalDateTime modifiedDate
+    }
+
+    MEMBER {
+        Long id PK
+        string username
+        string password
+        string nickname
+        string githubId
+        string imgUrl
+        string refreshToken
+        string githubLink
+        string widgetLink
+        Role role
+        LocalDateTime createdDate
+        LocalDateTime modifiedDate
+        LocalDateTime deletedDate
+    }
+
+    REVIEW {
+        Long id PK
+        Long reviewerId FK
+        Long bookId FK
+        string content
+        float rating
+        LocalDateTime createdDate
+        LocalDateTime modifiedDate
+    }
+
+    WISH {
+        Long id PK
+        Long memberId FK
+        Long bookId FK
+        LocalDateTime createdDate
+        LocalDateTime modifiedDate
+    }
+
+    TAG {
+        Long id PK
+        string name
+        LocalDateTime createdDate
+        LocalDateTime modifiedDate
+    }
+
+    REVIEW_TAG {
+        Long id PK
+        Long reviewId FK
+        Long tagId FK
+        LocalDateTime createdDate
+        LocalDateTime modifiedDate
+    }
+
+    BOOK_OPERATIONAL {
+        Long id PK
+        string isbn
+        int viewCount
+        double averageRating
+        int reviewCount
+        LocalDateTime createdDate
+        LocalDateTime modifiedDate
+    }

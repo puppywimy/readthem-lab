@@ -1,0 +1,47 @@
+name: Gemini Code Review
+
+# dev 브랜치로 PR이 올라오거나 코드가 업데이트될 때 실행
+on:
+  pull_request:
+    branches: [dev]
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write # PR에 AI가 직접 댓글을 달아야 하므로 write 권한이 필요합니다.
+
+jobs:
+  review:
+    if: >-
+      !contains(github.event.pull_request.title, 'hotfix')
+      && !contains(format('{0} {1}', github.event.pull_request.title, github.event.pull_request.body), 'skip-review')
+    runs-on: ubuntu-latest
+    steps:
+      # 1. 깃허브 마켓플레이스에서 내 소스코드를 체크아웃하는 액션
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      # 2. 기본 Gemini 설정 파일을 임시 설정 파일로 복사
+      - name: Build Gemini Review Config
+        run: cp .github/gemini-review.yml .github/gemini-review.generated.yml
+
+      # 3. PR 제목에 refactor가 포함된 경우 리팩토링 규칙 문서를 Gemini 설정 파일에 주입
+      - name: Append Refactoring Rules
+        if: contains(github.event.pull_request.body, 'Review Refactoring')
+        uses: ./.github/actions/build-gemini-review-config
+        with:
+          output_config_path: .github/gemini-review.generated.yml
+          heading: 프로젝트 리팩토링 규칙
+          document_paths: |
+            docs/review-rules/refactoring-rules.md
+            docs/review-rules/software-architecture.md
+
+      # 4. 선택하신 Gemini 리뷰 봇 실행
+      - name: Gemini code review
+        uses: jgunnink/gemini-review-bot@v1.2.0
+        with:
+          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          config_path: .github/gemini-review.generated.yml
+          # (선택) 만약 특정 모델을 강제하고 싶다면 아래 주석을 풀고 설정하세요.
+          # model: "gemini-1.5-pro-latest"

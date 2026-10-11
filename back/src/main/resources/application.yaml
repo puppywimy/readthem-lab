@@ -1,0 +1,102 @@
+server:
+  forward-headers-strategy: native
+  port: 8080
+  ssl.enabled: false
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.data.redis.autoconfigure.DataRedisAutoConfiguration
+      - org.springframework.boot.session.data.redis.autoconfigure.SessionDataRedisAutoConfiguration
+  application:
+    name: back
+  config:
+    import: optional:file:.env[.properties]
+  profiles:
+    active: ${SPRING__PROFILES__ACTIVE}
+  output:
+    ansi:
+      enabled: always
+  data:
+    redis:
+      host: dummy
+      password: dummy
+  datasource:
+    url: jdbc:h2:./db_dev;MODE=MySQL;AUTO_SERVER=TRUE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+    hikari:
+      auto-commit: false
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        highlight_sql: true
+        use_sql_comments: true
+    open-in-view: false
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            client-id: ${SPRING__SECURITY__OAUTH2__CLIENT__REGISTRATION__GITHUB__CLIENT_ID}
+            client-secret: ${SPRING__SECURITY__OAUTH2__CLIENT__REGISTRATION__GITHUB__CLIENT_SECRET}
+            client-name: Github
+            scope: profile_nickname, profile_image
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/{action}/oauth2/code/{registrationId}"
+        provider:
+          github:
+            authorization-uri: https://github.com/login/oauth/authorize
+            user-name-attribute: id
+springdoc:
+  default-produces-media-type: application/json;charset=UTF-8
+logging:
+  level:
+    com.back: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
+    org.hibernate.orm.jdbc.extract: TRACE
+    org.springframework.transaction.interceptor: TRACE
+management:
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+custom:
+  dev:
+    cookieDomain: localhost
+    cookieSecure: false
+    frontUrl: "http://${custom.dev.cookieDomain}:3000"
+    backUrl: "http://${custom.dev.cookieDomain}:${server.port}"
+  prod:
+    cookieDomain: ${CUSTOM__PROD__COOKIE_DOMAIN}
+    cookieSecure: ${CUSTOM__PROD__COOKIE_SECURE}
+    frontUrl: ${CUSTOM__PROD__FRONT_URL}
+    backUrl: ${CUSTOM__PROD__BACK_URL}
+  site:
+    cookieDomain: "${custom.dev.cookieDomain}"
+    cookieSecure: "${custom.dev.cookieSecure}"
+    frontUrl: "${custom.dev.frontUrl}"
+    backUrl: "${custom.dev.backUrl}"
+  jwt:
+    secretKey: ${CUSTOM__JWT__SECRET_KEY}
+  accessToken:
+    expirationSeconds: "#{60*${CUSTOM__JWT__EXPIRATION_MINUTES}}"
+  book-fetch:
+    api-key: ${CUSTOM__BOOK_FETCH__API_KEY}
+    api-keys: ${CUSTOM__BOOK__FETCH__API_KEYS}
+  widget:
+    renderer:
+      base-url: ${CUSTOM__WIDGET__RENDERER__BASE_URL:http://localhost:3001}
+  kakao:
+    api-key: ${CUSTOM__KAKAO__API_KEY:}
+    base-url: https://dapi.kakao.com

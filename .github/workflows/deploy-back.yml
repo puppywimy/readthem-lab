@@ -1,0 +1,226 @@
+name: 🚀 `back` 배포!
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - ".github/workflows/deploy-back.yml"
+      - "back/src/**"
+      - "back/build.gradle.kts"
+      - "back/settings.gradle.kts"
+      - "back/Dockerfile"
+
+env:
+  IMAGE_NAME: nbe10-12-3-adp
+  CONTAINER_1_NAME: back_1
+  CONTAINER_2_NAME: back_2
+  APPLICATION_PORT: 8080
+  DOCKERFILE_DIR: back
+  INSTANCE_TAG_NAME: terraform-ec2-1
+  DOCKER_NETWORK: common
+
+concurrency:
+  group: deploy
+  cancel-in-progress: true
+
+jobs:
+  createTagAndRelease:
+    name: 1. 태그 및 릴리즈 생성
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      tag: ${{ steps.create_tag.outputs.new_tag }}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: 태그 생성 (ex. v1.2.3)
+        id: create_tag
+        uses: mathieudutour/github-tag-action@v6.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 릴리즈 생성
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.create_tag.outputs.new_tag }}
+          release_name: Release ${{ steps.create_tag.outputs.new_tag }}
+          body: ${{ steps.create_tag.outputs.changelog }}
+          draft: false
+          prerelease: false
+
+  buildAndPushDockerImage:
+    name: 2. 도커 이미지 빌드 및 푸시
+    needs: [createTagAndRelease]
+    runs-on: ubuntu-26.04-arm
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Docker Buildx 설치
+        uses: docker/setup-buildx-action@v4
+
+      - name: 레지스트리 로그인
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 저장소 소유자명을 소문자로 (GHCR 경로 표준화)
+        env:
+          OWNER: "${{ github.repository_owner }}"
+        run: |
+          echo "OWNER_LC=${OWNER,,}" >> "${GITHUB_ENV}"
+
+      - name: "이미지 빌드 및 푸시"
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ env.DOCKERFILE_DIR }}
+          platforms: linux/arm64
+          push: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: |
+            ghcr.io/${{ env.OWNER_LC }}/${{ env.IMAGE_NAME }}:${{ needs.createTagAndRelease.outputs.tag}}
+            ghcr.io/${{ env.OWNER_LC }}/${{ env.IMAGE_NAME }}:latest
+
+  deploy:
+    name: 3. Blue/Green 무중단 배포
+    runs-on: ubuntu-latest
+    needs: [createTagAndRelease, buildAndPushDockerImage]
+
+    steps:
+      - name: AWS 자격 구성
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: 인스턴스 ID 가져오기
+        run: |
+          INSTANCE_ID=$(aws ec2 describe-instances \
+            --filters "Name=tag:Name,Values=${{ env.INSTANCE_TAG_NAME }}" "Name=instance-state-name,Values=running" \
+            --query "Reservations[].Instances[].InstanceId" --output text)
+          [[ -n "${INSTANCE_ID}" && "${INSTANCE_ID}" != "None" ]] || { echo "No running instance found"; exit 1; }
+          echo "INSTANCE_ID=$INSTANCE_ID" >> $GITHUB_ENV
+
+      - name: AWS SSM `send-command`
+        uses: peterkimzz/aws-ssm-send-command@master
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+          instance-ids: ${{ env.INSTANCE_ID }}
+          working-directory: /
+          comment: Deploy
+          command: |
+            bash <<'EOF'
+            set -Eeuo pipefail
+
+            LOG="/tmp/ssm-$(date +%Y%m%d_%H%M%S).log"
+            exec > >(awk '{ fflush(); print strftime("[%Y-%m-%d %H:%M:%S]"), $0 }' | tee -a "$LOG")
+            exec 2> >(awk '{ fflush(); print strftime("[%Y-%m-%d %H:%M:%S]"), $0 }' | tee -a "$LOG" >&2)
+
+            source /etc/environment || true
+            OWNER_LC="${{ github.repository_owner }}"
+            OWNER_LC="${OWNER_LC,,}"
+            IMAGE_TAG="${{ needs.createTagAndRelease.outputs.tag }}"
+            IMAGE_NAME="${{ env.IMAGE_NAME }}"
+            IMAGE="ghcr.io/${OWNER_LC}/${IMAGE_NAME}:${IMAGE_TAG}"
+            CONTAINER_1_NAME="${{ env.CONTAINER_1_NAME }}"
+            CONTAINER_2_NAME="${{ env.CONTAINER_2_NAME }}"
+            APPLICATION_PORT="${{ env.APPLICATION_PORT }}"
+            NET="${{ env.DOCKER_NETWORK }}"
+
+            NPM_API="https://127.0.0.1:81/api"
+
+            echo "Use image: ${IMAGE}"
+
+            COOKIE_JAR=$(mktemp /tmp/npm-cookie.XXXXXX)
+            trap 'rm -f "${COOKIE_JAR}"' EXIT
+
+            LOGIN_RESPONSE_JSON=$(curl -sk -c "${COOKIE_JAR}" -X POST "${NPM_API}/tokens" \
+              -H "Content-Type: application/json" \
+              -d "{\"identity\": \"admin@npm.com\", \"secret\": \"${BOOTSTRAP_ENV_PASSWORD:-}\"}")
+
+            EXPIRES=$(jq -r '.expires // empty' <<< "${LOGIN_RESPONSE_JSON}")
+            [[ -n "${EXPIRES}" ]] || { echo "NPM login failed: ${LOGIN_RESPONSE_JSON}"; exit 1; }
+            grep -q "Http-token" "${COOKIE_JAR}" || { echo "NPM token cookie missing"; exit 1; }
+            [[ -n "${BOOTSTRAP_ENV_APPLICATION_DOMAIN:-}" ]] || { echo "BOOTSTRAP_ENV_APPLICATION_DOMAIN is empty"; exit 1; }
+
+            PROXY_ID=$(curl -sk -b "${COOKIE_JAR}" -X GET "${NPM_API}/nginx/proxy-hosts" \
+              | jq ".[] | select(.domain_names[]==\"${BOOTSTRAP_ENV_APPLICATION_DOMAIN}\") | .id")
+            [[ -n "${PROXY_ID}" && "${PROXY_ID}" != "null" ]] || { echo "Proxy host not found for ${BOOTSTRAP_ENV_APPLICATION_DOMAIN}"; exit 1; }
+
+            CURRENT_HOST=$(curl -sk -b "${COOKIE_JAR}" -X GET "${NPM_API}/nginx/proxy-hosts/${PROXY_ID}" \
+              | jq -r '.forward_host')
+
+            echo "CURRENT_HOST: ${CURRENT_HOST:-none}"
+
+            if [[ "${CURRENT_HOST:-}" == "${CONTAINER_1_NAME}" ]]; then
+              BLUE="${CONTAINER_1_NAME}"
+              GREEN="${CONTAINER_2_NAME}"
+            elif [[ "${CURRENT_HOST:-}" == "${CONTAINER_2_NAME}" ]]; then
+              BLUE="${CONTAINER_2_NAME}"
+              GREEN="${CONTAINER_1_NAME}"
+            else
+              BLUE="none" # 초기 배포
+              GREEN="${CONTAINER_1_NAME}"
+            fi
+            echo "role -> blue(now): ${BLUE}, green(next): ${GREEN}"
+
+            docker rm -f "${GREEN}" >/dev/null 2>&1 || true
+            echo "run new container → ${GREEN}"
+            docker run -d --name "${GREEN}" \
+              --restart unless-stopped \
+              --network "${NET}" \
+              --env-file .env \
+              -e TZ=Asia/Seoul \
+              "${IMAGE}"
+
+            echo "⏱ health-check: ${GREEN}"
+            TIMEOUT=120
+            INTERVAL=3
+            ELAPSED=0
+            sleep 8 # 초기 부팅 여유
+
+            while (( ELAPSED < TIMEOUT )); do
+              CODE=$(docker exec "${GREEN}" curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:${APPLICATION_PORT}/actuator/health" || echo 000)
+              [[ "${CODE}" == "200" ]] && { echo "✅ ${GREEN} healthy"; break; }
+              sleep "${INTERVAL}"
+              ELAPSED=$((ELAPSED + INTERVAL))
+            done
+            [[ "${CODE:-000}" == "200" ]] || { echo "❌ ${GREEN} health failed"; docker logs --tail=200 "${GREEN}" || true; docker rm -f "${GREEN}" || true; exit 1; }
+
+            NEW_CONFIG_JSON=$(jq -n --arg host "${GREEN}" --argjson port ${APPLICATION_PORT} '{forward_host:$host, forward_port:$port}')
+            SWITCH_RESPONSE_JSON=$(curl -sk -b "${COOKIE_JAR}" -X PUT "${NPM_API}/nginx/proxy-hosts/${PROXY_ID}" \
+              -H "Content-Type: application/json" \
+              -d "${NEW_CONFIG_JSON}")
+            SWITCHED_HOST=$(jq -r '.forward_host // empty' <<< "${SWITCH_RESPONSE_JSON}")
+            [[ "${SWITCHED_HOST}" == "${GREEN}" ]] || { echo "❌ upstream switch failed: ${SWITCH_RESPONSE_JSON}"; exit 1; }
+            echo "switch upstream → ${GREEN}:${APPLICATION_PORT}"
+
+            if [[ "${BLUE}" != "none" ]]; then
+              docker stop "${BLUE}" >/dev/null 2>&1 || true
+              docker rm "${BLUE}" >/dev/null 2>&1 || true
+              echo "removed old blue: ${BLUE}"
+            fi
+
+            {
+              docker images --format "{{.Repository}}:{{.Tag}}" \
+                | grep -F "ghcr.io/${OWNER_LC}/${IMAGE_NAME}:" \
+                | grep -vxF "ghcr.io/${OWNER_LC}/${IMAGE_NAME}:${IMAGE_TAG}" \
+                | grep -vxF "ghcr.io/${OWNER_LC}/${IMAGE_NAME}:latest" \
+                | xargs -r docker rmi
+            } || true
+
+            echo "Blue/Green switch complete. now blue = ${GREEN}"
+            EOF
