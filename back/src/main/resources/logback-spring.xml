@@ -14,9 +14,25 @@
         </rollingPolicy>
     </appender>
 
+    <appender name="BOOK_FETCH_SERVICE_V2_DEBUG_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder>
+            <pattern>%d %msg%n%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>./logs/book_fetch_service_v2_debug-%d{yyyy_MM_dd}.log</fileNamePattern>
+            <maxHistory>14</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
     <logger name="com.back.domain.book.service.BookScheduler" level="ERROR" additivity="false">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="BOOK_SCHEDULER_ERROR_APPENDER"/>
+    </logger>
+
+    <logger name="com.back.domain.book.service.BookFetchServiceV2" level="DEBUG" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="BOOK_FETCH_SERVICE_V2_DEBUG_APPENDER"/>
     </logger>
 
     <root level="INFO">

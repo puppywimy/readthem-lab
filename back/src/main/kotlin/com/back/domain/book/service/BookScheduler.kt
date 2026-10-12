@@ -18,7 +18,7 @@ class BookScheduler(
         bookService.updateBooksViewCountInDb()
     }
 
-//    @Scheduled(fixedDelay = 10000, initialDelay = 3000)
+    @Scheduled(fixedDelay = 2000, initialDelay = 3000)
     fun fetchBooks() {
         try {
             val books = bookFetchService.fetchBooksFromLastFetchedPage()
