@@ -5,6 +5,7 @@ import com.back.domain.book.entity.BookLastFetchedPage
 import com.back.domain.book.repository.BookLastFetchedPageRepository
 import com.back.domain.book.repository.BookRepository
 import com.back.standard.util.Ut
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -15,6 +16,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import kotlin.String
 import org.springframework.transaction.annotation.Propagation.NOT_SUPPORTED
+import org.springframework.web.reactive.function.client.ExchangeStrategies
 
 @Service
 @Transactional(readOnly = true)
@@ -25,20 +27,29 @@ class BookFetchServiceV2(
     private val bookLastFetchedPageRepository: BookLastFetchedPageRepository,
     private val bookRepository: BookRepository
 ) {
+    companion object {
+        private const val PAGE_SIZE = 1000
+    }
+
     private fun fetchBooks(pageNumber: Int) =
         WebClient
-            .create("https://www.nl.go.kr/seoji/SearchApi.do")
+            .builder()
+            .baseUrl("https://www.nl.go.kr/seoji/SearchApi.do")
+            .codecs { configurer -> configurer.defaultCodecs().maxInMemorySize(4 * 1024 * 1024) }
+            .build()
             .get()
             .uri {
                 it
                     .queryParam("cert_key", apiKey)
                     .queryParam("result_style", "json")
                     .queryParam("page_no", pageNumber)
-                    .queryParam("page_size", 2)
+                    .queryParam("page_size", PAGE_SIZE)
                     .queryParam("sort", "INPUT_DATE")
                     .queryParam("order_by", "ASC")
                     .build()
             }
+
+    private val logger = LoggerFactory.getLogger(BookFetchServiceV2::class.java)
 
     private data class DocumentDto(
         val PUBLISHER: String,
@@ -83,7 +94,10 @@ class BookFetchServiceV2(
     )
 
     private class ResponseBodyDto(
-        val docs: List<DocumentDto> // ? = null,
+        val docs: List<DocumentDto>? = null,
+
+        val resultCode: String? = null,
+        val resultMsg: String? = null,
 
 //        val RESULT: String? = null,
 //        val ERR_CODE: String? = null,
@@ -110,45 +124,73 @@ class BookFetchServiceV2(
             responseBody,
             ResponseBodyDto::class.java
         )
+
+        if (responseBodyDto.docs == null) {
+            logger.debug("$currentPageNumber: ${responseBodyDto.resultCode}-${responseBodyDto.resultMsg}")
+            return listOf()
+        }
+
 //        if (responseBodyDto.RESULT == "ERROR")
 //            throw RuntimeException("${responseBodyDto.ERR_CODE}: ${responseBodyDto.ERR_MESSAGE}")
 
         val documents = responseBodyDto.docs // ?: listOf()
-//        if (documents.isEmpty())
-//            throw RuntimeException("documents is null or empty.")
+        if (documents.isEmpty())
+            throw RuntimeException("documents is empty.")
 
-        return documents.map {
-            val publishedDate = it.PUBLISH_PREDATE.takeIf(String::isNotBlank)?.let { date ->
-                LocalDate.parse(
-                    date,
-                    DateTimeFormatter.ofPattern("yyyyMMdd"),
-                ).atStartOfDay()
+        return documents
+            .mapIndexedNotNull { i, it ->
+                val currentDocumentNumber = (currentPageNumber - 1) * PAGE_SIZE + i + 1;
+
+                val isbn = it.EA_ISBN.uppercase()
+                if (isbn.isBlank()) {
+                    logger.debug("document#${currentDocumentNumber}: EA_ISBN is blank.")
+                    return@mapIndexedNotNull null
+                }
+
+                val publishedDate = it.PUBLISH_PREDATE.takeIf(String::isNotBlank)?.let { date ->
+                    LocalDate.parse(
+                        date,
+                        DateTimeFormatter.ofPattern("yyyyMMdd"),
+                    ).atStartOfDay()
+                }
+
+                Book(
+                    title = it.TITLE,
+                    description = it.BOOK_INTRODUCTION,
+                    isbn = isbn,
+                    authors = it.AUTHOR,
+                    publishedDate = publishedDate,
+                    publisher = it.PUBLISHER,
+                    imgUrl = it.TITLE_URL,
+                )
             }
-
-            Book(
-                title = it.TITLE,
-                description = it.BOOK_INTRODUCTION,
-                isbn = it.EA_ISBN,
-                authors = it.AUTHOR,
-                publishedDate = publishedDate,
-                publisher = it.PUBLISHER,
-                imgUrl = it.TITLE_URL,
-            )
-        }
+            .reversed()
     }
 
     @Transactional
     fun updateBooks(books: List<Book>) {
-        books.forEach {
-            bookRepository.findByIsbn(it.isbn)
-                ?: bookRepository.save(it)
+        if (books.isNotEmpty()) {
+            val existingIsbnSet = bookRepository
+                .findByIsbnIn(books.map { it.isbn })
+                .map { it.isbn }
+                .toMutableSet()
+
+            val newBooks = mutableListOf<Book>()
+            books.forEach {
+                if (it.isbn in existingIsbnSet) return@forEach
+                newBooks.add(it)
+                existingIsbnSet.add(it.isbn)
+            }
+
+            bookRepository.saveBulk(newBooks)
+
+            if (existingIsbnSet.isNotEmpty())
+                logger.debug("이미 존재하는 `isbn` 목록입니다.\n${existingIsbnSet.joinToString("\n")}")
         }
 
         val bookLastFetchedPage = bookLastFetchedPageRepository.findByIdOrNull(1)
             ?: throw RuntimeException("Cannot find last fetched page.")
-
         bookLastFetchedPage.increaseNumber()
-
         bookLastFetchedPageRepository.save(bookLastFetchedPage)
     }
 }
