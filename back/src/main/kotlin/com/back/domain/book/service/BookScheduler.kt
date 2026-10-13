@@ -18,13 +18,18 @@ class BookScheduler(
         bookService.updateBooksViewCountInDb()
     }
 
-    @Scheduled(fixedDelay = 0, initialDelay = 3000)
+    @Scheduled(initialDelay = 3000)
     fun fetchBooks() {
-        try {
-            val books = bookFetchService.fetchBooksFromLastFetchedPage()
-            bookFetchService.updateBooks(books)
-        } catch (exception: Exception) {
-            logger.error("도서 수집 실패", exception)
+        while (!Thread.currentThread().isInterrupted) {
+            try {
+                val books = bookFetchService.fetchBooksFromLastFetchedPage()
+                bookFetchService.updateBooks(books)
+            } catch (exception: InterruptedException) {
+                Thread.currentThread().interrupt()
+            } catch (exception: Exception) {
+                logger.error("도서 수집 실패", exception)
+                Thread.sleep(3_000)
+            }
         }
     }
 }
