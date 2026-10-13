@@ -24,7 +24,7 @@ class BookScheduler(
             val books = bookFetchService.fetchBooksFromLastFetchedPage()
             bookFetchService.updateBooks(books)
         } catch (exception: Exception) {
-            logger.error(exception.message)
+            logger.error("도서 수집 실패", exception)
         }
     }
 }
