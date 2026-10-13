@@ -21,9 +21,10 @@ class BookRepositoryImpl(
                 published_date,
                 publisher,
                 img_url,
+                fetched_page,
                 created_date,
                 modified_date
-            ) values (?, ?, ?, ?, ?, ?, ?, ?, ?);
+            ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
             """.trimIndent()
 
         val now = LocalDateTime.now()
@@ -43,8 +44,12 @@ class BookRepositoryImpl(
 
             ps.setString(6, book.publisher)
             ps.setString(7, book.imgUrl)
-            ps.setObject(8, now)
+
+            if (book.fetchedPage != null) ps.setInt(8, book.fetchedPage)
+            else ps.setNull(8, Types.INTEGER)
+
             ps.setObject(9, now)
+            ps.setObject(10, now)
         }
     }
 }

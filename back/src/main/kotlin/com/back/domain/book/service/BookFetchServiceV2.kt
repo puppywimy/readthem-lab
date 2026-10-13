@@ -162,6 +162,7 @@ class BookFetchServiceV2(
                     publishedDate = publishedDate,
                     publisher = it.PUBLISHER,
                     imgUrl = it.TITLE_URL,
+                    fetchedPage = currentPageNumber,
                 )
             }
             .reversed()
