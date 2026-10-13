@@ -167,28 +167,30 @@ class BookFetchServiceV2(
 
     @Transactional
     fun updateBooks(books: List<Book>) {
+        val bookLastFetchedPage = bookLastFetchedPageRepository.findByIdOrNull(1)
+            ?: throw RuntimeException("Cannot find last fetched page.")
+        bookLastFetchedPage.increaseNumber()
+
         if (books.isNotEmpty()) {
-            val existingIsbnSet = bookRepository
+            var duplicatedCount = 0
+
+            val duplicatedIsbns = bookRepository
                 .findByIsbnIn(books.map { it.isbn })
                 .map { it.isbn }
                 .toMutableSet()
 
+            // add()는 처음 보는 ISBN일 때만 true → 페이지 내 중복과 DB 중복을 함께 거름
             val newBooks = mutableListOf<Book>()
             books.forEach {
-                if (it.isbn in existingIsbnSet) return@forEach
-                newBooks.add(it)
-                existingIsbnSet.add(it.isbn)
+                if (duplicatedIsbns.add(it.isbn)) newBooks.add(it)
+                else duplicatedCount++
             }
+
+            logger.debug("페이지 번호: ${bookLastFetchedPage.number}, 중복된 도서 수: ${duplicatedCount}")
 
             bookRepository.saveBulk(newBooks)
 
-            if (existingIsbnSet.isNotEmpty())
-                logger.debug("이미 존재하는 `isbn` 목록입니다.\n${existingIsbnSet.joinToString("\n")}")
+            bookLastFetchedPageRepository.save(bookLastFetchedPage)
         }
-
-        val bookLastFetchedPage = bookLastFetchedPageRepository.findByIdOrNull(1)
-            ?: throw RuntimeException("Cannot find last fetched page.")
-        bookLastFetchedPage.increaseNumber()
-        bookLastFetchedPageRepository.save(bookLastFetchedPage)
     }
 }
