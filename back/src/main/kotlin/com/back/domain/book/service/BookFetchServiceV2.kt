@@ -16,7 +16,6 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import kotlin.String
 import org.springframework.transaction.annotation.Propagation.NOT_SUPPORTED
-import org.springframework.web.reactive.function.client.ExchangeStrategies
 
 @Service
 @Transactional(readOnly = true)
@@ -118,15 +117,13 @@ class BookFetchServiceV2(
         if (responseBody.isBlank())
             throw RuntimeException("Response body is null or blank.")
 
-        println(responseBody)
-
         val responseBodyDto = Ut.json.objectMapper!!.readValue(
             responseBody,
             ResponseBodyDto::class.java
         )
 
         if (responseBodyDto.docs == null) {
-            logger.debug("$currentPageNumber: ${responseBodyDto.resultCode}-${responseBodyDto.resultMsg}")
+            logger.debug("$currentPageNumber: ${responseBodyDto.resultCode}-${responseBodyDto.resultMsg}\n$responseBody")
             return listOf()
         }
 
