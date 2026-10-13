@@ -24,7 +24,7 @@ class BookRepositoryImpl(
                 fetched_page,
                 created_date,
                 modified_date
-            ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """.trimIndent()
 
         val now = LocalDateTime.now()
