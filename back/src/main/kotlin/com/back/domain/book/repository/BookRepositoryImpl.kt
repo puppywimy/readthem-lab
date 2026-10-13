@@ -45,8 +45,7 @@ class BookRepositoryImpl(
             ps.setString(6, book.publisher)
             ps.setString(7, book.imgUrl)
 
-            if (book.fetchedPage != null) ps.setInt(8, book.fetchedPage)
-            else ps.setNull(8, Types.INTEGER)
+            book.fetchedPage?.let { ps.setInt(8, it) } ?: ps.setNull(8, Types.INTEGER)
 
             ps.setObject(9, now)
             ps.setObject(10, now)
