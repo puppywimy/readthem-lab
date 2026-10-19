@@ -6,14 +6,18 @@ import com.back.domain.book.repository.BookLastFetchedPageRepository
 import com.back.domain.book.repository.BookRepository
 import com.back.standard.util.Ut
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.Lazy
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.reactive.function.client.bodyToMono
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 import kotlin.String
 import org.springframework.transaction.annotation.Propagation.NOT_SUPPORTED
 
@@ -24,11 +28,15 @@ class BookFetchServiceV2(
     private val apiKey: String,
 
     private val bookLastFetchedPageRepository: BookLastFetchedPageRepository,
-    private val bookRepository: BookRepository
+    private val bookRepository: BookRepository,
 ) {
     companion object {
         private const val PAGE_SIZE = 1000
     }
+
+    @Lazy
+    @Autowired
+    private lateinit var self: BookFetchServiceV2
 
     private fun fetchBooks(pageNumber: Int) =
         WebClient
@@ -93,104 +101,144 @@ class BookFetchServiceV2(
     )
 
     private class ResponseBodyDto(
+        val TOTAL_COUNT: String? = null,
+        val PAGE_NO: String? = null,
         val docs: List<DocumentDto>? = null,
 
         val resultCode: String? = null,
         val resultMsg: String? = null,
-
-//        val RESULT: String? = null,
-//        val ERR_CODE: String? = null,
-//        val ERR_MESSAGE: String? = null,
     )
 
     @Transactional(propagation = NOT_SUPPORTED)
-    fun fetchBooksFromLastFetchedPage(): List<Book> {
-        val bookLastFetchedPage = bookLastFetchedPageRepository.findByIdOrNull(1)
-            ?: bookLastFetchedPageRepository.save(BookLastFetchedPage())
+    fun fetchBooksFromLastFetchedPage() {
+        while (true) {
+            val bookLastFetchedPage = bookLastFetchedPageRepository.findByIdOrNull(1)
+                ?: bookLastFetchedPageRepository.save(BookLastFetchedPage())
 
-        val currentPageNumber = bookLastFetchedPage.number + 1
+            val currentPageNumber = bookLastFetchedPage.number + 1
 
-        val responseBody = fetchBooks(currentPageNumber)
-            .retrieve()
-            .bodyToMono<String>()
-            .block() ?: ""
-        if (responseBody.isBlank())
-            throw RuntimeException("Response body is null or blank.")
+            val responseBody = try {
+                fetchBooks(currentPageNumber)
+                    .retrieve()
+                    .bodyToMono<String>()
+                    .block() ?: ""
+            } catch (e: WebClientResponseException) {
+                logger.error("page=$currentPageNumber 외부 API 오류 응답 status=${e.statusCode} body=${e.responseBodyAsString}")
+                break
+            } catch (e: Exception) {
+                logger.error("page=$currentPageNumber 외부 API 요청 실패", e)
+                break
+            }
 
-        val responseBodyDto = Ut.json.objectMapper!!.readValue(
-            responseBody,
-            ResponseBodyDto::class.java
-        )
+            if (responseBody.isBlank()) {
+                logger.error("page=$currentPageNumber 응답 본문이 비어 있음")
+                break
+            }
 
-        if (responseBodyDto.docs == null) {
-            logger.debug("$currentPageNumber: ${responseBodyDto.resultCode}-${responseBodyDto.resultMsg}\n$responseBody")
-            return listOf()
+            val responseBodyDto = try {
+                Ut.json.objectMapper!!.readValue(
+                    responseBody,
+                    ResponseBodyDto::class.java
+                )
+            } catch (e: Exception) {
+                logger.error("page=$currentPageNumber 응답 본문 파싱 실패", e)
+                break
+            }
+
+            // 외부 API의 약속된 오류 (200, resultCode와 resultMsg로 분기), 일단 수집 중단으로 설계하고 추후 종류에 따라 분기
+            if (responseBodyDto.docs == null) {
+                logger.error("page=$currentPageNumber API 오류 resultCode=${responseBodyDto.resultCode} resultMsg=${responseBodyDto.resultMsg} body=$responseBody")
+                break
+            }
+
+            val totalCount = try {
+                Integer.parseInt(responseBodyDto.TOTAL_COUNT)
+            } catch (e: Exception) {
+                logger.error("page=$currentPageNumber TOTAL_COUNT가 숫자가 아님 TOTAL_COUNT=${responseBodyDto.TOTAL_COUNT}")
+                break
+            }
+
+            val documents = responseBodyDto.docs
+            if (documents.isEmpty()) {
+                logger.error("page=$currentPageNumber docs가 빈 배열임")
+                break
+            }
+
+            val books = documents
+                .mapIndexedNotNull { i, it ->
+                    val currentDocumentNumber = (currentPageNumber - 1) * PAGE_SIZE + i + 1;
+
+                    val isbn = it.EA_ISBN.uppercase()
+                    if (isbn.isBlank()) {
+                        logger.debug("page=$currentPageNumber document=$currentDocumentNumber controlNo=${it.CONTROL_NO} ISBN 없음, 건너뜀")
+                        return@mapIndexedNotNull null
+                    }
+
+                    val publishedDate = try {
+                        LocalDate.parse(
+                            it.PUBLISH_PREDATE,
+                            DateTimeFormatter.ofPattern("yyyyMMdd"),
+                        ).atStartOfDay()
+                    } catch (e: DateTimeParseException) {
+                        logger.debug("page=$currentPageNumber document=$currentDocumentNumber controlNo=${it.CONTROL_NO} 출판일 형식 오류 PUBLISH_PREDATE=${it.PUBLISH_PREDATE}, null로 저장")
+                        null
+                    }
+
+                    Book(
+                        title = it.TITLE,
+                        description = it.BOOK_INTRODUCTION,
+                        isbn = isbn,
+                        authors = it.AUTHOR,
+                        publishedDate = publishedDate,
+                        publisher = it.PUBLISHER,
+                        imgUrl = it.TITLE_URL,
+                        fetchedPage = currentPageNumber,
+                    )
+                }
+                .reversed()
+
+            try {
+                self.updateBooks(books)
+            } catch (e: Exception) {
+                logger.error("page=$currentPageNumber 저장 실패", e)
+                break
+            }
+
+            val lastPageNumber = (totalCount + PAGE_SIZE - 1) / PAGE_SIZE
+            logger.info("page=$currentPageNumber/$lastPageNumber 처리 완료 fetched=${documents.size} noIsbn=${documents.size - books.size}")
+
+            if (totalCount <= currentPageNumber * PAGE_SIZE) {
+                logger.info("page=$currentPageNumber 마지막 페이지 도달, 수집 완료 total=$totalCount")
+                break
+            }
         }
 
-//        if (responseBodyDto.RESULT == "ERROR")
-//            throw RuntimeException("${responseBodyDto.ERR_CODE}: ${responseBodyDto.ERR_MESSAGE}")
-
-        val documents = responseBodyDto.docs // ?: listOf()
-        if (documents.isEmpty())
-            throw RuntimeException("documents is empty.")
-
-        return documents
-            .mapIndexedNotNull { i, it ->
-                val currentDocumentNumber = (currentPageNumber - 1) * PAGE_SIZE + i + 1;
-
-                val isbn = it.EA_ISBN.uppercase()
-                if (isbn.isBlank()) {
-                    logger.debug("document#${currentDocumentNumber}: EA_ISBN is blank.")
-                    return@mapIndexedNotNull null
-                }
-
-                val publishedDate = it.PUBLISH_PREDATE.takeIf(String::isNotBlank)?.let { date ->
-                    LocalDate.parse(
-                        date,
-                        DateTimeFormatter.ofPattern("yyyyMMdd"),
-                    ).atStartOfDay()
-                }
-
-                Book(
-                    title = it.TITLE,
-                    description = it.BOOK_INTRODUCTION,
-                    isbn = isbn,
-                    authors = it.AUTHOR,
-                    publishedDate = publishedDate,
-                    publisher = it.PUBLISHER,
-                    imgUrl = it.TITLE_URL,
-                    fetchedPage = currentPageNumber,
-                )
-            }
-            .reversed()
     }
 
     @Transactional
     fun updateBooks(books: List<Book>) {
         val bookLastFetchedPage = bookLastFetchedPageRepository.findByIdOrNull(1)
-            ?: throw RuntimeException("Cannot find last fetched page.")
+            ?: error("Cannot find last fetched page.")
         bookLastFetchedPage.increaseNumber()
-
-        if (books.isNotEmpty()) {
-            var duplicatedCount = 0
-
-            val duplicatedIsbns = bookRepository
-                .findByIsbnIn(books.map { it.isbn })
-                .map { it.isbn }
-                .toMutableSet()
-
-            // add()는 처음 보는 ISBN일 때만 true → 페이지 내 중복과 DB 중복을 함께 거름
-            val newBooks = mutableListOf<Book>()
-            books.forEach {
-                if (duplicatedIsbns.add(it.isbn)) newBooks.add(it)
-                else duplicatedCount++
-            }
-
-            logger.debug("페이지 번호: ${bookLastFetchedPage.number}, 중복된 도서 수: ${duplicatedCount}")
-
-            bookRepository.saveBulk(newBooks)
-
-            bookLastFetchedPageRepository.save(bookLastFetchedPage)
-        }
+//
+//        if (books.isNotEmpty()) {
+//            var duplicatedCount = 0
+//
+//            val duplicatedIsbns = bookRepository
+//                .findByIsbnIn(books.map { it.isbn })
+//                .map { it.isbn }
+//                .toMutableSet()
+//
+//            // add()는 처음 보는 ISBN일 때만 true → 페이지 내 중복과 DB 중복을 함께 거름
+//            val newBooks = mutableListOf<Book>()
+//            books.forEach {
+//                if (duplicatedIsbns.add(it.isbn)) newBooks.add(it)
+//                else duplicatedCount++
+//            }
+//
+//            logger.info("page=${bookLastFetchedPage.number} 처리 완료 fetched=${books.size} saved=${newBooks.size} duplicated=$duplicatedCount")
+//
+//            bookRepository.saveBulk(newBooks)
+//        }
     }
 }
