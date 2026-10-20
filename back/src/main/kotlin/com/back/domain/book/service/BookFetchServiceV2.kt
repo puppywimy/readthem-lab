@@ -144,10 +144,22 @@ class BookFetchServiceV2(
                 break
             }
 
-            // 외부 API의 약속된 오류 (200, resultCode와 resultMsg로 분기), 일단 수집 중단으로 설계하고 추후 종류에 따라 분기
             if (responseBodyDto.docs == null) {
-                logger.error("page=$currentPageNumber API 오류 resultCode=${responseBodyDto.resultCode} resultMsg=${responseBodyDto.resultMsg} body=$responseBody")
-                break
+                val resultCode = responseBodyDto.resultCode
+                val resultMsg = responseBodyDto.resultMsg
+                when (resultCode) {
+                    "105" -> {
+                        logger.error("page=$currentPageNumber API 오류 resultCode=105 resultMsg=$resultMsg body=$responseBody")
+                        bookLastFetchedPage.increaseNumber()
+                        bookLastFetchedPageRepository.save(bookLastFetchedPage)
+                        continue
+                    }
+
+                    else -> {
+                        logger.error("page=$currentPageNumber API 오류 resultCode=$resultCode resultMsg=$resultMsg body=$responseBody")
+                        break
+                    }
+                }
             }
 
             val totalCount = try {
