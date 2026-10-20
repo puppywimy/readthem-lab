@@ -19,7 +19,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import kotlin.String
-import org.springframework.transaction.annotation.Propagation.NOT_SUPPORTED
+import org.springframework.transaction.annotation.Propagation.NEVER
 
 @Service
 @Transactional(readOnly = true)
@@ -109,12 +109,11 @@ class BookFetchServiceV2(
         val resultMsg: String? = null,
     )
 
-    @Transactional(propagation = NOT_SUPPORTED)
+    @Transactional(propagation = NEVER)
     fun fetchBooksFromLastFetchedPage() {
         while (true) {
             val bookLastFetchedPage = bookLastFetchedPageRepository.findByIdOrNull(1)
                 ?: bookLastFetchedPageRepository.save(BookLastFetchedPage())
-
             val currentPageNumber = bookLastFetchedPage.number + 1
 
             val responseBody = try {
@@ -197,48 +196,45 @@ class BookFetchServiceV2(
                 }
                 .reversed()
 
-            try {
-                self.updateBooks(books)
+            val savedCount = try {
+                self.updateBooksAndProgress(books)
             } catch (e: Exception) {
                 logger.error("page=$currentPageNumber 저장 실패", e)
                 break
             }
 
             val lastPageNumber = (totalCount + PAGE_SIZE - 1) / PAGE_SIZE
-            logger.info("page=$currentPageNumber/$lastPageNumber 처리 완료 fetched=${documents.size} noIsbn=${documents.size - books.size}")
+            logger.info("page=$currentPageNumber/$lastPageNumber 처리 완료 fetched=${documents.size} savedCount=$savedCount")
 
             if (totalCount <= currentPageNumber * PAGE_SIZE) {
-                logger.info("page=$currentPageNumber 마지막 페이지 도달, 수집 완료 total=$totalCount")
+                logger.info("마지막 페이지 도달, 수집 완료")
                 break
             }
         }
-
     }
 
     @Transactional
-    fun updateBooks(books: List<Book>) {
+    fun updateBooksAndProgress(books: List<Book>): Int {
         val bookLastFetchedPage = bookLastFetchedPageRepository.findByIdOrNull(1)
-            ?: error("Cannot find last fetched page.")
+            ?: error("Cannot find BookLastFetchedPage.")
+
+        val newBooks = mutableListOf<Book>()
+
+        if (books.isNotEmpty()){
+            val duplicatedIsbns = bookRepository
+                .findByIsbnIn(books.map { it.isbn })
+                .map { it.isbn }
+                .toMutableSet()
+
+            books.forEach {
+                if (duplicatedIsbns.add(it.isbn)) newBooks.add(it)
+            }
+
+            bookRepository.saveBulk(newBooks)
+        }
+
         bookLastFetchedPage.increaseNumber()
-//
-//        if (books.isNotEmpty()) {
-//            var duplicatedCount = 0
-//
-//            val duplicatedIsbns = bookRepository
-//                .findByIsbnIn(books.map { it.isbn })
-//                .map { it.isbn }
-//                .toMutableSet()
-//
-//            // add()는 처음 보는 ISBN일 때만 true → 페이지 내 중복과 DB 중복을 함께 거름
-//            val newBooks = mutableListOf<Book>()
-//            books.forEach {
-//                if (duplicatedIsbns.add(it.isbn)) newBooks.add(it)
-//                else duplicatedCount++
-//            }
-//
-//            logger.info("page=${bookLastFetchedPage.number} 처리 완료 fetched=${books.size} saved=${newBooks.size} duplicated=$duplicatedCount")
-//
-//            bookRepository.saveBulk(newBooks)
-//        }
+
+        return newBooks.size
     }
 }
