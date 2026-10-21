@@ -18,13 +18,8 @@ class BookScheduler(
         bookService.updateBooksViewCountInDb()
     }
 
-//    @Scheduled(fixedDelay = 10000, initialDelay = 3000)
-    fun fetchBooks() {
-        try {
-            val books = bookFetchService.fetchBooksFromLastFetchedPage()
-            bookFetchService.updateBooks(books)
-        } catch (exception: Exception) {
-            logger.error(exception.message)
-        }
+    @Scheduled(initialDelay = 3000)
+    fun upsertBooks() {
+        bookFetchService.fetchBooksFromLastFetchedPage()
     }
 }

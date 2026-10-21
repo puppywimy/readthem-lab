@@ -9,6 +9,10 @@ spring:
       - org.springframework.boot.session.data.redis.autoconfigure.SessionDataRedisAutoConfiguration
   application:
     name: back
+  task:
+    scheduling:
+      pool:
+        size: 2
   config:
     import: optional:file:.env[.properties]
   profiles:
