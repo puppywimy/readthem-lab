@@ -6,6 +6,7 @@ import { ToastProvider } from "@/lib/toast/ToastProvider";
 
 import AuthReturnPathRestorer from "@/app/_components/AuthReturnPathRestorer";
 import Header from "@/app/_components/Header";
+import SvgIcon from "@/app/_components/SvgIcon";
 
 import "./globals.css";
 
@@ -38,7 +39,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" suppressHydrationWarning>
+    <html lang="ko" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <link rel="preconnect" href="https://cdn.jsdelivr.net" />
@@ -61,8 +62,9 @@ export default function RootLayout({
                     href="https://github.com/prgrms-be-devcourse/NBE10-12-3-ADP"
                     target="_blank"
                     rel="noreferrer"
+                    aria-label="GitHub Repository"
                   >
-                    GitHub Repository
+                    <SvgIcon name="github" />
                   </a>
                 </div>
               </footer>

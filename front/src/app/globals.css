@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
 [data-theme="light"] .home-a {
   color-scheme: light;
 }
@@ -225,7 +231,7 @@
     font-weight: 400;
   }
   .trend-link span {
-    margin-top: 0.3em;
+    margin-top: 0.15em;
   }
   .trend-link:hover {
     text-decoration: underline;
@@ -556,6 +562,14 @@
     flex-wrap: wrap;
     gap: 12px 24px;
     justify-content: space-between;
+    align-items: center;
+  }
+  .foot a {
+    display: flex;
+  }
+  .foot .i {
+    width: 22px;
+    height: 22px;
   }
 
   .reveal {
