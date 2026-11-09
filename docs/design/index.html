@@ -1,8 +1,8 @@
 <!doctype html>
 <!--
-  READTHEM.md 디자인 가이드라인
+  Readthem Lab 디자인 가이드라인
 
-  - 현재 front/ 의 화면을 API 없이 그대로 보여 주는 정적 프로토타입입니다.
+  - 현재 front/ 의 화면을 API 없이 그대로 보여 주는 정적 프로토타입입니다. 홈 화면만 새 디자인이라 front/ 와 다릅니다.
   - 아래 <style type="text/tailwindcss"> 는 front/src/app/globals.css 의 복사본입니다. (첫 줄 @import 만 제외)
   - 마크업과 className 은 front/src/app 의 컴포넌트에서 그대로 옮겼습니다.
   - 도서·리뷰·회원은 샘플 데이터이고, 표지는 실제 표지 대신 만든 임시 이미지입니다.
@@ -11,8 +11,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>READTHEM.md 디자인 가이드</title>
-    <meta name="description" content="개발자의 도서 리뷰 공유 플랫폼 READTHEM.md의 현재 디자인" />
+    <title>Readthem Lab 디자인 가이드</title>
+    <meta name="description" content="개발자의 도서 리뷰 공유 플랫폼 Readthem Lab의 디자인" />
     <script>
       // layout.tsx 의 themeScript 와 동일
       (() => {
@@ -1144,6 +1144,170 @@ button:hover {
   vertical-align: middle;
 }
     </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
+    <style>
+/* 홈 화면 전용 (index-a.html에서 옮김). 다른 화면에 영향을 주지 않도록 .home-a 안에 가둔다.
+   모서리 규칙: 표지 4px, 패널 16px, 상호작용 요소(버튼, 입력창)는 pill. */
+body.is-home #header,
+body.is-home > footer { display: none; }
+body.is-home > main { max-width: none; padding: 0; }
+[data-theme=light] .home-a { color-scheme: light; }
+[data-theme=dark] .home-a { color-scheme: dark; }
+@keyframes home-drift { to { transform: translateY(calc(-50% - 7px)); } }
+@keyframes home-swap { from { opacity: 0; transform: translateY(10px); } }
+
+.home-a {
+  --bg: light-dark(#fbfcfd, #0f1115);
+  --surface: light-dark(#e9ebef, #191c22);
+  --ink: light-dark(#14161a, #eef0f3);
+  --muted: light-dark(#596070, #a0a7b3);
+  --line: light-dark(#d5d9e0, #2a2e37);
+  --accent: light-dark(#1f3fd6, #8a9dff);
+  --on-accent: light-dark(#f7f8ff, #0f1115);
+  --feature: light-dark(#1f3fd6, #2a3a8f);
+  --on-feature: #f7f8ff;
+  --gutter: clamp(16px, 4vw, 56px);
+  --ease: cubic-bezier(.16, 1, .3, 1);
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 16px/1.6 "Pretendard Variable", Pretendard, system-ui, sans-serif;
+  word-break: keep-all;
+  -webkit-font-smoothing: antialiased;
+
+  * { box-sizing: border-box; margin: 0; }
+  a { color: inherit; text-decoration: none; }
+  button, input { font: inherit; color: inherit; }
+  button { cursor: pointer; background: none; border: 0; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .wrap { max-width: 1400px; margin-inline: auto; padding-inline: var(--gutter); }
+  /* globals.css의 제목 테이프 장식을 끈다 */
+  h1, h2 { display: block; position: static; width: auto; }
+  h1::before, h2::before { content: none; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+
+  /* 내비게이션 */
+  .nav { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--bg) 90%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+  .nav .wrap { height: 68px; display: flex; align-items: center; gap: 28px; }
+  .logo { font-weight: 800; font-size: 1.15rem; letter-spacing: -.03em; white-space: nowrap; }
+  .logo em { font-style: normal; color: var(--accent); }
+  .links { display: flex; gap: 22px; color: var(--muted); font-weight: 500; white-space: nowrap; }
+  .links a:hover, .links button:hover { color: var(--ink); }
+  .links button { padding: 0; font-weight: 500; }
+  .nav-end { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .icon-btn { width: 42px; height: 42px; border-radius: 999px; display: grid; place-items: center; transition: background .2s; }
+  .icon-btn:hover { background: var(--surface); }
+  .btn { display: inline-flex; align-items: center; gap: 8px; height: 42px; padding-inline: 18px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font-weight: 600; white-space: nowrap; transition: transform .2s var(--ease), filter .2s; }
+  .btn:hover { filter: brightness(1.1); }
+  .btn:active { transform: translateY(1px) scale(.98); }
+  .btn.line { background: none; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--line); }
+  .btn.line:hover { background: var(--surface); filter: none; }
+
+  /* 표지 */
+  .cover { position: relative; display: block; aspect-ratio: 2/3; border-radius: 4px; overflow: hidden; background: hsl(var(--h) 38% 28%); color: #f4f5f2; box-shadow: 0 10px 24px -14px color-mix(in srgb, var(--ink) 55%, transparent); }
+  .cover > span { position: absolute; inset: 12px; font-weight: 700; line-height: 1.3; font-size: .92rem; }
+  .cover img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+  /* 히어로 */
+  .hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); height: min(calc(100dvh - 104px), 760px); min-height: 560px; max-width: 1400px; margin-inline: auto; overflow: hidden; }
+  .hero-text { padding: clamp(48px, 9vh, 88px) var(--gutter) 40px; align-self: center; }
+  h1 { font-size: clamp(2.5rem, 5vw, 4.6rem); line-height: 1.12; letter-spacing: -.03em; font-weight: 800; }
+  .lede { margin-top: 20px; font-size: 1.13rem; color: var(--muted); max-width: 30em; }
+  .trend-link { display: inline-flex; align-items: flex-start; gap: 1px; padding: 0; font-style: italic; font-weight: 400; }
+  .trend-link span { margin-top: .3em; }
+  .trend-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .search { margin-top: 32px; max-width: 520px; }
+  .search label { display: block; font-weight: 600; font-size: .93rem; margin-bottom: 8px; }
+  .search div { display: flex; gap: 6px; padding: 6px; border: 1.5px solid var(--ink); border-radius: 999px; background: var(--bg); transition: box-shadow .2s; }
+  .search div:focus-within { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent); }
+  .search input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; padding-inline: 14px; }
+  .search input::placeholder { color: var(--muted); }
+  .wall { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; padding-right: var(--gutter); overflow: hidden; mask-image: linear-gradient(transparent, #000 7%, #000 93%, transparent); }
+  .col { display: grid; gap: 14px; align-content: start; animation: home-drift 70s linear infinite; }
+  .col:nth-child(2) { animation-direction: reverse; animation-duration: 85s; }
+  .col:nth-child(3) { animation-duration: 60s; }
+  .wall:hover .col { animation-play-state: paused; }
+  .col .cover { transition: transform .35s var(--ease); }
+  .col .cover:hover { transform: scale(1.03); }
+
+  /* 순위 */
+  section { padding-block: clamp(56px, 8vw, 104px); scroll-margin-top: 40px; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px 32px; }
+  .tab { font-size: clamp(1.5rem, 3vw, 2.5rem); font-weight: 800; letter-spacing: -.03em; color: var(--muted); padding: 0; transition: color .2s; }
+  .tab:hover { color: var(--ink); }
+  .tab[aria-selected=true] { color: var(--ink); text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 4px; text-underline-offset: 10px; }
+  .panel { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(32px, 6vw, 88px); margin-top: 48px; animation: home-swap .5s var(--ease); }
+  .top { display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr); gap: 24px; align-items: end; align-self: start; }
+  .top .num { font-size: clamp(4.5rem, 9vw, 7.5rem); font-weight: 800; line-height: .9; letter-spacing: -.06em; color: var(--accent); }
+  .top h3 { font-size: 1.5rem; font-weight: 700; line-height: 1.25; letter-spacing: -.025em; margin-top: 12px; }
+  .meta { color: var(--muted); font-size: .93rem; }
+  .metric { display: inline-flex; align-items: center; gap: 4px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .metric > span:first-child { color: var(--accent); }
+  .rows { list-style: none; padding: 0; }
+  .rows li + li { border-top: 1px solid var(--line); }
+  .rows a { display: grid; grid-template-columns: 2.2rem 48px minmax(0, 1fr) auto; gap: 16px; align-items: center; padding-block: 12px; transition: transform .25s var(--ease); }
+  .rows a:hover { transform: translateX(6px); }
+  .rows b { font-size: 1.3rem; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+  .rows .title { font-weight: 600; line-height: 1.35; }
+  .rows .cover > span { display: none; }
+
+  /* 리뷰 */
+  h2 { font-size: clamp(1.6rem, 3vw, 2.5rem); font-weight: 800; letter-spacing: -.035em; line-height: 1.2; }
+  .reviews { display: grid; grid-template-columns: 7fr 5fr; gap: 16px; margin-top: 36px; }
+  .rv { border-radius: 16px; padding: clamp(20px, 2.5vw, 32px); display: flex; flex-direction: column; background: var(--surface); }
+  .rv:first-child { grid-row: span 2; background: var(--feature); color: var(--on-feature); --muted: var(--on-feature); }
+  .rv q { quotes: none; font-weight: 600; line-height: 1.5; font-size: 1.1rem; }
+  .rv:first-child q { font-size: clamp(1.5rem, 2.8vw, 2.4rem); line-height: 1.32; letter-spacing: -.03em; font-weight: 700; }
+  .rv-foot { margin-top: auto; padding-top: 24px; display: flex; align-items: center; gap: 14px; }
+  .rv-foot .cover { width: 44px; flex: none; box-shadow: none; }
+  .rv-foot .cover > span { display: none; }
+  .rv-foot div { min-width: 0; flex: 1; line-height: 1.35; }
+  .rv-foot strong { display: block; }
+  .rv-foot small { font-size: .87rem; color: var(--muted); }
+  .rating { display: inline-flex; align-items: center; gap: 3px; margin-left: 8px; }
+  .widget { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(32px, 6vw, 88px); align-items: center; }
+  .widget-section { padding-block: clamp(96px, 13vw, 184px); background: color-mix(in srgb, var(--accent) 8%, var(--bg)); }
+  .widget .btn { margin-top: 24px; }
+  .widget img { width: 100%; border-radius: 16px; }
+  .like { display: inline-flex; align-items: center; gap: 5px; font-weight: 600; font-variant-numeric: tabular-nums; padding: 6px 10px; border-radius: 999px; transition: transform .2s var(--ease); }
+  .like:active { transform: scale(.92); }
+  .rv:first-child .like:focus-visible { outline-color: var(--on-feature); }
+
+  /* 최근 */
+  .head { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .arrows { display: flex; gap: 4px; }
+  .arrows .icon-btn { border: 1px solid var(--line); }
+  .track { display: grid; grid-auto-flow: column; grid-auto-columns: clamp(132px, 14vw, 176px); gap: 20px; overflow-x: auto; scroll-snap-type: x proximity; margin-top: 32px; padding-bottom: 12px; scrollbar-width: none; }
+  .track > a { scroll-snap-align: start; display: block; }
+  .track .cover { transition: transform .3s var(--ease); }
+  .track > a:hover .cover { transform: translateY(-6px); }
+  .track h3 { font-size: .98rem; font-weight: 600; line-height: 1.35; margin-top: 12px; }
+
+  .foot { border-top: 1px solid var(--line); padding-block: 28px; color: var(--muted); font-size: .93rem; }
+  .foot .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; justify-content: space-between; }
+
+  .reveal { opacity: 0; transform: translateY(18px); transition: opacity .7s var(--ease), transform .7s var(--ease); }
+  .reveal.in { opacity: 1; transform: none; }
+
+  @media (max-width: 860px) {
+    .long { display: none; }
+    .nav .wrap { height: auto; flex-wrap: wrap; gap: 8px 12px; padding-block: 10px; }
+    .links { order: 3; width: 100%; gap: 18px; font-size: .93rem; }
+    section { scroll-margin-top: 88px; }
+    .tabs { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 16px; scrollbar-width: none; }
+    .tab { flex: none; white-space: nowrap; }
+    .hero { grid-template-columns: minmax(0, 1fr); height: auto; min-height: 0; }
+    .hero-text { padding-top: 40px; padding-bottom: 28px; }
+    .wall { height: 280px; padding-inline: var(--gutter); gap: 10px; }
+    .panel, .reviews, .widget { grid-template-columns: minmax(0, 1fr); }
+    .rv:first-child { grid-row: auto; }
+    .top { grid-template-columns: 130px minmax(0, 1fr); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .reveal { opacity: 1; transform: none; }
+  }
+}
+    </style>
   </head>
   <body class="flex min-h-screen flex-col antialiased">
     <nav id="doc-bar" class="doc-bar" aria-label="디자인 가이드 화면 목록"></nav>
@@ -1181,8 +1345,11 @@ button:hover {
         bookmark: FILLED(BOOKMARK_PATH),
         "chevron-left": STROKE(2.4, '<path d="M15 18l-6-6 6-6"/>'),
         "chevron-right": STROKE(2.4, '<path d="M9 18l6-6-6-6"/>'),
+        "arrow-up-right": STROKE(2.4, '<path d="M7 17 17 7M8 7h9v9"/>'),
         clock: STROKE(2, '<circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.8 1.6"/>'),
         fire: STROKE(2, '<path d="M12 22c4 0 7-2.8 7-6.7 0-2.3-1-4.2-2.9-5.9.1 1.9-.8 3.2-2.2 3.8.4-3.8-1.4-6.8-5-9.2.3 3-1.3 4.9-2.6 6.6A7.2 7.2 0 0 0 5 15.3C5 19.2 8 22 12 22Z"/><path d="M10 17c0-1.4.8-2.4 2.1-3.4.8 1.1 1.9 2.2 1.9 3.7A2 2 0 0 1 12 19a2 2 0 0 1-2-2Z"/>'),
+        comment: STROKE(2, '<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>'),
+        eye: STROKE(2, '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>'),
         github: FILLED(GITHUB_PATH),
         "heart-outline": STROKE(2, `<path d="${HEART_PATH}"/>`),
         heart: FILLED(HEART_PATH),
@@ -1236,7 +1403,7 @@ button:hover {
       }
 
       /* ───────── 상태 ───────── */
-      const state = { auth: "guest", searchOpen: false, searchTerm: "", mypageTab: "reviews", adminTab: "members", wished: new Set([1]) };
+      const state = { auth: "guest", searchOpen: false, searchTerm: "", mypageTab: "reviews", adminTab: "members", wished: new Set([1]), homeTab: "인기 도서" };
       const isLogin = () => state.auth !== "guest";
 
       /* ───────── lib/ratingColor.ts ───────── */
@@ -1415,15 +1582,6 @@ button:hover {
           ${button(icon("chevron-right"), { size: "sm", cls: "flex h-8 w-8 items-center justify-center px-0 text-xl leading-none", attrs: `data-act="carousel" data-dir="1" aria-label="${title} 다음 목록"` })}
         </div>`;
 
-      const sectionHead = (title, iconName) =>
-        `<div class="mb-2 flex w-full items-center gap-3">
-          <h1 class="main-section-heading text-2xl font-bold">
-            <span class="shrink-0" aria-hidden="true">${icon(iconName, "h-5 w-5")}</span>
-            <span>${title}</span>
-          </h1>
-          ${carouselButtons(title)}
-        </div>`;
-
       const reviewerHref = (reviewer) => (isLogin() && reviewer.id === ME.id ? "#/mypage" : "#/member");
 
       const reviewDetailCard = (review, { actions = false } = {}) => {
@@ -1515,7 +1673,6 @@ button:hover {
           </g>
         </svg>`;
       const adminDivider = () => `<div class="relative h-2 w-full opacity-70 ">${frame("softDivider")}</div>`;
-      const sectionDivider = () => `<div class="theme-section-divider-bar mt-7 opacity-25">${roughLine()}</div>`;
 
       /* ───────── RoughRatingInput ───────── */
       const starPreview = (percent, fill) =>
@@ -1650,7 +1807,7 @@ button:hover {
         document.getElementById("header").innerHTML = `<header class="theme-site-header relative">
           <nav class="mx-auto flex w-full max-w-4xl items-center gap-3 px-4 py-2">
             <div class="shrink-0 ${open ? "max-sm:hidden" : ""}">
-              <a href="#/" class="shrink-0 text-xl font-bold whitespace-nowrap">READTHEM.md</a>
+              <a href="#/" class="shrink-0 text-xl font-bold whitespace-nowrap">Readthem Lab</a>
             </div>
             ${open ? "" : `<button type="button" class="mobile-search-toggle theme-nav-link theme-nav-control shrink-0" data-act="search-open" aria-label="검색창 열기">${icon("search")}<span class="theme-nav-label">검색</span></button>`}
             <form data-search-form class="min-w-0 items-center gap-1 ${open ? "flex flex-1" : "hidden w-72 shrink-0 sm:flex lg:w-80"}">
@@ -1681,71 +1838,158 @@ button:hover {
         </header>`;
       }
 
-      /* ───────── 화면: 홈 (app/page.tsx) ───────── */
+      /* ───────── 화면: 홈 (index-a.html에서 옮김, front/에는 아직 없음) ───────── */
+      // 샘플 데이터. id가 있는 책은 도서 상세로, 없는 책은 검색 화면으로 이동한다. 표지는 Open Library에서 불러온다.
+      const HOME_BOOKS = {
+        ddia: { id: 6, t: "데이터 중심 애플리케이션 설계", a: "마틴 클레프만", i: "9781449373320", h: 205, r: 4.8, n: 312, v: 18420 },
+        ej: { id: 3, t: "이펙티브 자바", a: "조슈아 블로크", i: "9780134685991", h: 20, r: 4.7, n: 287, v: 15873 },
+        prag: { id: 8, t: "실용주의 프로그래머", a: "데이비드 토머스 외", i: "9780135957059", h: 150, r: 4.6, n: 241, v: 13208 },
+        ref: { id: 4, t: "리팩터링 2판", a: "마틴 파울러", i: "9780134757599", h: 340, r: 4.5, n: 198, v: 12761 },
+        clean: { id: 1, t: "클린 코드", a: "로버트 C. 마틴", i: "9780132350884", h: 45, r: 4.1, n: 406, v: 12094 },
+        ddd: { id: 9, t: "도메인 주도 설계", a: "에릭 에반스", i: "9780321125217", h: 265, r: 4.3, n: 134, v: 9317 },
+        apo: { t: "A Philosophy of Software Design", a: "존 오스터하우트", i: "9781732102200", h: 190, r: 4.9, n: 76, v: 6240 },
+        hf: { t: "헤드 퍼스트 디자인 패턴", a: "에릭 프리먼 외", i: "9780596007126", h: 10, r: 4.4, n: 223, v: 8955 },
+        cc: { t: "코드 컴플리트 2판", a: "스티브 맥코넬", i: "9780735619678", h: 120, r: 4.5, n: 91, v: 5482 },
+        staff: { t: "Staff Engineer", a: "윌 라슨", i: "9781736417911", h: 230, r: 4.6, n: 58, v: 4176 },
+        mmm: { t: "맨먼스 미신", a: "프레드릭 브룩스", i: "9780201835953", h: 30, r: 4.4, n: 83, v: 3890 },
+        csapp: { t: "컴퓨터 시스템", a: "랜달 브라이언트 외", i: "9780134092669", h: 300, r: 4.8, n: 112, v: 7023 },
+        sicp: { t: "컴퓨터 프로그램의 구조와 해석", a: "해럴드 에이블슨 외", i: "9780262510875", h: 275, r: 4.7, n: 64, v: 3312 },
+        ca: { t: "클린 아키텍처", a: "로버트 C. 마틴", i: "9780134494166", h: 0, r: 4.2, n: 176, v: 9640 },
+        ri: { t: "Release It! 2판", a: "마이클 나이가드", i: "9781680502398", h: 95, r: 4.6, n: 47, v: 2765 },
+      };
+      const HOME_RANK = {
+        "인기 도서": { ids: ["ddia", "ej", "prag", "ref", "clean", "ca"], icon: "eye", label: "조회", value: (b) => b.v.toLocaleString() },
+        "평점 좋은 도서": { ids: ["apo", "ddia", "csapp", "ej", "sicp", "prag"], icon: "star", label: "별점", value: (b) => b.r.toFixed(1) },
+        "리뷰 많은 도서": { ids: ["clean", "ddia", "ej", "prag", "hf", "ref"], icon: "comment", label: "리뷰", value: (b) => b.n.toLocaleString() },
+      };
+      const HOME_REVIEWS = [
+        { b: "ddia", u: "mun-seok", r: 5, l: 214, q: "복제와 파티셔닝을 안다고 생각했는데, 장애 상황을 설명해 보라는 질문에 막혔어요. 이 책을 읽고 나서야 트레이드오프를 제 말로 설명할 수 있게 됐습니다." },
+        { b: "ej", u: "byte-bori", r: 5, l: 167, q: "순서대로 읽지 않아도 됩니다. 코드 리뷰에서 같은 지적을 세 번 받았다면 그 아이템부터 펴 보세요." },
+        { b: "apo", u: "yoonseul", r: 4.5, l: 128, q: "얇아서 주말이면 끝납니다. 깊은 모듈이라는 개념 하나로 지난주에 쪼갠 클래스를 다시 합쳤어요." },
+      ];
+      const HOME_RECENT = [["ddd", "12분 전"], ["hf", "38분 전"], ["staff", "1시간 전"], ["ri", "2시간 전"], ["csapp", "3시간 전"], ["mmm", "5시간 전"], ["cc", "8시간 전"], ["sicp", "어제"]];
+
+      const homeHref = (b) => (b.id ? bookHref(b.id) : `#/search?term=${encodeURIComponent(b.t)}`);
+      const homeCover = (b, { size = "L", loading = "lazy" } = {}) =>
+        `<span class="cover" style="--h:${b.h}"><span>${esc(b.t)}</span><img loading="${loading}" src="https://covers.openlibrary.org/b/isbn/${b.i}-${size}.jpg?default=false" alt="${esc(b.t)} 표지" onerror="this.remove()"></span>`;
+      const homeLike = (v, i) =>
+        `<button class="like" data-act="home-like" data-index="${i}" aria-pressed="${!!v.liked}" aria-label="좋아요">${icon(v.liked ? "heart" : "heart-outline")}<span>${v.l}</span></button>`;
+
+      function homeRankPanel(name) {
+        const { ids, icon: iconName, label, value } = HOME_RANK[name];
+        const [first, ...rest] = ids.map((key) => HOME_BOOKS[key]);
+        const metric = (b) => `<span class="metric">${icon(iconName)}<span class="sr">${label} </span><span>${value(b)}</span></span>`;
+        return `<div class="panel">
+          <a class="top" href="${homeHref(first)}">${homeCover(first)}<div><div class="num">1</div><h3>${esc(first.t)}</h3><p class="meta">${esc(first.a)}</p><p style="margin-top:8px">${metric(first)}</p></div></a>
+          <ol class="rows" start="2">${rest
+            .map((b, i) => `<li><a href="${homeHref(b)}"><b>${i + 2}</b>${homeCover(b, { size: "M" })}<div><div class="title">${esc(b.t)}</div><div class="meta">${esc(b.a)}</div></div>${metric(b)}</a></li>`)
+            .join("")}</ol>
+        </div>`;
+      }
+
       function homeScreen() {
-        const horizontal = "book-scroll-list flex snap-x snap-mandatory gap-5 overflow-x-auto py-2 pb-4";
-        const bookSection = (title, iconName, books, cls) =>
-          `<section class="${cls}">
-            ${sectionHead(title, iconName)}
-            <div class="book-scroll-fade">
-              <ul class="${horizontal}">
-                ${books
-                  .map(
-                    (book, i) => `<li class="book-horizontal-item group flex shrink-0 flex-col basis-[calc((100%_-_2.5rem)/3)] md:basis-[calc((100%_-_3.75rem)/4)] xl:basis-[calc((100%_-_5rem)/5)] relative ${i === books.length - 1 ? "snap-end" : "snap-start"}" data-carousel-item>
-                      ${bookGridItem(book, i, true)}
-                    </li>`,
-                  )
-                  .join("")}
-              </ul>
+        const keys = Object.keys(HOME_BOOKS);
+        // 표지 벽: 세 칸을 두 번씩 이어 붙여 끊김 없이 흐르게 한다
+        const wall = [0, 1, 2]
+          .map((c) => {
+            const col = keys.filter((_, i) => i % 3 === c).map((k) => homeCover(HOME_BOOKS[k], { loading: "eager" })).join("");
+            return `<div class="col">${col + col}</div>`;
+          })
+          .join("");
+        const tabs = Object.keys(HOME_RANK)
+          .map((name) => `<button class="tab" role="tab" data-act="home-tab" aria-selected="${name === state.homeTab}">${name}</button>`)
+          .join("");
+        const reviews = HOME_REVIEWS.map((v, i) => {
+          const b = HOME_BOOKS[v.b];
+          return `<article class="rv">
+            <q>${esc(v.q)}</q>
+            <div class="rv-foot">${homeCover(b, { size: "M" })}<div><strong>${esc(b.t)}</strong><small>${esc(v.u)}<span class="rating">${icon("star", "h-3 w-3")}<span class="sr">별점 </span>${v.r.toFixed(1)}</span></small></div>${homeLike(v, i)}</div>
+          </article>`;
+        }).join("");
+        const recent = HOME_RECENT.map(([k, when]) => {
+          const b = HOME_BOOKS[k];
+          return `<a href="${homeHref(b)}">${homeCover(b)}<h3>${esc(b.t)}</h3><p class="meta">${when} 리뷰</p></a>`;
+        }).join("");
+        return `<div class="home-a">
+          <header class="nav"><div class="wrap">
+            <a class="logo" href="#/">Readthem <em>Lab</em></a>
+            <nav class="links" aria-label="주요 메뉴">
+              <button data-act="home-top">도서 검색</button>
+              <button data-act="home-jump" data-target="home-rank">독서 트렌드</button>
+              <button data-act="home-jump" data-target="home-reviews">리뷰</button>
+              ${isLogin() ? `<a href="#/mypage">내 서재</a>` : ""}
+              ${state.auth === "admin" ? `<a href="#/admin">관리자</a>` : ""}
+            </nav>
+            <div class="nav-end">
+              <button class="icon-btn" data-act="theme" aria-label="테마 전환">${icon("moon", "theme-light-only h-5 w-5")}${icon("sun", "theme-dark-only h-5 w-5")}</button>
+              ${
+                isLogin()
+                  ? `<button class="btn line" data-act="logout">${icon("logout")}로그아웃</button>`
+                  : `<a class="btn line" href="#" data-act="login">${icon("github")}<span><span class="long">GitHub </span>로그인</span></a>`
+              }
             </div>
-          </section>`;
-        const reviews = [...REVIEWS].sort((a, b) => b.likes - a.likes);
-        const popularReviews = `<section class="mt-6">
-          ${sectionHead("인기 많은 리뷰", "fire")}
-          <div class="book-scroll-fade">
-            <ul data-step="review" class="book-scroll-list flex snap-x snap-mandatory gap-4 overflow-x-auto py-2 pb-4">
-              ${reviews
-                .map(
-                  (review, i) => `<li class="min-w-0 basis-full shrink-0 xl:basis-[calc((100%_-_1rem)/2)] ${i === reviews.length - 1 ? "snap-end" : "snap-start"}" data-carousel-item>
-                    ${likedReviewCard(review)}
-                  </li>`,
-                )
-                .join("")}
-            </ul>
+          </div></header>
+
+          <div class="hero">
+            <div class="hero-text">
+              <h1>개발자의<br>도서 리뷰 플랫폼</h1>
+              <p class="lede">개발자들의 <button class="trend-link" data-act="home-jump" data-target="home-rank">독서 트렌드${icon("arrow-up-right", "h-3 w-3")}</button>를 확인하고 찜하세요.<br>나만의 찜 목록을 위젯으로 만들어보세요.</p>
+              <form class="search" data-search-form>
+                <label for="home-q">도서 검색</label>
+                <div><input id="home-q" type="search" maxlength="100" placeholder="제목이나 저자를 입력하세요" value="${esc(state.searchTerm)}"><button class="btn">검색</button></div>
+              </form>
+            </div>
+            <div class="wall" aria-hidden="true">${wall}</div>
           </div>
-        </section>`;
-        const latest = [...BOOKS.slice(0, 9), ...BOOKS.slice(0, 3)];
-        const latestReviews = `<section class="mt-6">
-          ${sectionHead("최근 리뷰가 추가된 도서", "clock")}
-          <div class="book-scroll-fade">
-            <ul data-step="latest" class="book-scroll-list flex snap-x snap-mandatory gap-3 overflow-x-auto py-2 pb-4">
-              ${latest
-                .map(
-                  (book, i) => `<li class="basis-[calc((100%_-_3rem)/5)] shrink-0 sm:basis-[calc((100%_-_3.75rem)/6)] lg:basis-[calc((100%_-_4.5rem)/7)] xl:basis-[calc((100%_-_5.25rem)/8)] ${i === latest.length - 1 ? "snap-end" : "snap-start"}" data-carousel-item>
-                    <article class="relative h-full w-full overflow-hidden rounded-xl bg-white">
-                      ${bookCoverCard(
-                        book,
-                        bookTape(`<div class="flex flex-col gap-1">
-                          <div class="line-clamp-1 text-xs font-bold">${esc(book.title)}</div>
-                          <span class="text-xs font-bold">${ratingValue(book.rating)}</span>
-                        </div>`),
-                      )}
-                    </article>
-                  </li>`,
-                )
-                .join("")}
-            </ul>
-          </div>
-        </section>`;
-        const byRating = [...BOOKS].sort((a, b) => b.rating - a.rating);
-        const byReviews = [...BOOKS].sort((a, b) => b.reviewCount - a.reviewCount);
-        return [
-          bookSection("인기 도서", "fire", BOOKS, "mt-4"),
-          popularReviews,
-          latestReviews,
-          bookSection("평점 좋은 도서", "star", byRating, "mt-6"),
-          bookSection("리뷰 많은 도서", "stacked-books", byReviews, "mt-6"),
-        ].join(sectionDivider());
+
+          <section id="home-rank" class="wrap">
+            <h2 class="sr">독서 트렌드</h2>
+            <div class="tabs" role="tablist">${tabs}</div>
+            <div id="home-panel" role="tabpanel">${homeRankPanel(state.homeTab)}</div>
+          </section>
+
+          <section id="home-reviews" class="wrap reveal">
+            <h2>인기 많은 리뷰</h2>
+            <div class="reviews">${reviews}</div>
+          </section>
+
+          <section class="wrap reveal">
+            <div class="head">
+              <h2>최근 리뷰가 추가된 도서</h2>
+              <div class="arrows">
+                <button class="icon-btn" data-act="home-scroll" data-dir="-1" aria-label="이전 도서">${icon("chevron-left")}</button>
+                <button class="icon-btn" data-act="home-scroll" data-dir="1" aria-label="다음 도서">${icon("chevron-right")}</button>
+              </div>
+            </div>
+            <div class="track" id="home-track">${recent}</div>
+          </section>
+
+          <section class="reveal widget-section">
+            <div class="wrap widget">
+              <div>
+                <h2>GitHub 프로필에 붙이는 나만의 책장</h2>
+                <p class="lede">코드 한 줄을 README에 붙이면 프로필에 내 책장이 표시됩니다.</p>
+                ${isLogin() ? `<a class="btn" href="#/mypage">내 서재로 이동</a>` : `<a class="btn" href="#" data-act="login">${icon("github")}GitHub로 3초 만에 시작하기</a>`}
+              </div>
+              <img src="widget-sample.svg" alt="읽은 책과 리뷰 수를 보여 주는 책장 위젯 예시">
+            </div>
+          </section>
+
+          <footer class="foot"><div class="wrap"><span>Readthem Lab</span><a href="https://github.com/prgrms-be-devcourse/NBE10-12-3-ADP" target="_blank" rel="noreferrer">GitHub Repository</a></div></footer>
+        </div>`;
+      }
+      // 화면을 그린 뒤 호출한다: 스크롤하면 섹션이 나타나게 한다
+      function initHome() {
+        const io = new IntersectionObserver(
+          (entries) =>
+            entries.forEach((e) => {
+              if (!e.isIntersecting) return;
+              e.target.classList.add("in");
+              io.unobserve(e.target);
+            }),
+          { threshold: 0.12 },
+        );
+        document.querySelectorAll(".home-a .reveal").forEach((el) => io.observe(el));
       }
 
       /* ───────── 화면: 검색 (app/books/search/page.tsx) ───────── */
@@ -2180,6 +2424,7 @@ button:hover {
         ["평점 입력", "0.5점 단위입니다. 드래그와 방향키로 고르고, Delete로 해제합니다."],
         ["로딩", "실제 화면은 데이터가 올 때까지 같은 크기의 스켈레톤을 보여 줍니다."],
         ["빈 섹션", "홈 섹션은 데이터가 없으면 숨기고, 그 밖의 목록은 빈 상태 문구를 보여 줍니다."],
+        ["홈 디자인", "홈은 새 디자인으로, Rough 선과 색상 토큰 대신 .home-a 전용 토큰을 씁니다."],
         ["카드 호버", "책 카드는 3px 떠오르고 그림자와 선이 진해집니다. 리뷰 카드 안의 표지는 움직이지 않습니다."],
       ];
       const guideBlock = (title, body) => `<section class="mt-8 flex flex-col gap-3"><div><h2 class="text-xl font-bold">${title}</h2></div>${body}</section>`;
@@ -2299,11 +2544,12 @@ button:hover {
           specTable(
             ["항목", "값"],
             [
-              ["본문 최대 폭", "max-w-4xl (도서 상세 max-w-3xl)"],
+              ["본문 최대 폭", "max-w-4xl (도서 상세 max-w-3xl, 홈 1400px)"],
               ["640px 미만", "헤더 글자 숨김, 검색 접힘, 서재 사이드바를 위로 쌓음"],
-              ["인기 도서", "한 화면 3권, md 4권, xl 5권"],
-              ["최근 리뷰 도서", "한 화면 5권, sm 6권, lg 7권, xl 8권"],
-              ["인기 리뷰", "한 화면 1개, xl 2개"],
+              ["홈 첫 화면", "860px 이상은 문구와 표지 벽 2단, 미만은 1단"],
+              ["홈 순위", "탭으로 인기, 평점, 리뷰 수를 바꾸고 6위까지 표시"],
+              ["홈 인기 리뷰", "860px 이상은 큰 리뷰 1개와 작은 리뷰 2개, 미만은 1단"],
+              ["홈 최근 리뷰 도서", "가로 스크롤, 표지 폭 132~176px"],
               ["표지 비율", "2:3"],
             ],
           ),
@@ -2347,7 +2593,9 @@ button:hover {
         if (path === "mypage" && !isLogin()) state.auth = "member"; // 실제 화면은 비로그인이면 이동시키므로, 문서에서는 회원으로 전환해 보여 준다
         renderDocBar(path);
         renderHeader();
+        document.body.classList.toggle("is-home", path === "");
         document.getElementById("screen").innerHTML = SCREENS[path][1](params);
+        if (path === "") initHome();
       }
 
       /* ───────── 이벤트 ───────── */
@@ -2357,6 +2605,29 @@ button:hover {
       }
       const ACTIONS = {
         noop() {},
+        "home-tab"(el) {
+          state.homeTab = el.textContent;
+          document.querySelectorAll(".home-a .tab").forEach((tab) => tab.setAttribute("aria-selected", tab === el));
+          document.getElementById("home-panel").innerHTML = homeRankPanel(state.homeTab);
+        },
+        "home-top"() {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        },
+        "home-jump"(el) {
+          document.getElementById(el.dataset.target).scrollIntoView({ behavior: "smooth" });
+        },
+        "home-scroll"(el) {
+          document.getElementById("home-track").scrollBy({ left: Number(el.dataset.dir) * 400, behavior: "smooth" });
+        },
+        "home-like"(el) {
+          if (!isLogin()) return openModal(loginModal());
+          const index = Number(el.dataset.index);
+          const review = HOME_REVIEWS[index];
+          review.liked = !review.liked;
+          review.l += review.liked ? 1 : -1;
+          showToast(review.liked ? "좋아요를 눌렀습니다." : "좋아요를 취소했습니다.");
+          el.outerHTML = homeLike(review, index);
+        },
         theme() {
           const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
           document.documentElement.dataset.theme = next;
