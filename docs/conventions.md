@@ -27,7 +27,7 @@
 | 항목 | 규칙 |
 | --- | --- |
 | 타입 | 버그 수정은 `fix`, 기능 추가·변경은 `feature` |
-| 수정도메인 | `back/src/main/kotlin/com/back/domain` 하위 패키지명 (`book`, `member`, `review`, `tag`, `widget`, `wish`). 도메인 밖의 공통 코드를 고치면 `global` |
+| 수정도메인 | `back/src/main/kotlin/com/back/domain` 하위 패키지명 (`book`, `member`, `review`, `tag`, `widget`, `wish`). 도메인 밖의 백엔드 공통 코드를 고치면 `global`, 프론트엔드를 고치면 `front` |
 | 작업요약 | 영어 소문자 `snake_case` |
 
 예: `fix/book_fetch_books`, `feature/wish_add_sorting`
