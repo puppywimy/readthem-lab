@@ -1,6 +1,6 @@
 "use client";
 
-import { type RefObject, useEffect, useState } from "react";
+import { type CSSProperties, useEffect, useState } from "react";
 
 import { apiFetch } from "@/lib/backend/client";
 
@@ -8,17 +8,11 @@ const MISSING_THUMBNAIL_CACHE_TTL_MS = 5 * 60 * 1000;
 const missingThumbnailRequestedAt = new Map<number, number>();
 const thumbnailRequestByBookId = new Map<number, Promise<string | null>>();
 
-type BookThumbnailProps = {
+type BookCoverProps = {
   bookId?: number;
   imgUrl?: string | null;
   title?: string | null;
-  className?: string;
-  placeholderClassName?: string;
-  placeholderText?: string;
-  altClassName?: string;
-  imgClassName?: string;
-  imgRef?: RefObject<HTMLImageElement | null>;
-  onLoad?: () => void;
+  loading?: "lazy" | "eager";
 };
 
 function hasRecentMissingThumbnail(bookId: number) {
@@ -64,18 +58,13 @@ function fetchBookThumbnail(bookId: number) {
   return request;
 }
 
-export default function BookThumbnail({
+export default function BookCover({
   bookId,
   imgUrl,
   title,
-  className,
-  placeholderClassName,
-  placeholderText = "표지 없음",
-  altClassName,
-  imgClassName,
-  imgRef,
-  onLoad,
-}: BookThumbnailProps) {
+  loading = "lazy",
+}: BookCoverProps) {
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
   const normalizedImgUrl = imgUrl?.trim() || null;
   const [fetchedThumbnail, setFetchedThumbnail] = useState<{
     bookId: number;
@@ -85,8 +74,7 @@ export default function BookThumbnail({
     fetchedThumbnail != null && fetchedThumbnail.bookId === bookId
       ? fetchedThumbnail.imgUrl
       : null;
-  const thumbnailUrl =
-    normalizedImgUrl ?? fetchedThumbnailUrl;
+  const thumbnailUrl = normalizedImgUrl ?? fetchedThumbnailUrl;
 
   useEffect(() => {
     if (normalizedImgUrl != null) {
@@ -118,24 +106,20 @@ export default function BookThumbnail({
     };
   }, [bookId, normalizedImgUrl]);
 
-  if (thumbnailUrl == null) {
-    return (
-      <div className={placeholderClassName ?? className}>
-        <span className={altClassName ?? "text-sm text-gray-400"}>
-          {placeholderText}
-        </span>
-      </div>
-    );
-  }
+  const hue = ((bookId ?? 0) * 47) % 360;
 
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      ref={imgRef}
-      src={thumbnailUrl}
-      alt={title ?? ""}
-      className={imgClassName ?? className}
-      onLoad={onLoad}
-    />
+    <span className="cover" style={{ "--h": hue } as CSSProperties}>
+      <span>{title}</span>
+      {thumbnailUrl != null && thumbnailUrl !== failedUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          loading={loading}
+          src={thumbnailUrl}
+          alt={`${title ?? "도서"} 표지`}
+          onError={() => setFailedUrl(thumbnailUrl)}
+        />
+      )}
+    </span>
   );
 }

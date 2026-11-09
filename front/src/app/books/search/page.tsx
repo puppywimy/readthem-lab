@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
@@ -9,7 +10,9 @@ import { apiFetch } from "@/lib/backend/client";
 import type { components } from "@/lib/backend/apiV1/schema";
 import { goToErrorPage } from "@/lib/error/goToErrorPage";
 
-import BookGrid from "@/app/_components/BookGrid";
+import BookCover from "@/app/_components/BookCover";
+import RatingValue from "@/app/_components/RatingValue";
+import SearchForm from "@/app/_components/SearchForm";
 
 type BookDto = components["schemas"]["BookDto"];
 type PageBookDto = components["schemas"]["PageBookDto"];
@@ -20,27 +23,16 @@ function isPageBookDto(data: BookDto[] | PageBookDto): data is PageBookDto {
   return data != null && !Array.isArray(data) && "content" in data;
 }
 
-function searchLoadingChanged(isLoading: boolean) {
-  window.dispatchEvent(
-    new CustomEvent("readthem-search-loading", { detail: isLoading }),
-  );
-}
-
-function SearchResultsSkeleton({ searchTerm }: { searchTerm?: string }) {
+function BookGridSkeleton() {
   return (
-    <>
-      <div className="px-1">
-        <div className="book-skeleton h-9 w-56 max-w-full rounded" />
-        {searchTerm && (
-          <div className="mt-2 text-sm theme-muted">
-            &apos;{searchTerm}&apos; 검색 결과를 불러오는 중...
-          </div>
-        )}
-      </div>
-      <div className="mt-4">
-        <BookGrid isLoading />
-      </div>
-    </>
+    <div className="book-grid">
+      {Array.from({ length: 12 }).map((_, index) => (
+        <div key={index}>
+          <span className="sk cover-sk" />
+          <span className="sk line" />
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -55,6 +47,7 @@ function SearchResultsContent({ searchTerm }: { searchTerm: string }) {
     searchTerm.length > 0,
   );
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [totalElements, setTotalElements] = useState<number | null>(null);
 
   const requestSearchPage = useCallback(
     (page: number, signal?: AbortSignal, onStart?: () => void) => {
@@ -63,7 +56,6 @@ function SearchResultsContent({ searchTerm }: { searchTerm: string }) {
       }
 
       loadingRef.current = true;
-      searchLoadingChanged(true);
       onStart?.();
 
       apiFetch(
@@ -88,6 +80,7 @@ function SearchResultsContent({ searchTerm }: { searchTerm: string }) {
           );
           setPageNumber(nextPageNumber);
           setHasNextPage(!isLastPage);
+          if (isPageBookDto(data)) setTotalElements(data.totalElements ?? null);
         })
         .catch((error) => {
           if (signal?.aborted) return;
@@ -97,7 +90,6 @@ function SearchResultsContent({ searchTerm }: { searchTerm: string }) {
           if (signal?.aborted) return;
 
           loadingRef.current = false;
-          searchLoadingChanged(false);
           setIsInitialLoading(false);
           setIsLoadingMore(false);
         });
@@ -115,7 +107,6 @@ function SearchResultsContent({ searchTerm }: { searchTerm: string }) {
     const abortController = new AbortController();
 
     if (searchTerm.length === 0) {
-      searchLoadingChanged(false);
       return;
     }
 
@@ -124,7 +115,6 @@ function SearchResultsContent({ searchTerm }: { searchTerm: string }) {
     return () => {
       abortController.abort();
       loadingRef.current = false;
-      searchLoadingChanged(false);
     };
   }, [requestSearchPage, searchTerm]);
 
@@ -148,35 +138,60 @@ function SearchResultsContent({ searchTerm }: { searchTerm: string }) {
     };
   }, [hasNextPage, loadMorePage]);
 
-  if (searchTerm.length === 0) {
-    return <div>검색어를 입력해주세요.</div>;
-  }
+  const count = isInitialLoading
+    ? "불러오는 중"
+    : `${(totalElements ?? books.length).toLocaleString()}권`;
 
   return (
-    <>
-      <h1>&apos;{searchTerm}&apos; 검색 결과</h1>
-      {isInitialLoading ? (
-        <div className="mt-4">
-          <BookGrid isLoading />
-        </div>
-      ) : (
-        <>
-          <BookGrid books={books} />
-          <div
-            ref={sentinelRef}
-            className="py-6 text-center text-sm theme-muted"
-          >
-            {isLoadingMore
-              ? "더 불러오는 중..."
-              : hasNextPage
-                ? " "
-                : books.length > 0
-                  ? "마지막 검색 결과입니다."
-                  : ""}
+    <div className="wrap split">
+      <div className="sticky-col search-col">
+        <h1 className="page-title">
+          {searchTerm ? `'${searchTerm}' 검색 결과` : "도서 검색"}
+        </h1>
+        {searchTerm && <p className="count">{count}</p>}
+        <SearchForm id="search-q" initialTerm={searchTerm} />
+      </div>
+      <div aria-busy={isInitialLoading}>
+        {searchTerm.length === 0 ? (
+          <div className="state">
+            <strong>검색어를 입력해 주세요.</strong>
+            제목이나 저자 이름으로 찾을 수 있습니다.
           </div>
-        </>
-      )}
-    </>
+        ) : isInitialLoading ? (
+          <BookGridSkeleton />
+        ) : books.length === 0 ? (
+          <div className="state">
+            <strong>찾는 도서가 없습니다.</strong>
+            다른 제목이나 저자 이름으로 검색해 보세요.
+          </div>
+        ) : (
+          <>
+            <div className="book-grid swap">
+              {books.map((book) => (
+                <Link key={book.id} href={`/books/detail?id=${book.id}`}>
+                  <BookCover
+                    bookId={book.id}
+                    imgUrl={book.imgUrl}
+                    title={book.title}
+                  />
+                  <h2>{book.title}</h2>
+                  <p className="stats">
+                    <RatingValue rating={book.averageRating} />
+                  </p>
+                </Link>
+              ))}
+            </div>
+            <div ref={sentinelRef} className="end">
+              {isLoadingMore
+                ? "더 불러오는 중..."
+                : hasNextPage
+                  ? " "
+                  : "마지막 검색 결과입니다."}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -189,7 +204,14 @@ function SearchResults() {
 
 export default function Page() {
   return (
-    <Suspense fallback={<SearchResultsSkeleton />}>
+    <Suspense
+      fallback={
+        <div className="wrap split">
+          <div />
+          <BookGridSkeleton />
+        </div>
+      }
+    >
       <SearchResults />
     </Suspense>
   );

@@ -1,36 +1,25 @@
-import RoughFrame from "@/app/_components/RoughFrame";
-
-const SIZE_CLASSES = {
-  sm: "w-10 h-10 text-base",
-  lg: "w-24 h-24 text-3xl",
-};
+import type { CSSProperties } from "react";
 
 export default function Avatar({
   label,
   imageUrl,
-  size = "sm",
+  size = 44,
 }: {
-  label: string | null;
+  label: string | null | undefined;
   imageUrl?: string | null;
-  size?: "sm" | "lg";
+  size?: number;
 }) {
   return (
-    <div
-      className={`${SIZE_CLASSES[size]} relative shrink-0 rounded-full bg-gray-200 flex items-center justify-center font-bold text-gray-600`}
+    <span
+      className="avatar"
+      style={{ "--s": `${size}px` } as CSSProperties}
+      aria-hidden="true"
     >
-      <RoughFrame className="rough-overlay" variant="circle" />
-      {imageUrl ? (
+      {label ? label.charAt(0).toUpperCase() : "?"}
+      {imageUrl && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={imageUrl}
-          alt=""
-          className="absolute inset-0 h-full w-full rounded-full object-cover"
-        />
-      ) : (
-        <span className="relative z-10">
-          {label ? label.charAt(0).toUpperCase() : "?"}
-        </span>
+        <img src={imageUrl} alt="" loading="lazy" />
       )}
-    </div>
+    </span>
   );
 }
