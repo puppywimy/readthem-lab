@@ -3,20 +3,21 @@
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
     <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
 
-    <appender name="BOOK_SCHEDULER_ERROR_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <appender name="BOOK_FETCH_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <encoder>
-            <pattern>%d %msg%n%n</pattern>
+            <pattern>%d %-5level [%logger{0}] %msg%n</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>./logs/book_scheduler_error-%d{yyyy_MM_dd}.log</fileNamePattern>
+            <fileNamePattern>./logs/book_fetch-%d{yyyy_MM_dd}.log</fileNamePattern>
             <maxHistory>14</maxHistory>
             <totalSizeCap>1GB</totalSizeCap>
         </rollingPolicy>
     </appender>
 
-    <logger name="com.back.domain.book.service.BookScheduler" level="ERROR" additivity="false">
+    <!-- 레벨은 application*.yaml의 logging.level을 따른다 (prod: INFO, 그 외: DEBUG) -->
+    <logger name="com.back.domain.book.service.BookFetchServiceV2" additivity="false">
         <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="BOOK_SCHEDULER_ERROR_APPENDER"/>
+        <appender-ref ref="BOOK_FETCH_APPENDER"/>
     </logger>
 
     <root level="INFO">

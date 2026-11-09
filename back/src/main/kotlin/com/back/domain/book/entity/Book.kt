@@ -21,7 +21,10 @@ class Book(
 
     val publishedDate: LocalDateTime?,
     var publisher: String?,
-    var imgUrl: String?
+    var imgUrl: String?,
+
+    // 수집 시 호출한 API 페이지 번호 (원본 대조용)
+    val fetchedPage: Int? = null
 
 ) : BaseEntity() {
 
