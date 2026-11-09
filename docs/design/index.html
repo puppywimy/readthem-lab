@@ -1,18 +1,15 @@
 <!doctype html>
 <!--
-  READTHEM.md 디자인 가이드라인
+  Readthem Lab 디자인 가이드 (홈, 도서 검색, 도서 상세, 마이페이지, 관리자, 회원가입 약관)
 
-  - 현재 front/ 의 화면을 API 없이 그대로 보여 주는 정적 프로토타입입니다.
-  - 아래 <style type="text/tailwindcss"> 는 front/src/app/globals.css 의 복사본입니다. (첫 줄 @import 만 제외)
-  - 마크업과 className 은 front/src/app 의 컴포넌트에서 그대로 옮겼습니다.
-  - 도서·리뷰·회원은 샘플 데이터이고, 표지는 실제 표지 대신 만든 임시 이미지입니다.
+  - 새 디자인을 보여 주는 정적 프로토타입입니다. API는 연결되어 있지 않고, front/에는 아직 반영되지 않았습니다.
+  - 맨 위 검은 막대는 시안 이동용 패널이며 실제 서비스에는 넣지 않습니다.
 -->
 <html lang="ko">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>READTHEM.md 디자인 가이드</title>
-    <meta name="description" content="개발자의 도서 리뷰 공유 플랫폼 READTHEM.md의 현재 디자인" />
+    <title>Readthem Lab 디자인 시안</title>
     <script>
       // layout.tsx 의 themeScript 와 동일
       (() => {
@@ -30,1142 +27,382 @@
         }
       })();
     </script>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2032%2032%22%3E%20%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%228%22%20fill%3D%22%23fffaf0%22/%3E%20%3Cpath%20d%3D%22M16%209.5c-2.8-1.7-6.6-2.2-9.5-1.2v15c2.9-1%206.7-.5%209.5%201.2%202.8-1.7%206.6-2.2%209.5-1.2v-15c-2.9-1-6.7-.5-9.5%201.2z%22%20fill%3D%22%230f766e%22%20stroke%3D%22%2317202a%22%20stroke-width%3D%221.5%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22/%3E%20%3Cpath%20d%3D%22M16%209.5v15.2%22%20stroke%3D%22%23fffaf0%22%20stroke-width%3D%221.1%22%20stroke-linecap%3D%22round%22/%3E%20%3Cpath%20d%3D%22M25%207.3l1.05%202.3%202.3%201.05-2.3%201.05-1.05%202.3-1.05-2.3-2.3-1.05%202.3-1.05z%22%20fill%3D%22%23facc15%22%20stroke%3D%22%2317202a%22%20stroke-width%3D%220.7%22%20stroke-linejoin%3D%22round%22/%3E%20%3C/svg%3E" />
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/roughjs@4.6.6/bundled/rough.js"></script>
-    <style type="text/tailwindcss">
-/* 주의: 이 style 안에 at-import 문자열을 쓰면 @tailwindcss/browser 가 기본 Tailwind 를 넣지 않습니다. globals.css 의 첫 줄도 그래서 뺐습니다. */
-
-@font-face {
-  font-family: "GangwonEducationModuche";
-  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2201-2@1.0/GangwonEdu_OTFLightA.woff")
-    format("woff");
-  font-weight: 300;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "GangwonEducationModuche";
-  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2201-2@1.0/GangwonEdu_OTFLightA.woff")
-    format("woff");
-  font-weight: 400;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "GangwonEducationModuche";
-  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2201-2@1.0/GangwonEdu_OTFBoldA.woff")
-    format("woff");
-  font-weight: 500;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "GangwonEducationModuche";
-  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2201-2@1.0/GangwonEdu_OTFBoldA.woff")
-    format("woff");
-  font-weight: 600;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "GangwonEducationModuche";
-  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2201-2@1.0/GangwonEdu_OTFBoldA.woff")
-    format("woff");
-  font-weight: 700;
-  font-display: swap;
-}
-
-:root {
-  --background: #fffaf0;
-  --foreground: #1f2933;
-  --line: #17202a;
-  --surface: #fffdf7;
-  --surface-card: #ffffff;
-  --surface-soft: #fff5d9;
-  --surface-muted: #eef8f4;
-  --surface-transparent: transparent;
-  --surface-muted-hover: #dff3eb;
-  --surface-hover: #e8f6ff;
-  --header-background: rgb(255 253 247 / 0.82);
-  --footer-background: #eef8f4;
-  --accent: #0f766e;
-  --accent-soft: #ccfbf1;
-  --accent-warm: #facc15;
-  --title-tape-yellow: rgb(250 204 21 / 0.42);
-  --title-tape-mint: rgb(45 212 191 / 0.28);
-  --title-tape-peach: rgb(251 146 60 / 0.28);
-  --title-highlight: var(--title-tape-yellow);
-  --book-skeleton: #f7f2e8;
-  --book-skeleton-active: #efe4ce;
-}
-
-:root[data-theme="dark"] {
-  --background: #171b22;
-  --foreground: #f4f1ea;
-  --line: #f4f1ea;
-  --surface: #1f2630;
-  --surface-card: #242d38;
-  --surface-soft: #121720;
-  --surface-muted: #263241;
-  --surface-transparent: transparent;
-  --surface-muted-hover: #314154;
-  --surface-hover: #2e4054;
-  --header-background: rgb(31 38 48 / 0.9);
-  --footer-background: #121720;
-  --accent: #5eead4;
-  --accent-soft: #134e4a;
-  --accent-warm: #fde68a;
-  --title-tape-yellow: rgb(59 130 246 / 0.34);
-  --title-tape-mint: rgb(45 110 101 / 0.48);
-  --title-tape-peach: rgb(139 88 61 / 0.46);
-  --title-highlight: var(--title-tape-yellow);
-  --book-skeleton: #202832;
-  --book-skeleton-active: #2a3542;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans:
-    "GangwonEducationModuche", "Apple SD Gothic Neo", "Malgun Gothic", Arial,
-    Helvetica, sans-serif;
-  --text-xs: 0.8125rem;
-  --text-sm: 0.9375rem;
-  --text-base: 1.0625rem;
-  --text-lg: 1.1875rem;
-  --text-xl: 1.3125rem;
-  --text-2xl: 1.5625rem;
-  --text-3xl: 1.9375rem;
-}
-
-html,
-body,
-button,
-input,
-textarea,
-select {
-  font-family:
-    "GangwonEducationModuche", "Apple SD Gothic Neo", "Malgun Gothic", Arial,
-    Helvetica, sans-serif;
-}
-
-body {
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--accent-soft) 30%, transparent),
-      transparent 18rem
-    ),
-    var(--background);
-  color: var(--foreground);
-  font-size: 1.0625rem;
-  overflow-x: clip;
-}
-
-:root[data-theme="dark"] body {
-  background: var(--background);
-}
-
-h1,
-h2 {
-  display: inline-block;
-  position: relative;
-  z-index: 0;
-  width: fit-content;
-  max-width: 100%;
-}
-
-h1 {
-  --title-tape: var(--title-tape-yellow);
-}
-
-h2 {
-  --title-tape: var(--title-tape-mint);
-}
-
-.main-section-heading {
-  display: inline-flex;
-  width: fit-content;
-  max-width: 100%;
-  align-items: center;
-  gap: 0.375rem;
-  white-space: nowrap;
-}
-
-.main-section-heading svg {
-  display: inline-block;
-  flex: 0 0 auto;
-}
-
-h1::before,
-h2::before {
-  position: absolute;
-  inset: 0.06em -0.18em 0.04em;
-  z-index: -1;
-  display: block;
-  border-radius: 0.08em;
-  background: var(--title-tape);
-  clip-path: polygon(1.5% 7%, 98.5% 0, 100% 88%, 0 100%);
-  content: "";
-  opacity: 0.82;
-  transform: rotate(-0.45deg);
-  transform-origin: center;
-}
-
-a,
-button,
-input,
-textarea {
-  transition: transform 160ms ease;
-}
-
-a:hover {
-  transform: translateY(-1px);
-}
-
-button:hover {
-  transform: none;
-}
-
-.theme-site-header {
-  position: relative;
-  z-index: 60;
-  isolation: isolate;
-  background: var(--header-background);
-  backdrop-filter: blur(10px);
-}
-
-.theme-site-footer {
-  position: relative;
-  z-index: 60;
-  isolation: isolate;
-  background: var(--footer-background);
-}
-
-.theme-rough-divider-bar {
-  position: relative;
-  left: 50%;
-  z-index: 100;
-  height: 12px;
-  width: 100vw;
-  flex: 0 0 12px;
-  overflow: visible;
-  pointer-events: none;
-  transform: translateX(-50%);
-}
-
-.theme-rough-divider-bar svg {
-  position: relative;
-  z-index: 100;
-  display: block;
-  height: 100%;
-  width: 100%;
-}
-
-.sketch-shell {
-  position: relative;
-  border: 1px solid color-mix(in srgb, var(--line) 22%, transparent);
-  border-radius: 12px;
-  background: var(--surface);
-}
-
-.sketch-card {
-  position: relative;
-  border: 1px solid color-mix(in srgb, var(--line) 18%, transparent);
-  border-radius: 10px;
-  background: var(--surface);
-}
-
-.sketch-panel {
-  position: relative;
-  border: 1px solid color-mix(in srgb, var(--line) 18%, transparent);
-  border-radius: 10px;
-  background: var(--surface);
-}
-
-.sketch-input {
-  border: 1px solid color-mix(in srgb, var(--line) 28%, transparent);
-  border-radius: 8px;
-  background: var(--surface);
-}
-
-.sketch-input:focus {
-  outline: none;
-  border-color: var(--line);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--line) 8%, transparent);
-}
-
-.sketch-button {
-  position: relative;
-  border: 1px solid color-mix(in srgb, var(--line) 28%, transparent);
-  border-radius: 8px;
-  background: var(--surface);
-}
-
-.sketch-button:hover {
-  background: var(--surface-hover);
-}
-
-.sketch-dashed {
-  border-style: dashed;
-}
-
-.rough-overlay {
-  pointer-events: none;
-  position: absolute;
-  inset: 0;
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-.ink-muted {
-  color: rgb(107 114 128);
-}
-
-.book-cover-placeholder {
-  background: var(--surface-muted);
-}
-
-.rough-border {
-  position: relative;
-  border-radius: 8px;
-}
-
-.rough-border > .rough-overlay {
-  inset: -2px;
-}
-
-.rough-input-border {
-  position: relative;
-  display: block;
-  box-sizing: border-box;
-  height: 34px;
-  width: 100%;
-  border: 0;
-  border-radius: 10px;
-  background: var(--surface);
-}
-
-.rough-input-border > .rough-overlay {
-  inset: 0;
-}
-
-.rough-input-paper {
-  background: var(--surface-soft);
-}
-
-.rough-input-history {
-  background: #e0f7ff;
-}
-
-.rough-input-wish {
-  background: #fff0f4;
-}
-
-.rough-input-sm {
-  height: 30px;
-}
-
-.rough-search-button {
-  position: relative;
-  box-sizing: border-box;
-  height: 34px;
-  min-width: 48px;
-  border: 0;
-  border-radius: 10px;
-  background: var(--surface);
-  padding: 0 0.5rem;
-  font-size: 0.875rem;
-}
-
-.rough-search-button:hover {
-  background: var(--surface-hover);
-}
-
-.rough-search-button-frame {
-  position: absolute;
-  inset: 0;
-  display: block;
-  border-radius: inherit;
-  pointer-events: none;
-}
-
-.rough-search-button-frame > .rough-overlay {
-  inset: 0;
-}
-
-.rough-github-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  background: var(--surface);
-  padding: 0.35rem 0.5rem;
-  white-space: nowrap;
-}
-
-.rough-github-link:hover {
-  background: var(--surface-hover);
-}
-
-.rough-github-link:focus-visible {
-  outline: 2px solid rgb(31 35 40 / 0.35);
-  outline-offset: 2px;
-}
-
-.rough-github-link-framed {
-  border: 1px solid color-mix(in srgb, var(--line) 45%, transparent);
-  background: color-mix(in srgb, var(--surface) 88%, #ffffff);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.65),
-    0 1px 0 rgb(17 24 39 / 0.05);
-  padding: 0.45rem 0.9rem;
-  min-height: 2.25rem;
-}
-
-.rough-github-link-framed:hover {
-  background: color-mix(in srgb, var(--surface-hover) 82%, #ffffff);
-}
-
-.rough-github-image {
-  display: block;
-  width: 88px;
-  height: 34px;
-  object-fit: contain;
-}
-
-.rough-github-button-icon {
-  display: block;
-  width: 16px;
-  height: 16px;
-  object-fit: contain;
-}
-
-.auth-action-enter {
-  animation: auth-action-fade-in 180ms ease-out;
-}
-
-@keyframes auth-action-fade-in {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-:root[data-theme="dark"] .rough-github-image {
-  filter: brightness(0) invert(1);
-}
-
-:root[data-theme="dark"] .rough-github-inline-image {
-  filter: brightness(0) invert(1);
-}
-
-.rough-github-inline {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  line-height: 1;
-  opacity: 0.75;
-  transform: translateY(0);
-  transition:
-    opacity 160ms ease,
-    transform 160ms ease;
-}
-
-.rough-github-inline:hover {
-  opacity: 1;
-  transform: translateY(-3px);
-}
-
-.rough-github-inline-image {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  vertical-align: middle;
-}
-
-.rough-input-compact {
-  width: 5rem;
-  flex: none;
-}
-
-.rough-textarea-border {
-  position: relative;
-  display: block;
-  min-height: 58px;
-  width: 100%;
-  border: 0;
-  border-radius: 10px;
-  background: var(--surface);
-}
-
-.rough-textarea-border > .rough-overlay {
-  inset: 0;
-}
-
-.rough-divider {
-  position: relative;
-  height: 10px;
-  width: calc(100% + 12px);
-  margin-left: -6px;
-}
-
-.rough-book-card {
-  position: relative;
-  overflow: hidden;
-  border: 0;
-  border-radius: 12px;
-  background: var(--surface-card);
-  box-shadow:
-    0 1px 4px rgb(15 118 110 / 0.06),
-    0 10px 20px rgb(15 118 110 / 0.1);
-  transition:
-    box-shadow 180ms ease,
-    transform 180ms ease;
-}
-
-:root[data-theme="dark"] .rough-book-card {
-  box-shadow:
-    0 1px 5px rgb(0 0 0 / 0.18),
-    0 10px 22px rgb(0 0 0 / 0.28);
-}
-
-.book-link,
-.book-link:hover {
-  transform: none;
-}
-
-.book-link .book-title,
-.book-link .book-rating,
-.book-link:hover .book-title,
-.book-link:hover .book-rating {
-  color: inherit;
-  transform: none;
-  transition: none;
-}
-
-.rough-book-card:hover {
-  box-shadow:
-    0 4px 10px rgb(15 118 110 / 0.12),
-    0 16px 28px rgb(15 118 110 / 0.18);
-  transform: translateY(-3px);
-}
-
-.rough-book-card.review-book-thumbnail:hover {
-  box-shadow:
-    0 1px 4px rgb(15 118 110 / 0.06),
-    0 10px 20px rgb(15 118 110 / 0.1);
-  transform: none;
-}
-
-:root[data-theme="dark"] .rough-book-card:hover {
-  box-shadow:
-    0 4px 12px rgb(0 0 0 / 0.24),
-    0 16px 30px rgb(0 0 0 / 0.34);
-}
-
-:root[data-theme="dark"] .rough-book-card.review-book-thumbnail:hover {
-  box-shadow:
-    0 1px 5px rgb(0 0 0 / 0.18),
-    0 10px 22px rgb(0 0 0 / 0.28);
-}
-
-.book-scroll-fade {
-  --book-scroll-gutter: 0px;
-  position: relative;
-  width: 100%;
-  overflow: hidden;
-}
-
-.book-scroll-fade::before,
-.book-scroll-fade::after {
-  pointer-events: none;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  z-index: 30;
-  width: 0.35rem;
-  content: "";
-}
-
-.book-scroll-fade::before {
-  left: 0;
-  background: linear-gradient(to right, var(--background), transparent);
-}
-
-.book-scroll-fade::after {
-  right: 0;
-  background: linear-gradient(to left, var(--background), transparent);
-}
-
-.book-scroll-list {
-  padding-right: var(--book-scroll-gutter);
-  padding-left: var(--book-scroll-gutter);
-  scrollbar-width: none;
-}
-
-.book-scroll-list::-webkit-scrollbar {
-  display: none;
-}
-
-.theme-section-divider-bar {
-  height: 10px;
-  width: 100%;
-  padding-block: 2px;
-  overflow: visible;
-}
-
-.theme-section-divider-bar svg {
-  display: block;
-  width: 100%;
-}
-
-.book-skeleton {
-  background-color: var(--book-skeleton);
-  animation: book-skeleton-pulse 1.4s ease-in-out infinite;
-}
-
-@keyframes book-skeleton-pulse {
-  0%,
-  100% {
-    background-color: var(--book-skeleton);
-  }
-
-  50% {
-    background-color: var(--book-skeleton-active);
-  }
-}
-
-.book-title {
-  display: -webkit-box;
-  overflow: hidden;
-  padding: 0 0.25rem;
-  line-height: 1.5rem;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-
-.book-rating {
-  display: block;
-  height: 1.5rem;
-  line-height: 1.5rem;
-  padding: 0 0.25rem;
-}
-
-.book-rank-overlay {
-  pointer-events: none;
-  position: absolute;
-  inset: 0;
-  z-index: 10;
-  background: linear-gradient(
-    to top right,
-    rgb(255 255 255 / 0.7),
-    rgb(255 255 255 / 0.24) 28%,
-    rgb(255 255 255 / 0.08) 48%,
-    transparent 72%
-  );
-}
-
-.book-rank-number {
-  position: absolute;
-  bottom: 0.5rem;
-  left: 0.75rem;
-  z-index: 20;
-  color: #000000;
-  font-size: 3rem;
-  font-weight: 700;
-  line-height: 1;
-  filter: drop-shadow(0 2px 8px rgb(255 255 255 / 0.55));
-}
-
-:root[data-theme="dark"] .book-rank-overlay {
-  background: linear-gradient(
-    to top right,
-    rgb(0 0 0 / 0.7),
-    rgb(0 0 0 / 0.24) 28%,
-    rgb(0 0 0 / 0.08) 48%,
-    transparent 72%
-  );
-}
-
-:root[data-theme="dark"] .book-rank-number {
-  color: #ffffff;
-  filter: drop-shadow(0 2px 8px rgb(0 0 0 / 0.55));
-}
-
-.rough-card-line {
-  inset: 0;
-  opacity: 0.68;
-  transition: opacity 180ms ease;
-}
-
-.rough-book-cover-line {
-  z-index: 2;
-}
-
-.theme-nav-button {
-  border-radius: 0.5rem;
-  padding: 0.5rem;
-}
-
-.theme-nav-control {
-  display: inline-flex;
-  box-sizing: border-box;
-  height: 34px;
-  min-width: 34px;
-  align-items: center;
-  justify-content: center;
-  gap: 0.375rem;
-  font-size: 1rem;
-  line-height: 1.5rem;
-}
-
-.theme-nav-button:hover {
-  background: var(--surface-hover);
-}
-
-.theme-dark-only {
-  display: none;
-}
-
-:root[data-theme="dark"] .theme-light-only {
-  display: none;
-}
-
-:root[data-theme="dark"] .theme-dark-only {
-  display: block;
-}
-
-.theme-toggle-label::before {
-  content: "다크";
-}
-
-:root[data-theme="dark"] .theme-toggle-label::before {
-  content: "라이트";
-}
-
-.theme-nav-link {
-  border-radius: 0.5rem;
-  padding: 0.5rem;
-}
-
-.theme-nav-link.theme-nav-control {
-  padding: 0 0.5rem;
-}
-
-.theme-nav-link:hover {
-  background: var(--surface-hover);
-}
-
-.mobile-search-toggle {
-  display: none;
-}
-
-.search-submit-button {
-  display: inline-flex;
-}
-
-@media (width < 640px) {
-  .mobile-search-toggle {
-    display: inline-flex;
-  }
-
-  .search-submit-button {
-    display: none;
-  }
-
-  .search-submit-button.search-submit-button-open {
-    display: inline-flex;
-  }
-
-  .theme-nav-label {
-    display: none;
-  }
-}
-
-.theme-tag {
-  color: #0f766e;
-}
-
-:root[data-theme="dark"] .theme-tag {
-  color: #5eead4;
-}
-
-.theme-muted {
-  color: #6b7280;
-}
-
-:root[data-theme="dark"] .theme-muted {
-  color: #9ca3af;
-}
-
-.theme-description {
-  color: #374151;
-}
-
-:root[data-theme="dark"] .theme-description {
-  color: #e5e7eb;
-}
-
-.theme-subtle {
-  color: #9ca3af;
-}
-
-:root[data-theme="dark"] .theme-subtle {
-  color: #d4d4d8;
-}
-
-.theme-link {
-  color: #2563eb;
-}
-
-:root[data-theme="dark"] .theme-link {
-  color: #93c5fd;
-}
-
-.theme-tab {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.theme-tab-active {
-  display: inline-flex;
-  position: relative;
-  z-index: 0;
-  isolation: isolate;
-  color: var(--foreground);
-  font-weight: 700;
-}
-
-.theme-tab-active::before {
-  position: absolute;
-  inset: 0.22em -0.15em 0.14em;
-  z-index: -1;
-  border-radius: 0.1em;
-  background: var(--title-tape-peach);
-  clip-path: polygon(1.5% 8%, 99% 0, 100% 88%, 0 100%);
-  content: "";
-  opacity: 0.9;
-  transform: rotate(0.35deg);
-}
-
-.theme-tab-inactive {
-  border-color: transparent;
-  color: #9ca3af;
-}
-
-:root[data-theme="dark"] .theme-tab-inactive {
-  color: #737373;
-}
-
-.rough-book-card:hover .rough-card-line {
-  opacity: 1;
-}
-
-.rough-cover {
-  position: relative;
-  border: 0;
-  border-radius: 12px;
-}
-
-.rough-panel-border {
-  position: relative;
-  border: 0;
-  border-radius: 10px;
-}
-
-.rough-panel-border > *:not(.rough-overlay),
-.rough-cover > *:not(.rough-overlay),
-.rough-book-card > *:not(.rough-overlay):not(.rough-review-tape) {
-  position: relative;
-  z-index: 1;
-}
-
-.rough-list-divider {
-  position: absolute;
-  bottom: -5px;
-  left: -6px;
-  height: 10px;
-  width: calc(100% + 12px);
-  overflow: visible;
-}
-
-.rough-list-divider-full {
-  left: -6px;
-  width: calc(100% + 12px);
-}
-
-.rough-action-button {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 0;
-  border-radius: 9999px;
-  background: var(--surface);
-  padding: 0.25rem 0.75rem;
-  line-height: 1.25rem;
-}
-
-.rough-action-button:hover {
-  transform: none;
-}
-
-.rough-action-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.58;
-}
-
-.rough-action-sm {
-  font-size: 0.875rem;
-}
-
-.rough-action-lg {
-  padding-block: 0.5rem;
-}
-
-.rough-action-neutral {
-  background: var(--surface);
-}
-
-.rough-action-neutral:hover {
-  background: var(--surface-muted-hover);
-}
-
-.rough-action-wish {
-  background: #fff0f4;
-  color: #be123c;
-}
-
-.rough-action-wish:hover {
-  background: #ffe1e9;
-}
-
-.rough-action-wish-active {
-  background: #ffe1e9;
-  color: #be123c;
-}
-
-.rough-action-history {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.rough-action-history:hover {
-  background: #bbf7d0;
-}
-
-.rough-action-submit {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.rough-action-submit:hover {
-  background: #fde68a;
-}
-
-.rough-action-cancel {
-  background: var(--surface-muted);
-  color: var(--foreground);
-}
-
-.rough-action-cancel:hover {
-  background: var(--surface-muted-hover);
-}
-
-.rough-action-button-frame {
-  position: absolute;
-  inset: 0;
-  display: block;
-  border-radius: inherit;
-  pointer-events: none;
-}
-
-.rough-action-button-frame > .rough-overlay {
-  inset: 0;
-}
-
-.rough-modal-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background:
-    linear-gradient(
-      color-mix(in srgb, var(--surface-soft) 84%, transparent),
-      color-mix(in srgb, var(--surface-soft) 84%, transparent)
-    ),
-    rgb(17 24 39 / 0.38);
-  padding: 1rem;
-}
-
-.rough-modal-card {
-  position: relative;
-  width: min(100%, 24rem);
-  border: 0;
-  border-radius: 16px;
-  background: var(--surface-soft);
-  padding: 1.25rem;
-  box-shadow: 0 18px 45px rgb(17 24 39 / 0.16);
-}
-
-.rough-modal-card > *:not(.rough-overlay) {
-  position: relative;
-  z-index: 1;
-}
-
-.rough-toast {
-  position: fixed;
-  left: 50%;
-  bottom: 1.5rem;
-  z-index: 60;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  max-width: calc(100vw - 2rem);
-  transform: translateX(-50%);
-  border: 0;
-  border-radius: 14px;
-  background: var(--surface-soft);
-  padding: 0.625rem 1rem;
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
+    <style>
+[data-theme=light] .home-a { color-scheme: light; }
+[data-theme=dark] .home-a { color-scheme: dark; }
+@keyframes home-drift { to { transform: translateY(calc(-50% - 7px)); } }
+@keyframes home-swap { from { opacity: 0; transform: translateY(10px); } }
+
+.home-a {
+  --bg: light-dark(#fbfcfd, #0f1115);
+  --surface: light-dark(#e9ebef, #191c22);
+  --ink: light-dark(#14161a, #eef0f3);
+  --muted: light-dark(#596070, #a0a7b3);
+  --line: light-dark(#d5d9e0, #2a2e37);
+  --accent: light-dark(#1f3fd6, #8a9dff);
+  --on-accent: light-dark(#f7f8ff, #0f1115);
+  --feature: light-dark(#1f3fd6, #2a3a8f);
+  --on-feature: #f7f8ff;
+  --gutter: clamp(16px, 4vw, 56px);
+  --ease: cubic-bezier(.16, 1, .3, 1);
+  background: var(--bg);
   color: var(--ink);
-  font-size: 0.875rem;
-  font-weight: 600;
-  box-shadow:
-    0 6px 16px rgb(15 118 110 / 0.14),
-    0 16px 32px rgb(17 24 39 / 0.16);
-  animation: rough-toast-in 180ms ease-out;
-  overflow: hidden;
-  text-align: center;
-  overflow-wrap: anywhere;
-  isolation: isolate;
-}
+  font: 400 16px/1.6 "Pretendard Variable", Pretendard, system-ui, sans-serif;
+  word-break: keep-all;
+  -webkit-font-smoothing: antialiased;
 
-@keyframes rough-toast-in {
-  from {
-    opacity: 0;
-    transform: translate(-50%, 0.5rem);
+  * { box-sizing: border-box; margin: 0; }
+  a { color: inherit; text-decoration: none; }
+  button, input { font: inherit; color: inherit; }
+  button { cursor: pointer; background: none; border: 0; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .wrap { max-width: 1400px; margin-inline: auto; padding-inline: var(--gutter); }
+  /* globals.css의 제목 테이프 장식을 끈다 */
+  h1, h2 { display: block; position: static; width: auto; }
+  h1::before, h2::before { content: none; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+
+  /* 내비게이션 */
+  .nav { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--bg) 90%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+  .nav .wrap { height: 68px; display: flex; align-items: center; gap: 28px; }
+  .logo { font-weight: 800; font-size: 1.15rem; letter-spacing: -.03em; white-space: nowrap; }
+  .logo em { font-style: normal; color: var(--accent); }
+  .links { display: flex; gap: 22px; color: var(--muted); font-weight: 500; white-space: nowrap; }
+  .links a:hover, .links button:hover { color: var(--ink); }
+  .links button { padding: 0; font-weight: 500; }
+  .nav-end { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .icon-btn { width: 42px; height: 42px; border-radius: 999px; display: grid; place-items: center; transition: background .2s; }
+  .icon-btn:hover { background: var(--surface); }
+  .btn { display: inline-flex; align-items: center; gap: 8px; height: 42px; padding-inline: 18px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font-weight: 600; white-space: nowrap; transition: transform .2s var(--ease), filter .2s; }
+  .btn:hover { filter: brightness(1.1); }
+  .btn:active { transform: translateY(1px) scale(.98); }
+  .btn.line { background: none; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--line); }
+  .btn.line:hover { background: var(--surface); filter: none; }
+
+  /* 표지 */
+  .cover { position: relative; display: block; aspect-ratio: 2/3; border-radius: 4px; overflow: hidden; background: hsl(var(--h) 38% 28%); color: #f4f5f2; box-shadow: 0 10px 24px -14px color-mix(in srgb, var(--ink) 55%, transparent); }
+  .cover > span { position: absolute; inset: 12px; font-weight: 700; line-height: 1.3; font-size: .92rem; }
+  .cover img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+  /* 히어로 */
+  .hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); height: min(calc(100dvh - 104px), 760px); min-height: 560px; max-width: 1400px; margin-inline: auto; overflow: hidden; }
+  .hero-text { padding: clamp(48px, 9vh, 88px) var(--gutter) 40px; align-self: center; }
+  h1 { font-size: clamp(2.5rem, 5vw, 4.6rem); line-height: 1.12; letter-spacing: -.03em; font-weight: 800; }
+  .lede { margin-top: 20px; font-size: 1.13rem; color: var(--muted); max-width: 30em; }
+  .trend-link { display: inline-flex; align-items: flex-start; gap: 1px; padding: 0; font-style: italic; font-weight: 400; }
+  .trend-link span { margin-top: .3em; }
+  .trend-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .search { margin-top: 32px; max-width: 520px; }
+  .search label { display: block; font-weight: 600; font-size: .93rem; margin-bottom: 8px; }
+  .search div { display: flex; gap: 6px; padding: 6px; border: 1.5px solid var(--ink); border-radius: 999px; background: var(--bg); transition: box-shadow .2s; }
+  .search div:focus-within { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent); }
+  .search input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; padding-inline: 14px; }
+  .search input::placeholder { color: var(--muted); }
+  .wall { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; padding-right: var(--gutter); overflow: hidden; mask-image: linear-gradient(transparent, #000 7%, #000 93%, transparent); }
+  .col { display: grid; gap: 14px; align-content: start; animation: home-drift 70s linear infinite; }
+  .col:nth-child(2) { animation-direction: reverse; animation-duration: 85s; }
+  .col:nth-child(3) { animation-duration: 60s; }
+  .wall:hover .col { animation-play-state: paused; }
+  .col .cover { transition: transform .35s var(--ease); }
+  .col .cover:hover { transform: scale(1.03); }
+
+  /* 순위 */
+  section { padding-block: clamp(56px, 8vw, 104px); scroll-margin-top: 40px; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px 32px; }
+  .tab { font-size: clamp(1.5rem, 3vw, 2.5rem); font-weight: 800; letter-spacing: -.03em; color: var(--muted); padding: 0; transition: color .2s; }
+  .tab:hover { color: var(--ink); }
+  .tab[aria-selected=true] { color: var(--ink); text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 4px; text-underline-offset: 10px; }
+  .panel { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(32px, 6vw, 88px); margin-top: 48px; animation: home-swap .5s var(--ease); }
+  .top { display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr); gap: 24px; align-items: end; align-self: start; }
+  .top .num { font-size: clamp(4.5rem, 9vw, 7.5rem); font-weight: 800; line-height: .9; letter-spacing: -.06em; color: var(--accent); }
+  .top h3 { font-size: 1.5rem; font-weight: 700; line-height: 1.25; letter-spacing: -.025em; margin-top: 12px; }
+  .meta { color: var(--muted); font-size: .93rem; }
+  .metric { display: inline-flex; align-items: center; gap: 4px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .metric > span:first-child { color: var(--accent); }
+  .rows { list-style: none; padding: 0; }
+  .rows li + li { border-top: 1px solid var(--line); }
+  .rows a { display: grid; grid-template-columns: 2.2rem 48px minmax(0, 1fr) auto; gap: 16px; align-items: center; padding-block: 12px; transition: transform .25s var(--ease); }
+  .rows a:hover { transform: translateX(6px); }
+  .rows b { font-size: 1.3rem; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+  .rows .title { font-weight: 600; line-height: 1.35; }
+  .rows .cover > span { display: none; }
+
+  /* 리뷰 */
+  h2 { font-size: clamp(1.6rem, 3vw, 2.5rem); font-weight: 800; letter-spacing: -.035em; line-height: 1.2; }
+  .reviews { display: grid; grid-template-columns: 7fr 5fr; gap: 16px; margin-top: 36px; }
+  .rv { border-radius: 16px; padding: clamp(20px, 2.5vw, 32px); display: flex; flex-direction: column; background: var(--surface); }
+  .rv:first-child { grid-row: span 2; background: var(--feature); color: var(--on-feature); --muted: var(--on-feature); }
+  .rv q { quotes: none; font-weight: 600; line-height: 1.5; font-size: 1.1rem; }
+  .rv:first-child q { font-size: clamp(1.5rem, 2.8vw, 2.4rem); line-height: 1.32; letter-spacing: -.03em; font-weight: 700; }
+  .rv-foot { margin-top: auto; padding-top: 24px; display: flex; align-items: center; gap: 14px; }
+  .rv-foot .cover { width: 44px; flex: none; box-shadow: none; }
+  .rv-foot .cover > span { display: none; }
+  .rv-foot div { min-width: 0; flex: 1; line-height: 1.35; }
+  .rv-foot strong { display: block; }
+  .rv-foot small { font-size: .87rem; color: var(--muted); }
+  .rating { display: inline-flex; align-items: center; gap: 3px; margin-left: 8px; }
+  .widget { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(32px, 6vw, 88px); align-items: center; }
+  .widget-section { padding-block: clamp(96px, 13vw, 184px); background: color-mix(in srgb, var(--accent) 8%, var(--bg)); }
+  .widget .btn { margin-top: 24px; }
+  .widget img { width: 100%; border-radius: 16px; }
+  .like { display: inline-flex; align-items: center; gap: 5px; font-weight: 600; font-variant-numeric: tabular-nums; padding: 6px 10px; border-radius: 999px; transition: transform .2s var(--ease); }
+  .like:active { transform: scale(.92); }
+  .rv:first-child .like:focus-visible { outline-color: var(--on-feature); }
+
+  /* 최근 */
+  .head { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .arrows { display: flex; gap: 4px; }
+  .arrows .icon-btn { border: 1px solid var(--line); }
+  .track { display: grid; grid-auto-flow: column; grid-auto-columns: clamp(132px, 14vw, 176px); gap: 20px; overflow-x: auto; scroll-snap-type: x proximity; margin-top: 32px; padding-bottom: 12px; scrollbar-width: none; }
+  .track > a { scroll-snap-align: start; display: block; }
+  .track .cover { transition: transform .3s var(--ease); }
+  .track > a:hover .cover { transform: translateY(-6px); }
+  .track h3 { font-size: .98rem; font-weight: 600; line-height: 1.35; margin-top: 12px; }
+
+  .foot { border-top: 1px solid var(--line); padding-block: 28px; color: var(--muted); font-size: .93rem; }
+  .foot .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; justify-content: space-between; }
+
+  .reveal { opacity: 0; transform: translateY(18px); transition: opacity .7s var(--ease), transform .7s var(--ease); }
+  .reveal.in { opacity: 1; transform: none; }
+
+  @media (max-width: 860px) {
+    .long { display: none; }
+    .nav .wrap { height: auto; flex-wrap: wrap; gap: 8px 12px; padding-block: 10px; }
+    .links { order: 3; width: 100%; gap: 18px; font-size: .93rem; }
+    section { scroll-margin-top: 88px; }
+    .tabs { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 16px; scrollbar-width: none; }
+    .tab { flex: none; white-space: nowrap; }
+    .hero { grid-template-columns: minmax(0, 1fr); height: auto; min-height: 0; }
+    .hero-text { padding-top: 40px; padding-bottom: 28px; }
+    .wall { height: 280px; padding-inline: var(--gutter); gap: 10px; }
+    .panel, .reviews, .widget { grid-template-columns: minmax(0, 1fr); }
+    .rv:first-child { grid-row: auto; }
+    .top { grid-template-columns: 130px minmax(0, 1fr); }
   }
-
-  to {
-    opacity: 1;
-    transform: translate(-50%, 0);
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .reveal { opacity: 1; transform: none; }
   }
 }
+body { margin: 0; }
+[data-theme=dark] .theme-light-only, [data-theme=light] .theme-dark-only { display: none; }
+@keyframes sk-pulse { 50% { opacity: .45; } }
 
-.rough-rating-chart {
+.home-a {
+  min-height: 100dvh;
   display: flex;
-  align-items: end;
-  gap: 0.35rem;
-  height: 5rem;
-  width: 100%;
-  padding: 0.25rem 0;
-}
+  flex-direction: column;
 
-.rough-rating-column {
-  display: flex;
-  flex: 1;
-  align-items: end;
-  height: 100%;
-}
+  > * { width: 100%; } /* margin-inline:auto인 .wrap이 flex 안에서 내용 폭으로 줄지 않게 한다 */
+  textarea, select { font: inherit; color: inherit; }
+  .i { width: 18px; height: 18px; flex: none; }
+  .i.h-3 { width: 12px; height: 12px; }
+  .i.h-5 { width: 20px; height: 20px; }
+  .page { flex: 1; width: 100%; }
+  .foot { margin-top: auto; }
+  .swap { animation: home-swap .5s var(--ease); }
 
-.rough-rating-bar {
-  position: relative;
-  width: 100%;
-  min-height: 0.5rem;
-  border: 0;
-  border-radius: 0.25rem;
-  background: transparent;
-}
+  /* 시안 이동 패널: 실제 서비스에는 포함하지 않는다 */
+  .dev-bar { position: sticky; top: 0; z-index: 20; height: 36px; flex: none; display: flex; align-items: center; gap: 18px; padding-inline: var(--gutter); background: var(--ink); color: var(--bg); font-size: .85rem; white-space: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .dev-bar strong { font-weight: 700; }
+  .dev-bar a { opacity: .75; padding-block: 4px; }
+  .dev-bar a:hover, .dev-bar a[aria-current] { opacity: 1; }
+  .dev-bar a[aria-current] { font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
+  .dev-bar :focus-visible { outline-color: var(--bg); }
+  .dev-end { margin-left: auto; display: flex; gap: 14px; }
+  .dev-bar label { display: flex; align-items: center; gap: 6px; }
+  .dev-bar select { background: transparent; border: 1px solid color-mix(in srgb, var(--bg) 40%, transparent); border-radius: 999px; padding: 0 6px; }
+  .dev-bar option { color: var(--ink); background: var(--bg); }
+  .nav { top: 36px; }
+  .links a[aria-current] { color: var(--ink); }
+  .links a.nav-admin, .links a.nav-admin:hover { display: inline-flex; align-items: center; gap: 4px; color: var(--accent); font-weight: 700; }
+  section { scroll-margin-top: 112px; }
 
-.rough-rating-bar > .rough-overlay {
-  inset: 0;
-}
+  /* 공통 */
+  .page-title { font-size: clamp(1.6rem, 3vw, 2.5rem); line-height: 1.2; letter-spacing: -.035em; }
+  .band { background: color-mix(in srgb, var(--accent) 8%, var(--bg)); }
+  .state { padding-block: 40px; color: var(--muted); }
+  .state strong { display: block; color: var(--ink); font-size: 1.25rem; font-weight: 700; margin-bottom: 4px; }
+  .state .btn { margin-top: 18px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; padding: 0; }
+  .tags li { padding: 2px 10px; border-radius: 999px; background: var(--surface); font-size: .85rem; }
+  .text-btn { padding: 4px 10px; border-radius: 999px; font-size: .9rem; font-weight: 600; color: var(--muted); white-space: nowrap; transition: background .2s, transform .2s var(--ease); }
+  .text-btn:hover { color: var(--ink); background: var(--surface); }
+  .text-btn:active { transform: scale(.96); }
+  .avatar { position: relative; display: grid; place-items: center; flex: none; width: var(--s, 44px); height: var(--s, 44px); border-radius: 999px; overflow: hidden; background: var(--surface); font-weight: 700; }
+  .avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .sk { display: block; border-radius: 8px; background: var(--surface); animation: sk-pulse 1.4s ease-in-out infinite; }
+  .sk.cover-sk { aspect-ratio: 2/3; border-radius: 4px; }
+  .sk.line { height: 1em; margin-top: 12px; }
 
-.rough-rating-input-wrap {
-  position: relative;
-  width: fit-content;
-  cursor: pointer;
-  border-radius: 9999px;
-}
+  /* 도서 검색 */
+  .split { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: clamp(32px, 6vw, 88px); align-items: start; padding-block: clamp(40px, 6vw, 72px); }
+  .sticky-col { position: sticky; top: 136px; }
+  .split .search { margin-top: 20px; }
+  .search-col { max-height: calc(100dvh - 160px); overflow-y: auto; padding: 4px; margin: -4px; scrollbar-width: thin; }
+  .filters { margin-top: 24px; }
+  .filters summary { display: none; }
+  .filter-group { border: 0; padding: 0; margin: 0 0 20px; min-width: 0; }
+  .filter-group legend { padding: 0; margin-bottom: 8px; font-size: .93rem; font-weight: 600; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { position: relative; cursor: pointer; }
+  .chip input { position: absolute; opacity: 0; }
+  .chip span { display: block; padding: 4px 12px; border: 1.5px solid var(--line); border-radius: 999px; font-size: .9rem; white-space: nowrap; transition: background .2s, color .2s; }
+  .chip:hover span { background: var(--surface); }
+  .chip input:checked + span { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  .chip input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .filters .text-btn { margin-left: -10px; }
+  .count { margin-top: 6px; color: var(--muted); }
+  .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 32px 22px; }
+  .book-grid .cover { transition: transform .3s var(--ease); }
+  .book-grid a:hover .cover { transform: translateY(-6px); }
+  .book-grid h2 { font-size: .98rem; font-weight: 600; line-height: 1.35; letter-spacing: 0; margin-top: 12px; }
+  .book-grid .stats { display: flex; gap: 12px; margin-top: 4px; font-size: .9rem; }
+  .end { padding-block: 40px 8px; color: var(--muted); font-size: .93rem; }
 
-.rough-rating-input-stars {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.125rem 0;
-}
+  /* 도서 상세 */
+  .book-hero { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: clamp(32px, 6vw, 88px); align-items: center; padding-block: clamp(40px, 6vw, 72px); }
+  .book-hero h1 { font-size: clamp(2rem, 4vw, 3.4rem); }
+  .book-hero .desc { margin-top: 18px; max-width: 38em; }
+  .book-hero .tags { margin-top: 18px; }
+  .book-hero .tags li { background: color-mix(in srgb, var(--accent) 12%, var(--bg)); }
+  .book-hero .btn { margin-top: 26px; }
+  .book-body { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: clamp(32px, 6vw, 88px); align-items: start; }
+  .score { font-size: clamp(4.5rem, 9vw, 7.5rem); font-weight: 800; line-height: .9; letter-spacing: -.06em; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .hist { margin-block: 24px; display: grid; gap: 6px; font-size: .9rem; font-variant-numeric: tabular-nums; }
+  .hist div { display: grid; grid-template-columns: 1rem minmax(0, 1fr); gap: 10px; align-items: center; }
+  .hist i { display: block; height: 8px; border-radius: 999px; background: var(--accent); }
+  .feature-review { border-radius: 16px; padding: clamp(20px, 2.5vw, 32px); border: 1px solid var(--line); }
+  .rv-list { list-style: none; padding: 0; margin-top: 12px; }
+  .sort { display: flex; justify-content: flex-end; gap: 16px; margin-top: 20px; padding-inline: calc(clamp(20px, 2.5vw, 32px) + 1px); }
+  .sort + .rv-list { margin-top: 4px; }
+  /* 태그 pill과 구분되도록 배경 없이 글자와 밑줄로만 표시한다 (홈 순위 탭과 같은 방식) */
+  .sort .text-btn, .sort .text-btn:hover { padding: 4px 0; border-radius: 0; background: none; }
+  .sort [aria-pressed=true] { color: var(--ink); font-weight: 700; text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 6px; }
+  .rv-list li + li { border-top: 1px solid var(--line); }
+  .rv-row { padding: 22px calc(clamp(20px, 2.5vw, 32px) + 1px); } /* 베스트 리뷰의 테두리 1px만큼 더해 내용 세로선을 맞춘다 */
+  .rv-who strong .badge { margin-left: 6px; font-size: .78rem; font-weight: 600; vertical-align: 1px; }
+  .rv-row q, .feature-review q { quotes: none; display: block; line-height: 1.6; max-width: 62ch; }
+  .rv-who { display: flex; align-items: center; gap: 10px; }
+  .rv-who > div { min-width: 0; flex: 1; line-height: 1.35; }
+  .rv-who strong { display: block; font-weight: 600; }
+  .rv-who small { font-size: .87rem; color: var(--muted); }
+  .rv-row q, .feature-review q { margin-top: 14px; }
+  .rv-row .tags, .feature-review .tags { margin-top: 12px; }
 
-.rough-rating-input-wrap:focus-visible {
-  outline: 2px solid rgb(245 158 11 / 0.45);
-  outline-offset: 2px;
-}
+  /* 내 서재 */
+  .me { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: clamp(20px, 3vw, 36px); align-items: center; padding-block: clamp(36px, 5vw, 56px); }
+  .me a.gh { display: inline-flex; align-items: center; gap: 5px; color: var(--muted); margin-top: 4px; }
+  .me a.gh:hover { color: var(--ink); }
+  .me-stats { display: flex; gap: clamp(24px, 4vw, 56px); margin: 0; }
+  .me-stats dd { margin: 0; order: -1; font-size: clamp(1.8rem, 3.4vw, 3rem); font-weight: 800; letter-spacing: -.04em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .me-stats div { display: flex; flex-direction: column; }
+  .me-stats dt { color: var(--muted); font-size: .93rem; }
+  .tab-body { margin-top: 32px; }
+  .my-row { display: grid; grid-template-columns: 72px minmax(0, 1fr) auto; gap: 20px; padding-block: 20px; }
+  .my-row h2 { font-size: 1.05rem; font-weight: 700; letter-spacing: -.01em; }
+  .my-row q { quotes: none; display: block; margin-top: 6px; max-width: 62ch; }
+  .my-row .row-actions { display: flex; align-items: flex-start; gap: 2px; }
+  .wish-item { position: relative; }
+  .wish-item .text-btn { margin-top: 4px; margin-left: -10px; }
+  .steps { list-style: none; padding: 0; margin-top: 20px; display: grid; gap: 4px; }
+  .steps b { font-weight: 700; }
+  .code { display: flex; align-items: center; gap: 8px; margin-top: 20px; padding: 6px 6px 6px 16px; border: 1.5px solid var(--line); border-radius: 999px; background: var(--bg); }
+  .code code { flex: 1; min-width: 0; overflow-x: auto; white-space: nowrap; font: 500 .85rem/1.6 ui-monospace, monospace; scrollbar-width: none; }
+  .code .btn { margin-top: 0; height: 36px; }
+  .account { padding-block: 24px; display: flex; justify-content: flex-end; }
 
-/* ── 여기부터는 이 문서 전용입니다. front 에는 없는 스타일입니다. ── */
-.doc-bar {
-  position: relative;
-  z-index: 70;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  background: var(--surface-muted);
-  padding: 0.375rem 1rem;
-  font-size: 0.875rem;
-  overflow-x: auto;
-  white-space: nowrap;
-  scrollbar-width: none;
-}
+  /* 관리자 */
+  .admin { padding-block: clamp(32px, 5vw, 56px); }
+  .admin .tabs { margin-top: 20px; }
+  .admin .tab { font-size: clamp(1.2rem, 2vw, 1.6rem); }
+  .table-wrap { overflow-x: auto; margin-top: 28px; }
+  table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+  th { text-align: left; font-weight: 600; color: var(--muted); font-size: .87rem; padding: 0 12px 10px 0; white-space: nowrap; }
+  td { padding: 12px 12px 12px 0; vertical-align: middle; border-top: 1px solid var(--line); }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td.fit { white-space: nowrap; text-align: right; padding-right: 0; }
+  td.nowrap { white-space: nowrap; }
+  td.clip { max-width: 28em; }
+  .cell-book { display: flex; align-items: center; gap: 12px; min-width: 16em; font-weight: 600; }
+  .cell-book .cover { width: 34px; flex: none; box-shadow: none; }
+  .cell-book .cover > span { display: none; }
+  .badge { display: inline-block; padding: 1px 9px; border-radius: 999px; background: var(--surface); font-size: .85rem; white-space: nowrap; }
+  .badge.on { background: var(--accent); color: var(--on-accent); }
+  .pager { display: flex; justify-content: flex-end; gap: 4px; margin-top: 18px; }
+  .pager button { min-width: 36px; height: 36px; border-radius: 999px; font-variant-numeric: tabular-nums; }
+  .pager button:hover { background: var(--surface); }
+  .pager button[aria-current] { background: var(--accent); color: var(--on-accent); font-weight: 700; }
+  .gate { max-width: 400px; padding-block: 72px; }
+  .gate form { margin-top: 24px; display: grid; gap: 16px; }
+  .gate .btn { justify-content: center; }
 
-.doc-bar select {
-  border-radius: 0.5rem;
-  background: var(--surface);
-  padding: 0.125rem 0.25rem;
-}
+  /* 폼과 대화상자 */
+  .field { display: grid; gap: 6px; font-size: .93rem; font-weight: 600; }
+  .field input, .field textarea { font-weight: 400; font-size: 1rem; padding: 10px 16px; border: 1.5px solid var(--muted); border-radius: 18px; background: var(--bg); }
+  .field input { border-radius: 999px; }
+  .field textarea { resize: vertical; min-height: 120px; }
+  .field input:focus, .field textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+  .field small { font-weight: 400; color: var(--muted); }
+  .field-head { display: flex; justify-content: space-between; align-items: baseline; }
+  .field input[type=range] { padding: 0; border: 0; border-radius: 999px; accent-color: var(--accent); }
+  dialog { margin: auto; width: min(520px, calc(100vw - 32px)); padding: 0; border: 0; border-radius: 16px; background: var(--bg); color: var(--ink); }
+  dialog::backdrop { background: rgb(15 17 21 / .55); }
+  .dlg { padding: 28px; display: grid; gap: 16px; }
+  .dlg h2 { font-size: 1.4rem; }
+  .dlg p { color: var(--muted); }
+  .dlg-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
+  .toast { position: fixed; bottom: 24px; left: 50%; translate: -50% 0; z-index: 30; padding: 10px 18px; border-radius: 999px; background: var(--ink); color: var(--bg); font-weight: 600; opacity: 0; transition: opacity .2s; pointer-events: none; }
+  .toast.show { opacity: 1; }
 
-.doc-swatch {
-  display: inline-block;
-  height: 1.5rem;
-  width: 2.5rem;
-  border: 1px solid color-mix(in srgb, var(--line) 28%, transparent);
-  border-radius: 0.375rem;
-  vertical-align: middle;
+  /* 회원가입(약관) */
+  .join-hero { height: auto; min-height: max(640px, calc(100dvh - 104px)); max-height: none; }
+  .join-text { padding: clamp(32px, 6vh, 64px) var(--gutter); align-self: center; }
+  .join-text h1 { font-size: clamp(2rem, 3.6vw, 3.2rem); }
+  .gh-account { display: flex; align-items: center; gap: 12px; margin-top: 24px; line-height: 1.35; }
+  .gh-account strong { display: block; }
+  .gh-account small { color: var(--muted); font-size: .87rem; }
+  .terms { margin-top: 24px; max-width: 520px; }
+  .check { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+  .check input { width: 20px; height: 20px; flex: none; accent-color: var(--accent); }
+  .all { padding: 14px 18px; border-radius: 16px; background: var(--surface); font-weight: 700; }
+  .term { padding: 12px 18px; }
+  .term + .term { border-top: 1px solid var(--line); }
+  .term-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .term summary { list-style: none; cursor: pointer; display: inline-block; font-size: .9rem; font-weight: 600; color: var(--muted); padding: 2px 6px; }
+  .term summary:hover { color: var(--ink); }
+  .term summary::-webkit-details-marker { display: none; }
+  .term-body { display: none; max-height: 132px; overflow-y: auto; margin-top: 10px; color: var(--muted); font-size: .93rem; }
+  .term:has(details[open]) .term-body { display: block; }
+  .join-actions { display: flex; align-items: center; gap: 8px; margin-top: 20px; }
+  .btn:disabled { background: var(--surface); color: var(--muted); cursor: not-allowed; filter: none; transform: none; }
+  .join-side { position: relative; }
+  .join-side .wall { position: absolute; inset: 0; }
+
+  @media (max-width: 860px) {
+    section { scroll-margin-top: 132px; }
+    .split, .book-hero, .book-body { grid-template-columns: minmax(0, 1fr); }
+    .sticky-col { position: static; }
+    .search-col { max-height: none; overflow: visible; padding: 0; margin: 0; }
+    .filters summary { display: inline-flex; list-style: none; }
+    .filters summary::-webkit-details-marker { display: none; }
+    .filters[open] summary { margin-bottom: 20px; }
+    .book-hero .cover { max-width: 200px; }
+    .book-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 24px 14px; }
+    .me { grid-template-columns: auto minmax(0, 1fr); }
+    .me-stats { grid-column: 1 / -1; }
+    .my-row { grid-template-columns: 56px minmax(0, 1fr); }
+    .my-row .row-actions { grid-column: 2; margin-left: -10px; }
+    .join-hero { grid-template-columns: minmax(0, 1fr); min-height: 0; }
+    .join-side { display: none; }
+  }
 }
     </style>
   </head>
-  <body class="flex min-h-screen flex-col antialiased">
-    <nav id="doc-bar" class="doc-bar" aria-label="디자인 가이드 화면 목록"></nav>
-    <div id="header"></div>
-    <main class="relative z-0 mx-auto flex w-full max-w-4xl flex-grow flex-col p-4">
-      <div class="relative flex flex-1 flex-col">
-        <div id="screen" class="contents"></div>
-        <div id="modal"></div>
-      </div>
-    </main>
-    <footer class="theme-site-footer text-center text-sm theme-muted">
-      <div class="theme-rough-divider-bar">
-        <svg data-rough="line" data-inset="0" aria-hidden="true" class="h-full w-full" preserveAspectRatio="none"></svg>
-      </div>
-      <div class="px-2 py-6">
-        <a href="https://github.com/prgrms-be-devcourse/NBE10-12-3-ADP" target="_blank" rel="noreferrer" class="theme-link">GitHub Repository</a>
-      </div>
-    </footer>
-    <div id="toast"></div>
-
+  <body>
+    <div id="app" class="home-a"></div>
     <script>
-      /* ───────── 아이콘: front/public/icons/*.svg ───────── */
       const STROKE = (w, body) =>
         `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
       const FILLED = (d) =>
@@ -1181,8 +418,11 @@ button:hover {
         bookmark: FILLED(BOOKMARK_PATH),
         "chevron-left": STROKE(2.4, '<path d="M15 18l-6-6 6-6"/>'),
         "chevron-right": STROKE(2.4, '<path d="M9 18l6-6-6-6"/>'),
+        "arrow-up-right": STROKE(2.4, '<path d="M7 17 17 7M8 7h9v9"/>'),
         clock: STROKE(2, '<circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.8 1.6"/>'),
         fire: STROKE(2, '<path d="M12 22c4 0 7-2.8 7-6.7 0-2.3-1-4.2-2.9-5.9.1 1.9-.8 3.2-2.2 3.8.4-3.8-1.4-6.8-5-9.2.3 3-1.3 4.9-2.6 6.6A7.2 7.2 0 0 0 5 15.3C5 19.2 8 22 12 22Z"/><path d="M10 17c0-1.4.8-2.4 2.1-3.4.8 1.1 1.9 2.2 1.9 3.7A2 2 0 0 1 12 19a2 2 0 0 1-2-2Z"/>'),
+        comment: STROKE(2, '<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>'),
+        eye: STROKE(2, '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>'),
         github: FILLED(GITHUB_PATH),
         "heart-outline": STROKE(2, `<path d="${HEART_PATH}"/>`),
         heart: FILLED(HEART_PATH),
@@ -1195,1370 +435,631 @@ button:hover {
         star: STROKE(2, '<path d="m12 3 2.7 5.5 6 .9-4.3 4.2 1 6-5.4-2.9-5.4 2.9 1-6-4.3-4.2 6-.9L12 3Z"/>'),
         sun: STROKE(2, '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M4.93 19.07l1.41-1.41"/><path d="M17.66 6.34l1.41-1.41"/>'),
       };
-      const GITHUB_IMG = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#1f2328" d="${GITHUB_PATH}"/></svg>`)}`;
 
-      /* ───────── 샘플 데이터 ───────── */
-      const BOOKS = [
-        { id: 1, title: "클린 코드", authors: ["로버트 C. 마틴"], publisher: "인사이트", date: "2013-12-24", rating: 4.5, reviewCount: 3, color: "#2f5d62", tags: ["클린코드", "입문"] },
-        { id: 2, title: "오브젝트", authors: ["조영호"], publisher: "위키북스", date: "2019-06-17", rating: 4.8, reviewCount: 3, color: "#7c3f58", tags: ["객체지향", "설계"] },
-        { id: 3, title: "이펙티브 자바", authors: ["조슈아 블로크"], publisher: "인사이트", date: "2018-11-01", rating: 4.2, reviewCount: 2, color: "#b45f06", tags: ["자바"] },
-        { id: 4, title: "리팩터링 2판", authors: ["마틴 파울러"], publisher: "한빛미디어", date: "2020-04-01", rating: 3.9, reviewCount: 2, color: "#22577a", tags: ["리팩터링"] },
-        { id: 5, title: "HTTP 완벽 가이드", authors: ["데이빗 고울리"], publisher: "인사이트", date: "2014-12-15", rating: 3.2, reviewCount: 1, color: "#5f6f52", tags: ["네트워크"] },
-        { id: 6, title: "데이터 중심 애플리케이션 설계", authors: ["마틴 클레프만"], publisher: "위키북스", date: "2018-04-12", rating: 5, reviewCount: 1, color: "#3d3b6e", tags: ["데이터"] },
-        { id: 7, title: "코틀린 인 액션", authors: ["드미트리 제메로프"], publisher: "에이콘출판", date: "2017-10-11", rating: 2, reviewCount: 1, color: "#8e4162", tags: ["코틀린"] },
-        { id: 8, title: "실용주의 프로그래머", authors: ["데이비드 토머스", "앤드류 헌트"], publisher: "인사이트", date: "2022-02-28", rating: 4.1, reviewCount: 1, color: "#54717a", tags: ["습관"] },
-        { id: 9, title: "도메인 주도 설계", authors: ["에릭 에반스"], publisher: "위키북스", date: "2011-07-21", rating: 1, reviewCount: 1, color: "#7a5c2e", tags: ["DDD"] },
-        { id: 10, title: "표지가 아직 없는 책", authors: ["저자 미상"], publisher: "샘플출판", date: "2024-01-01", rating: 3, reviewCount: 0, tags: ["표지없음"], noCover: true },
+      // 샘플 데이터. 표지는 Open Library에서 불러온다.
+      const HOME_BOOKS = {
+        ddia: { id: 6, t: "데이터 중심 애플리케이션 설계", a: "마틴 클레프만", i: "9781449373320", h: 205, r: 4.8, n: 312, v: 18420 },
+        ej: { id: 3, t: "이펙티브 자바", a: "조슈아 블로크", i: "9780134685991", h: 20, r: 4.7, n: 287, v: 15873 },
+        prag: { id: 8, t: "실용주의 프로그래머", a: "데이비드 토머스 외", i: "9780135957059", h: 150, r: 4.6, n: 241, v: 13208 },
+        ref: { id: 4, t: "리팩터링 2판", a: "마틴 파울러", i: "9780134757599", h: 340, r: 4.5, n: 198, v: 12761 },
+        clean: { id: 1, t: "클린 코드", a: "로버트 C. 마틴", i: "9780132350884", h: 45, r: 4.1, n: 406, v: 12094 },
+        ddd: { id: 9, t: "도메인 주도 설계", a: "에릭 에반스", i: "9780321125217", h: 265, r: 4.3, n: 134, v: 9317 },
+        apo: { t: "A Philosophy of Software Design", a: "존 오스터하우트", i: "9781732102200", h: 190, r: 4.9, n: 76, v: 6240 },
+        hf: { t: "헤드 퍼스트 디자인 패턴", a: "에릭 프리먼 외", i: "9780596007126", h: 10, r: 4.4, n: 223, v: 8955 },
+        cc: { t: "코드 컴플리트 2판", a: "스티브 맥코넬", i: "9780735619678", h: 120, r: 4.5, n: 91, v: 5482 },
+        staff: { t: "Staff Engineer", a: "윌 라슨", i: "9781736417911", h: 230, r: 4.6, n: 58, v: 4176 },
+        mmm: { t: "맨먼스 미신", a: "프레드릭 브룩스", i: "9780201835953", h: 30, r: 4.4, n: 83, v: 3890 },
+        csapp: { t: "컴퓨터 시스템", a: "랜달 브라이언트 외", i: "9780134092669", h: 300, r: 4.8, n: 112, v: 7023 },
+        sicp: { t: "컴퓨터 프로그램의 구조와 해석", a: "해럴드 에이블슨 외", i: "9780262510875", h: 275, r: 4.7, n: 64, v: 3312 },
+        ca: { t: "클린 아키텍처", a: "로버트 C. 마틴", i: "9780134494166", h: 0, r: 4.2, n: 176, v: 9640 },
+        ri: { t: "Release It! 2판", a: "마이클 나이가드", i: "9781680502398", h: 95, r: 4.6, n: 47, v: 2765 },
+      };
+      const HOME_RANK = {
+        "인기 도서": { ids: ["ddia", "ej", "prag", "ref", "clean", "ca"], icon: "eye", label: "조회", value: (b) => b.v.toLocaleString() },
+        "평점 좋은 도서": { ids: ["apo", "ddia", "csapp", "ej", "sicp", "prag"], icon: "star", label: "별점", value: (b) => b.r.toFixed(1) },
+        "리뷰 많은 도서": { ids: ["clean", "ddia", "ej", "prag", "hf", "ref"], icon: "comment", label: "리뷰", value: (b) => b.n.toLocaleString() },
+      };
+      const HOME_REVIEWS = [
+        { b: "ddia", u: "mun-seok", r: 5, l: 214, q: "복제와 파티셔닝을 안다고 생각했는데, 장애 상황을 설명해 보라는 질문에 막혔어요. 이 책을 읽고 나서야 트레이드오프를 제 말로 설명할 수 있게 됐습니다." },
+        { b: "ej", u: "byte-bori", r: 5, l: 167, q: "순서대로 읽지 않아도 됩니다. 코드 리뷰에서 같은 지적을 세 번 받았다면 그 아이템부터 펴 보세요." },
+        { b: "apo", u: "yoonseul", r: 4.5, l: 128, q: "얇아서 주말이면 끝납니다. 깊은 모듈이라는 개념 하나로 지난주에 쪼갠 클래스를 다시 합쳤어요." },
       ];
-      const DESCRIPTION = "도서 소개 샘플 문구입니다. 실제 화면에서는 카카오 도서 검색에서 가져온 소개글이 이 자리에 표시됩니다. 길이가 길어져도 표지 옆 영역 안에서 줄바꿈됩니다.";
-      const ME = { id: 1, username: "readthem", githubId: "readthem-dev" };
-      let REVIEWS = [
-        { id: 1, bookId: 2, reviewer: { id: 2, githubId: "book-lover" }, rating: 5, content: "역할과 책임을 다시 생각하게 된 책", tags: ["객체지향", "추천"], likes: 12, liked: false, at: "2026-10-30 21:14" },
-        { id: 2, bookId: 1, reviewer: { id: 3, githubId: "kotlin-fan" }, rating: 4.5, content: "이름 짓기 장은 매년 다시 읽어요", tags: ["습관"], likes: 9, liked: true, at: "2026-10-28 09:42" },
-        { id: 3, bookId: 2, reviewer: ME, rating: 4, content: "예제가 탄탄해서 따라가기 좋았어요", tags: ["설계"], likes: 5, liked: false, at: "2026-10-25 18:03" },
-        { id: 4, bookId: 3, reviewer: ME, rating: 3, content: "두고두고 찾아보는 책", tags: ["자바", "참고서"], likes: 3, liked: false, at: "2026-10-20 11:27" },
-        { id: 5, bookId: 7, reviewer: { id: 4, githubId: "spring-dev" }, rating: 2, content: "번역본은 조금 아쉬웠어요", tags: [], likes: 1, liked: true, at: "2026-10-18 22:50" },
-        { id: 6, bookId: 9, reviewer: { id: 2, githubId: "book-lover" }, rating: 1, content: "지금 제 수준엔 너무 어려웠습니다", tags: ["DDD"], likes: 0, liked: false, at: "2026-10-12 08:15" },
-      ];
-      const HISTOGRAM = { "0.5": 0, "1.0": 1, "1.5": 0, "2.0": 1, "2.5": 2, "3.0": 3, "3.5": 5, "4.0": 8, "4.5": 6, "5.0": 4 };
-      let WISHES = [BOOKS[5], BOOKS[7], BOOKS[9]];
-      const WIDGET_LINK = "https://readthem.example/api/v2/widgets/readthem-dev";
+      const HOME_RECENT = [["ddd", "12분 전"], ["hf", "38분 전"], ["staff", "1시간 전"], ["ri", "2시간 전"], ["csapp", "3시간 전"], ["mmm", "5시간 전"], ["cc", "8시간 전"], ["sicp", "어제"]];
 
-      const bookOf = (id) => BOOKS.find((b) => b.id === id);
-      const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
-
-      function coverUrl(book) {
-        const chunks = book.title.match(/.{1,7}(\s|$)|.{1,7}/g).map((s) => s.trim());
-        const lines = chunks.map((line, i) => `<text x="28" y="${110 + i * 46}" font-size="36" font-weight="700" fill="#fff">${esc(line)}</text>`).join("");
-        return `data:image/svg+xml,${encodeURIComponent(
-          `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" font-family="sans-serif"><rect width="300" height="450" fill="${book.color}"/><rect x="14" y="0" width="5" height="450" fill="#fff" opacity=".25"/>${lines}<text x="28" y="410" font-size="18" fill="#fff" opacity=".85">${esc(book.authors[0])}</text></svg>`,
-        )}`;
+      const homeHref = (b) => `#/book?id=${b.key}`;
+      const homeCover = (b, { size = "L", loading = "lazy" } = {}) =>
+        `<span class="cover" style="--h:${b.h}"><span>${esc(b.t)}</span><img loading="${loading}" src="https://covers.openlibrary.org/b/isbn/${b.i}-${size}.jpg?default=false" alt="${esc(b.t)} 표지" onerror="this.remove()"></span>`;
+      
+      function homeRankPanel(name) {
+        const { ids, icon: iconName, label, value } = HOME_RANK[name];
+        const [first, ...rest] = ids.map((key) => HOME_BOOKS[key]);
+        const metric = (b) => `<span class="metric">${icon(iconName)}<span class="sr">${label} </span><span>${value(b)}</span></span>`;
+        return `<div class="panel">
+          <a class="top" href="${homeHref(first)}">${homeCover(first)}<div><div class="num">1</div><h3>${esc(first.t)}</h3><p class="meta">${esc(first.a)}</p><p style="margin-top:8px">${metric(first)}</p></div></a>
+          <ol class="rows" start="2">${rest
+            .map((b, i) => `<li><a href="${homeHref(b)}"><b>${i + 2}</b>${homeCover(b, { size: "M" })}<div><div class="title">${esc(b.t)}</div><div class="meta">${esc(b.a)}</div></div>${metric(b)}</a></li>`)
+            .join("")}</ol>
+        </div>`;
       }
 
-      /* ───────── 상태 ───────── */
-      const state = { auth: "guest", searchOpen: false, searchTerm: "", mypageTab: "reviews", adminTab: "members", wished: new Set([1]) };
-      const isLogin = () => state.auth !== "guest";
-
-      /* ───────── lib/ratingColor.ts ───────── */
-      const RATING_STYLES = [
-        { min: 4, text: "text-green-600", fill: "#4ade80" },
-        { min: 2.5, text: "text-sky-500", fill: "#38bdf8" },
-        { min: 1.5, text: "text-orange-500", fill: "#fb923c" },
-        { min: 0, text: "text-red-500", fill: "#f87171" },
-      ];
-      const ratingStyle = (r) => RATING_STYLES.find(({ min }) => r >= min) ?? RATING_STYLES[3];
-
-      /* ───────── Rough 그리기: RoughFrame / RoughBar / RoughStarIcon 과 같은 수치 ───────── */
-      const inkColor = () => (document.documentElement.dataset.theme === "dark" ? "#f4f1ea" : "#1f1f1f");
-      const roundedRect = (l, t, r, b, radius) =>
-        [
-          `M ${l + radius} ${t}`, `L ${r - radius} ${t}`, `Q ${r} ${t} ${r} ${t + radius}`,
-          `L ${r} ${b - radius}`, `Q ${r} ${b} ${r - radius} ${b}`, `L ${l + radius} ${b}`,
-          `Q ${l} ${b} ${l} ${b - radius}`, `L ${l} ${t + radius}`, `Q ${l} ${t} ${l + radius} ${t}`, "Z",
-        ].join(" ");
-      const starPoints = (w, h) => {
-        const outer = Math.min(w, h) * 0.42;
-        return Array.from({ length: 10 }, (_, i) => {
-          const angle = -Math.PI / 2 + (i * Math.PI) / 5;
-          const radius = i % 2 === 0 ? outer : outer * 0.48;
-          return [w / 2 + Math.cos(angle) * radius, h / 2 + Math.sin(angle) * radius];
-        });
-      };
-
-      function draw(svg) {
-        const { width: w, height: h } = svg.parentElement.getBoundingClientRect();
-        if (w === 0 || h === 0) return;
-        const rc = rough.svg(svg);
-        const stroke = inkColor();
-        const { rough: kind, fill, inset } = svg.dataset;
-        svg.setAttribute("width", `${w}`);
-        svg.setAttribute("height", `${h}`);
-        svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
-        svg.replaceChildren();
-
-        if (kind === "search" || kind === "card") {
-          const pad = kind === "search" ? 3 : 4;
-          const radius = kind === "search" ? Math.min(10, h / 2 - 4) : 12;
-          const options =
-            kind === "search"
-              ? { stroke, strokeWidth: 1.4, roughness: 1.25, bowing: 1.3, fill: "transparent", preserveVertices: true }
-              : { stroke, strokeWidth: 1.4, roughness: 1.2, bowing: 1.2, fill: "transparent", preserveVertices: true };
-          svg.append(rc.path(roundedRect(pad, pad, w - pad, h - pad, radius), options));
-        } else if (kind === "circle") {
-          const d = Math.max(0, Math.min(w, h) - 3);
-          svg.append(rc.ellipse(w / 2, h / 2, d, d, { stroke, strokeWidth: 1.7, roughness: 1.35, bowing: 1.1, fill: "transparent" }));
-        } else if (kind === "softDivider") {
-          const over = Math.max(6, w * 0.015);
-          const color = document.documentElement.dataset.theme === "dark" ? "#a8a29e" : "#9ca3af";
-          svg.setAttribute("viewBox", `${-over} 0 ${w + over * 2} ${h}`);
-          svg.append(
-            rc.line(-over, h / 2, w + over, h / 2 - 0.5, { stroke: color, strokeWidth: 0.85, roughness: 0.8, bowing: 0.65 }),
-            rc.line(-over, h / 2 + 1.25, w + over, h / 2 + 0.75, { stroke: color, strokeWidth: 0.4, roughness: 0.7, bowing: 0.55 }),
-          );
-        } else if (kind === "line") {
-          svg.style.overflow = "visible";
-          const pad = inset != null ? Number(inset) : Math.max(2, Math.min(w, h) * 0.25);
-          svg.append(rc.line(pad, h / 2, w - pad, h / 2, { stroke, strokeWidth: 1, roughness: 1.8, bowing: 1.4 }));
-        } else if (kind === "bar") {
-          const radius = Math.min(5, (w - 2) / 2, (h - 2) / 2);
-          svg.append(rc.path(roundedRect(1, 1, w - 1, h - 1, radius), { stroke, strokeWidth: 1, roughness: 1.25, bowing: 1.1, fill, fillStyle: "solid" }));
-        } else if (kind === "star") {
-          svg.append(rc.polygon(starPoints(w, h), { stroke, strokeWidth: 1.15, roughness: 1.15, bowing: 1, fill, fillStyle: "solid" }));
-        }
-      }
-
-      // 컴포넌트마다 있던 ResizeObserver 를 한 곳으로 모았다. 새 svg 가 DOM 에 들어오면 자동으로 그려진다.
-      const resizeObserver = new ResizeObserver((entries) => {
-        for (const { target } of entries) target.querySelectorAll(":scope > svg[data-rough]").forEach(draw);
-      });
-      new MutationObserver(() => {
-        document.querySelectorAll("svg[data-rough]").forEach((svg) => resizeObserver.observe(svg.parentElement));
-      }).observe(document.body, { childList: true, subtree: true });
-
-      /* ───────── 공통 컴포넌트: front/src/app/_components ───────── */
-      const icon = (name, cls = "h-4 w-4") => {
-        const url = `url('data:image/svg+xml,${encodeURIComponent(ICONS[name])}') center / contain no-repeat`;
-        return `<span aria-hidden="true" class="inline-block shrink-0 bg-current ${cls}" style="-webkit-mask:${url};mask:${url}"></span>`;
-      };
-      const frame = (kind = "card", cls = "rough-overlay") => `<svg data-rough="${kind}" aria-hidden="true" class="${cls}"></svg>`;
-      const roughLine = (cls = "h-full w-full") => `<svg data-rough="line" data-inset="0" aria-hidden="true" class="${cls}" preserveAspectRatio="none"></svg>`;
-      const star = (fill, cls = "rough-overlay") => `<svg data-rough="star" data-fill="${fill}" aria-hidden="true" class="${cls}"></svg>`;
-
-      const TONES = { neutral: "rough-action-neutral", submit: "rough-action-submit", history: "rough-action-history", wish: "rough-action-wish", wishActive: "rough-action-wish-active", cancel: "rough-action-cancel" };
-      const SIZES = { sm: "rough-action-sm", md: "", lg: "rough-action-lg" };
-      const button = (children, { tone = "neutral", size = "md", cls = "", full = false, attrs = "", type = "button" } = {}) =>
-        `<button type="${type}" class="rough-action-button ${TONES[tone]} ${SIZES[size]} ${full ? "w-full" : ""} ${cls}" ${attrs}>
-          <span class="rough-action-button-frame">${frame("search")}</span>
-          <span class="relative z-10 inline-flex items-center justify-center gap-1.5 whitespace-nowrap">${children}</span>
-        </button>`;
-
-      const INPUT_TONES = { neutral: "", paper: "rough-input-paper", history: "rough-input-history", wish: "rough-input-wish" };
-      const input = ({ tone = "neutral", size = "md", wrap = "", cls = "", attrs = "" } = {}) =>
-        `<span class="rough-input-border ${{ sm: "rough-input-sm", md: "", compact: "rough-input-compact" }[size]} ${INPUT_TONES[tone]} ${wrap}">
-          ${frame("search")}
-          <input class="relative z-10 h-full w-full border-0 bg-transparent px-3 py-1 text-sm outline-none ${cls}" ${attrs} />
-        </span>`;
-      const textarea = ({ tone = "neutral", attrs = "", value = "" } = {}) =>
-        `<span class="rough-textarea-border ${INPUT_TONES[tone]}">
-          ${frame("search")}
-          <textarea class="relative z-10 w-full resize-none border-0 bg-transparent p-2 text-sm outline-none" ${attrs}>${esc(value)}</textarea>
-        </span>`;
-
-      const ratingValue = (rating, { cls = "", starCls = "h-5 w-5" } = {}) =>
-        `<span class="inline-flex items-center gap-1 ${cls}">
-          <span class="relative inline-block shrink-0 ${starCls}">${star(ratingStyle(rating).fill)}</span>
-          <span>${rating}</span>
-        </span>`;
-
-      const avatar = (label, size = "sm") =>
-        `<div class="${{ sm: "w-10 h-10 text-base", lg: "w-24 h-24 text-3xl" }[size]} relative shrink-0 rounded-full bg-gray-200 flex items-center justify-center font-bold text-gray-600">
-          ${frame("circle")}
-          <span class="relative z-10">${label ? esc(label.charAt(0).toUpperCase()) : "?"}</span>
-        </div>`;
-
-      const thumbnail = (book, cls, placeholderCls = "flex h-full w-full items-center justify-center", altCls = "text-xs text-gray-400") =>
-        book.noCover
-          ? `<div class="${placeholderCls}"><span class="${altCls}">표지 없음</span></div>`
-          : `<img src="${coverUrl(book)}" alt="${esc(book.title)}" class="${cls}" />`;
-
-      const tagList = (tags, cls = "flex flex-wrap gap-1 text-xs theme-tag") =>
-        `<div class="${cls}">${tags.map((tag) => `<span>#${esc(tag)}</span>`).join("")}</div>`;
-
-      const bookTape = (children, { overlay = true, cls = "" } = {}) =>
-        `<div class="rough-review-tape z-0 w-full overflow-hidden bg-[var(--surface-soft)] text-[var(--foreground)] ${overlay ? "!absolute !bottom-0" : "relative !bottom-auto !left-auto !right-auto !top-auto"} ${cls}">
-          ${roughLine(`w-full ${overlay ? "h-4" : "h-5"}`)}
-          <div class="px-2 py-2">${children}</div>
-        </div>`;
-
-      const bookHref = (id) => `#/book?id=${id}`;
-
-      const bookCoverCard = (book, children) =>
-        `<a href="${bookHref(book.id)}" class="rough-book-card group relative block overflow-hidden rounded-xl bg-white aspect-[2/3] w-full" aria-label="${esc(book.title)} 상세 보기">
-          ${frame("card", "rough-overlay rough-card-line rough-book-cover-line !z-30")}
-          <div class="relative h-full w-full">
-            ${thumbnail(book, "absolute inset-0 z-0 h-full w-full object-cover", "absolute inset-x-0 top-0 bottom-[4.25rem] flex items-center justify-center text-center bg-[var(--surface-card)]", "text-xs text-gray-500")}
-          </div>
-          <div class="absolute inset-x-0 bottom-0 z-10">${children}</div>
-        </a>`;
-
-      const COVER_CLS = "relative flex aspect-[2/3] w-full items-center justify-center overflow-hidden rounded-xl";
-
-      const bookGridItem = (book, index, horizontal) =>
-        `<a href="${bookHref(book.id)}" class="book-link flex h-full flex-col gap-2">
-          <div class="rough-book-card rounded-xl bg-white">
-            ${frame("card", "rough-overlay rough-card-line rough-book-cover-line")}
-            <div class="${COVER_CLS} ${book.noCover ? "book-cover-placeholder" : ""}">
-              ${thumbnail(book, "relative z-0 h-full w-full object-cover", "text-sm text-gray-400", "text-sm text-gray-400")}
-              ${horizontal ? `<span class="book-rank-overlay"></span><span class="book-rank-number">${index + 1}</span>` : ""}
-            </div>
-          </div>
-          <span class="book-title">${esc(book.title)}</span>
-          <span class="book-rating font-bold ${ratingStyle(book.rating).text}">${ratingValue(book.rating)}</span>
-        </a>`;
-
-      const skeletonCard = () =>
-        `<div class="flex h-full flex-col gap-2">
-          <div class="${COVER_CLS}"><div class="h-full w-full rounded-xl book-skeleton"></div></div>
-          <span class="book-title">
-            <span class="block h-5 w-full rounded book-skeleton"></span>
-            <span class="mt-2 block h-5 w-3/4 rounded book-skeleton"></span>
-          </span>
-          <span class="book-rating block h-6"><span class="block h-5 w-16 rounded book-skeleton"></span></span>
-        </div>`;
-
-      const bookGrid = (books, cls = "grid grid-cols-2 gap-4 p-2 sm:grid-cols-4") =>
-        `<ul class="${cls}">${books.map((book, i) => `<li class="group flex flex-col relative">${bookGridItem(book, i, false)}</li>`).join("")}</ul>`;
-
-      const carouselButtons = (title) =>
-        `<div class="ml-auto flex shrink-0 items-center gap-1">
-          ${button(icon("chevron-left"), { size: "sm", cls: "flex h-8 w-8 items-center justify-center px-0 text-xl leading-none", attrs: `data-act="carousel" data-dir="-1" aria-label="${title} 이전 목록"` })}
-          ${button(icon("chevron-right"), { size: "sm", cls: "flex h-8 w-8 items-center justify-center px-0 text-xl leading-none", attrs: `data-act="carousel" data-dir="1" aria-label="${title} 다음 목록"` })}
-        </div>`;
-
-      const sectionHead = (title, iconName) =>
-        `<div class="mb-2 flex w-full items-center gap-3">
-          <h1 class="main-section-heading text-2xl font-bold">
-            <span class="shrink-0" aria-hidden="true">${icon(iconName, "h-5 w-5")}</span>
-            <span>${title}</span>
-          </h1>
-          ${carouselButtons(title)}
-        </div>`;
-
-      const reviewerHref = (reviewer) => (isLogin() && reviewer.id === ME.id ? "#/mypage" : "#/member");
-
-      const reviewDetailCard = (review, { actions = false } = {}) => {
-        const mine = isLogin() && review.reviewer.id === ME.id;
-        const href = reviewerHref(review.reviewer);
-        return `<div class="flex h-full flex-col gap-2">
-          <div class="flex items-center gap-3">
-            <a href="${href}">${avatar(review.reviewer.githubId)}</a>
-            <div class="flex min-w-0 flex-1 flex-col gap-1">
-              <div class="flex items-center gap-1">
-                <a class="font-semibold hover:underline" href="${href}">${esc(review.reviewer.githubId)}</a>
-                <a class="rough-github-inline" href="#" data-act="noop" aria-label="${esc(review.reviewer.githubId)} GitHub">
-                  <img class="rough-github-inline-image" src="${GITHUB_IMG}" alt="" />
-                </a>
-              </div>
-              ${tagList(review.tags)}
-            </div>
-            <div class="flex shrink-0 items-center gap-2">
-              <span class="font-bold ${ratingStyle(review.rating).text}">${ratingValue(review.rating)}</span>
-            </div>
-          </div>
-          <div class="flex flex-1 items-start gap-3">
-            <div class="flex min-w-0 flex-1 flex-col self-stretch">
-              <div class="text-sm">${esc(review.content)}</div>
-              <div class="mt-auto pt-2 text-xs theme-subtle">${review.at}</div>
-            </div>
-            ${
-              actions
-                ? `<div class="ml-auto flex shrink-0 flex-col items-end gap-2">
-                    <div class="flex flex-wrap justify-end gap-2">
-                      ${mine ? button("수정", { size: "sm", cls: "px-2", attrs: `data-act="edit-review" data-id="${review.id}"` }) : ""}
-                      ${mine ? button("삭제", { size: "sm", tone: "cancel", cls: "px-2", attrs: `data-act="delete-review" data-id="${review.id}"` }) : ""}
-                      ${likeButton(review)}
-                    </div>
-                  </div>`
-                : ""
-            }
-          </div>
-        </div>`;
-      };
-
-      const likeButton = (review) =>
-        button(`${icon(review.liked ? "heart" : "heart-outline", "h-4 w-4 align-[-0.125em]")} 좋아요 ${review.likes}`, {
-          size: "sm",
-          tone: review.liked ? "wishActive" : "wish",
-          cls: "px-2",
-          attrs: `data-act="like" data-id="${review.id}" aria-label="${review.liked ? "좋아요 취소" : "좋아요"}"`,
-        });
-
-      const likedReviewCard = (review) => {
-        const book = bookOf(review.bookId);
-        return `<div class="relative flex min-w-0 gap-3 w-full rounded-2xl bg-[var(--surface)] p-3 shadow-sm">
-          ${frame("card")}
-          <div class="relative flex w-24 shrink-0 flex-col">
-            <a href="${bookHref(book.id)}" class="rough-book-card review-book-thumbnail relative flex h-36 w-24 items-center justify-center overflow-hidden rounded-lg bg-white" aria-label="${esc(book.title)} 상세 보기">
-              ${frame("card", "rough-overlay rough-card-line rough-book-cover-line")}
-              ${thumbnail(book, "h-full w-full object-cover")}
-            </a>
-            ${bookTape(`<div class="line-clamp-1 text-xs font-bold">${esc(book.title)}</div>`, { cls: "mt-0" })}
-          </div>
-          <div class="min-w-0 flex-1 p-0">${reviewDetailCard(review)}</div>
-        </div>`;
-      };
-
-      const histogram = (cls = "") => {
-        const buckets = Object.keys(HISTOGRAM);
-        const max = Math.max(1, ...Object.values(HISTOGRAM));
-        return `<div class="flex flex-col gap-1 ${cls}">
-          <div class="rough-rating-chart">
-            ${buckets
-              .map(
-                (bucket) => `<div class="rough-rating-column">
-                  <div class="rough-rating-bar" style="height:${(HISTOGRAM[bucket] / max) * 100}%">
-                    <svg data-rough="bar" data-fill="${ratingStyle(Number(bucket)).fill}" aria-hidden="true" class="rough-overlay" preserveAspectRatio="none"></svg>
-                  </div>
-                </div>`,
-              )
-              .join("")}
-          </div>
-          <div class="flex justify-between text-xs text-gray-500"><span>0.5</span><span>5</span></div>
-        </div>`;
-      };
-
-      const roughDivider = ({ full = false } = {}) =>
-        `<svg aria-hidden="true" class="rough-list-divider ${full ? "rough-list-divider-full" : ""}" width="900" height="10" viewBox="-18 0 936 10" preserveAspectRatio="none">
-          <g>
-            <path d="M-18 4.3 C210 2.8, 360 6.1, 450 5 C540 3.9, 690 6.2, 918 4.7" stroke="#6b7280" stroke-width="1" fill="none" />
-            <path d="M-18 5.8 C210 7.2, 360 3.9, 450 5 C540 6.1, 690 3.8, 918 5.3" stroke="#6b7280" stroke-width="0.6" fill="none" />
-          </g>
-        </svg>`;
-      const adminDivider = () => `<div class="relative h-2 w-full opacity-70 ">${frame("softDivider")}</div>`;
-      const sectionDivider = () => `<div class="theme-section-divider-bar mt-7 opacity-25">${roughLine()}</div>`;
-
-      /* ───────── RoughRatingInput ───────── */
-      const starPreview = (percent, fill) =>
-        `<span class="relative inline-block h-7 w-7 shrink-0">
-          ${star("#e5e7eb")}
-          ${percent > 0 ? `<span class="absolute inset-y-0 left-0 overflow-hidden" style="width:${percent}%">${star(fill)}</span>` : ""}
-        </span>`;
-      const ratingStars = (active) => {
-        const fill = active === 0 ? "#e5e7eb" : ratingStyle(active / 2).fill;
-        return Array.from({ length: 5 }, (_, i) => {
-          const threshold = (i + 1) * 2;
-          return starPreview(active >= threshold ? 100 : active === threshold - 1 ? 50 : 0, fill);
-        }).join("");
-      };
-      const ratingText = (value) => (value === 0 ? "미선택" : `${value / 2}점`);
-      const ratingTextCls = (value) => `min-w-12 ${value === 0 ? "text-gray-600" : ratingStyle(value / 2).text}`;
-      const ratingInput = (defaultValue) => {
-        const value = defaultValue != null ? Math.round(defaultValue * 2) : 0;
-        return `<div class="flex min-w-0 flex-col gap-2" data-rating-root data-value="${value}">
-          <div class="flex flex-wrap items-center gap-2 text-sm">
-            <span>평점</span>
-            <span data-rating-text class="${ratingTextCls(value)}">${ratingText(value)}</span>
-            <button class="text-xs text-gray-500 underline" type="button" data-act="rating-clear">선택 해제</button>
-          </div>
-          <div class="rough-rating-input-wrap" role="slider" aria-label="평점" aria-valuemin="0" aria-valuemax="5" aria-valuenow="${value / 2}" aria-valuetext="${ratingText(value)}" tabindex="0">
-            <div class="rough-rating-input-stars" aria-hidden="true">${ratingStars(value)}</div>
-          </div>
-        </div>`;
-      };
-      function setRating(root, value, committed = true) {
-        if (committed) root.dataset.value = value;
-        const selected = Number(root.dataset.value);
-        const text = root.querySelector("[data-rating-text]");
-        const wrap = root.querySelector(".rough-rating-input-wrap");
-        text.className = ratingTextCls(selected);
-        text.textContent = ratingText(selected);
-        wrap.setAttribute("aria-valuenow", selected / 2);
-        wrap.setAttribute("aria-valuetext", ratingText(selected));
-        wrap.firstElementChild.innerHTML = ratingStars(value);
-      }
-      const ratingFromPointer = (wrap, clientX) => {
-        const rect = wrap.getBoundingClientRect();
-        const x = Math.min(Math.max(clientX - rect.left, 0), rect.width);
-        return x === 0 ? 0 : Math.min(10, Math.max(1, Math.ceil((x / rect.width) * 10)));
-      };
-
-      /* ───────── 모달 ───────── */
-      const loginModal = () =>
-        `<div class="rough-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="login-required-title">
-          <div class="rough-modal-card">
-            ${frame("card")}
-            <h2 id="login-required-title" class="text-xl font-bold">로그인이 필요한 기능입니다</h2>
-            <p class="mt-2 text-sm text-gray-600">이 기능을 사용하려면 로그인이 필요합니다. 로그인하시겠습니까?</p>
-            <div class="mt-5 flex justify-end gap-2">
-              ${button("취소", { size: "sm", tone: "cancel", attrs: 'data-act="modal-close"' })}
-              ${button(`<img class="rough-github-button-icon shrink-0 !inline-block" src="${GITHUB_IMG}" alt="" /><span> GitHub로 로그인</span>`, { size: "sm", tone: "history", cls: "flex items-center gap-1.5 whitespace-nowrap", attrs: 'data-act="login" aria-label="GitHub로 로그인"' })}
-            </div>
-          </div>
-        </div>`;
-
-      const reviewModal = ({ title, submitLabel, review, bookId }) =>
-        `<div class="rough-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="review-form-title">
-          <form class="rough-modal-card flex w-full max-w-md flex-col gap-3" data-review-form data-id="${review?.id ?? ""}" data-book-id="${bookId ?? ""}">
-            ${frame("card")}
-            <h2 id="review-form-title" class="text-xl font-bold">${title}</h2>
-            ${ratingInput(review?.rating)}
-            ${textarea({ value: review?.content ?? "", attrs: 'name="content" maxlength="30" placeholder="리뷰 내용 (2~30자)" rows="2"' })}
-            ${input({ cls: "px-2", attrs: `type="text" name="tags" value="${esc((review?.tags ?? []).join(", "))}" placeholder="태그 (쉼표로 구분)"` })}
-            <div class="flex justify-end gap-2">
-              ${button("취소", { size: "sm", tone: "cancel", attrs: 'data-act="modal-close"' })}
-              ${button(submitLabel, { size: "sm", tone: "submit", type: "submit" })}
-            </div>
-          </form>
-        </div>`;
-
-      const WIDGET_STEPS = [
-        ["1. GitHub 프로필 README 레포지토리 생성", "GitHub에서 사용자 이름과 같은 이름의 공개 레포지토리를 만들고, `README.md` 파일을 준비해 주세요."],
-        ["2. 위젯 코드 복사", "README에서 이미지를 표시할 수 있도록 준비된 `img` 태그를 복사합니다."],
-        ["3. README.md에 붙여넣기", "복사한 `img` 태그를 README.md에 붙여 넣으면 프로필에서 바로 위젯이 보입니다."],
-      ];
-      const widgetCode = `<img src="${WIDGET_LINK}" alt="내 서재 위젯" />`;
-      const widgetGuideModal = (step) =>
-        `<div class="rough-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="widget-guide-title">
-          <div class="rough-modal-card">
-            ${frame("card")}
-            <h2 id="widget-guide-title" class="text-xl font-bold">README에 위젯 넣는 방법</h2>
-            <div class="rough-panel-border mt-2 bg-[var(--surface-muted)] px-3 py-2 text-sm theme-muted">
-              ${frame("card")}
-              <p>버튼을 눌러 단계를 바꿔가며 확인할 수 있어요.</p>
-            </div>
-            <div class="mt-4 flex flex-wrap gap-2">
-              ${[1, 2, 3].map((n) => button(`${n}단계`, { size: "sm", tone: step === n ? "history" : "neutral", attrs: `data-act="widget-step" data-step="${n}"` })).join("")}
-            </div>
-            <div class="rough-panel-border mt-4 bg-[var(--surface-muted)] p-3 text-sm">
-              ${frame("card")}
-              <div>
-                <div class="font-semibold">${WIDGET_STEPS[step - 1][0]}</div>
-                <div class="mt-1 theme-muted">${WIDGET_STEPS[step - 1][1]}</div>
-              </div>
-            </div>
-            <div class="rough-panel-border mt-4 flex flex-col gap-2 bg-[var(--surface-muted)] p-3">
-              ${frame("card")}
-              <div class="text-sm font-semibold">복사할 코드</div>
-              ${input({ size: "sm", cls: "font-mono text-xs", attrs: `readonly value="${esc(widgetCode)}"` })}
-              <div class="flex flex-wrap gap-2">
-                ${button('<span data-copy-label>코드 복사</span>', { size: "sm", tone: "history", attrs: 'data-act="copy-widget"' })}
-                <span class="self-center text-xs theme-muted">GitHub 프로필 README.md에 그대로 붙여 넣으면 됩니다.</span>
-              </div>
-            </div>
-            <div class="mt-5 flex justify-end gap-2">
-              ${button("취소", { size: "sm", tone: "cancel", attrs: 'data-act="modal-close"' })}
-            </div>
-          </div>
-        </div>`;
-
-      const openModal = (html) => (document.getElementById("modal").innerHTML = html);
-      const closeModal = () => openModal("");
-
-      /* ───────── 토스트: 1.8초 뒤 사라짐 ───────── */
-      let toastTimer = null;
-      function showToast(message) {
-        document.getElementById("toast").innerHTML = `<div class="rough-toast" role="status" aria-live="polite">${frame("card")}<span class="relative z-10">${esc(message)}</span></div>`;
-        clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => (document.getElementById("toast").innerHTML = ""), 1800);
-      }
-
-      /* ───────── 헤더 ───────── */
-      const navLink = (href, iconName, label, attrs = "") =>
-        `<a href="${href}" class="theme-nav-link theme-nav-control" ${attrs}>${icon(iconName)}<span class="theme-nav-label">${label}</span></a>`;
-      function renderHeader() {
-        const open = state.searchOpen;
-        document.getElementById("header").innerHTML = `<header class="theme-site-header relative">
-          <nav class="mx-auto flex w-full max-w-4xl items-center gap-3 px-4 py-2">
-            <div class="shrink-0 ${open ? "max-sm:hidden" : ""}">
-              <a href="#/" class="shrink-0 text-xl font-bold whitespace-nowrap">READTHEM.md</a>
-            </div>
-            ${open ? "" : `<button type="button" class="mobile-search-toggle theme-nav-link theme-nav-control shrink-0" data-act="search-open" aria-label="검색창 열기">${icon("search")}<span class="theme-nav-label">검색</span></button>`}
-            <form data-search-form class="min-w-0 items-center gap-1 ${open ? "flex flex-1" : "hidden w-72 shrink-0 sm:flex lg:w-80"}">
-              <label class="min-w-0 flex-1">
-                ${input({ wrap: "w-full", attrs: `type="text" name="q" placeholder="제목/저자 검색" maxlength="100" value="${esc(state.searchTerm)}"` })}
-              </label>
-              ${button(`${icon("search")}<span class="search-submit-label">검색</span>`, { size: "sm", type: "submit", cls: `search-submit-button theme-nav-control shrink-0 whitespace-nowrap px-2 ${open ? "search-submit-button-open" : ""}` })}
-            </form>
-            <div class="ml-auto shrink-0 items-center justify-end gap-2 whitespace-nowrap ${open ? "hidden sm:flex" : "flex"}">
-              <button type="button" class="theme-nav-link theme-nav-control shrink-0" data-act="theme" aria-label="테마 전환">
-                ${icon("moon", "theme-light-only h-4 w-4")}${icon("sun", "theme-dark-only h-4 w-4")}
-                <span class="theme-nav-label theme-toggle-label"></span>
-              </button>
-              ${
-                isLogin()
-                  ? `<div class="auth-action-enter flex min-w-0 items-center gap-2 whitespace-nowrap">
-                      ${navLink("#/mypage", "library", "내 서재")}
-                      ${state.auth === "admin" ? navLink("#/admin", "admin", "관리자") : ""}
-                      <button type="button" class="theme-nav-link theme-nav-control" data-act="logout" aria-label="로그아웃">${icon("logout")}<span class="theme-nav-label">로그아웃</span></button>
-                    </div>`
-                  : `<div class="auth-action-enter">
-                      <a href="#" class="theme-nav-link theme-nav-control gap-1.5" data-act="login" aria-label="GitHub로 로그인">${icon("github")}<span class="theme-nav-label">GitHub로 로그인</span></a>
-                    </div>`
-              }
-            </div>
-          </nav>
-          <div class="theme-rough-divider-bar">${roughLine()}</div>
-        </header>`;
-      }
-
-      /* ───────── 화면: 홈 (app/page.tsx) ───────── */
       function homeScreen() {
-        const horizontal = "book-scroll-list flex snap-x snap-mandatory gap-5 overflow-x-auto py-2 pb-4";
-        const bookSection = (title, iconName, books, cls) =>
-          `<section class="${cls}">
-            ${sectionHead(title, iconName)}
-            <div class="book-scroll-fade">
-              <ul class="${horizontal}">
-                ${books
-                  .map(
-                    (book, i) => `<li class="book-horizontal-item group flex shrink-0 flex-col basis-[calc((100%_-_2.5rem)/3)] md:basis-[calc((100%_-_3.75rem)/4)] xl:basis-[calc((100%_-_5rem)/5)] relative ${i === books.length - 1 ? "snap-end" : "snap-start"}" data-carousel-item>
-                      ${bookGridItem(book, i, true)}
-                    </li>`,
-                  )
-                  .join("")}
-              </ul>
-            </div>
-          </section>`;
-        const reviews = [...REVIEWS].sort((a, b) => b.likes - a.likes);
-        const popularReviews = `<section class="mt-6">
-          ${sectionHead("인기 많은 리뷰", "fire")}
-          <div class="book-scroll-fade">
-            <ul data-step="review" class="book-scroll-list flex snap-x snap-mandatory gap-4 overflow-x-auto py-2 pb-4">
-              ${reviews
-                .map(
-                  (review, i) => `<li class="min-w-0 basis-full shrink-0 xl:basis-[calc((100%_-_1rem)/2)] ${i === reviews.length - 1 ? "snap-end" : "snap-start"}" data-carousel-item>
-                    ${likedReviewCard(review)}
-                  </li>`,
-                )
-                .join("")}
-            </ul>
-          </div>
-        </section>`;
-        const latest = [...BOOKS.slice(0, 9), ...BOOKS.slice(0, 3)];
-        const latestReviews = `<section class="mt-6">
-          ${sectionHead("최근 리뷰가 추가된 도서", "clock")}
-          <div class="book-scroll-fade">
-            <ul data-step="latest" class="book-scroll-list flex snap-x snap-mandatory gap-3 overflow-x-auto py-2 pb-4">
-              ${latest
-                .map(
-                  (book, i) => `<li class="basis-[calc((100%_-_3rem)/5)] shrink-0 sm:basis-[calc((100%_-_3.75rem)/6)] lg:basis-[calc((100%_-_4.5rem)/7)] xl:basis-[calc((100%_-_5.25rem)/8)] ${i === latest.length - 1 ? "snap-end" : "snap-start"}" data-carousel-item>
-                    <article class="relative h-full w-full overflow-hidden rounded-xl bg-white">
-                      ${bookCoverCard(
-                        book,
-                        bookTape(`<div class="flex flex-col gap-1">
-                          <div class="line-clamp-1 text-xs font-bold">${esc(book.title)}</div>
-                          <span class="text-xs font-bold">${ratingValue(book.rating)}</span>
-                        </div>`),
-                      )}
-                    </article>
-                  </li>`,
-                )
-                .join("")}
-            </ul>
-          </div>
-        </section>`;
-        const byRating = [...BOOKS].sort((a, b) => b.rating - a.rating);
-        const byReviews = [...BOOKS].sort((a, b) => b.reviewCount - a.reviewCount);
-        return [
-          bookSection("인기 도서", "fire", BOOKS, "mt-4"),
-          popularReviews,
-          latestReviews,
-          bookSection("평점 좋은 도서", "star", byRating, "mt-6"),
-          bookSection("리뷰 많은 도서", "stacked-books", byReviews, "mt-6"),
-        ].join(sectionDivider());
-      }
+        const wall = coverWall();
+        const tabs = Object.keys(HOME_RANK)
+          .map((name) => `<button class="tab" role="tab" data-act="home-tab" aria-selected="${name === state.homeTab}">${name}</button>`)
+          .join("");
+        const reviews = HOME_REVIEWS.map((v, i) => {
+          const b = HOME_BOOKS[v.b];
+          return `<article class="rv">
+            <q>${esc(v.q)}</q>
+            <div class="rv-foot">${homeCover(b, { size: "M" })}<div><strong>${esc(b.t)}</strong><small>${esc(v.u)}<span class="rating">${icon("star", "h-3 w-3")}<span class="sr">별점 </span>${v.r.toFixed(1)}</span></small></div>${like(v.l, v.liked)}</div>
+          </article>`;
+        }).join("");
+        const recent = HOME_RECENT.map(([k, when]) => {
+          const b = HOME_BOOKS[k];
+          return `<a href="${homeHref(b)}">${homeCover(b)}<h3>${esc(b.t)}</h3><p class="meta">${when} 리뷰</p></a>`;
+        }).join("");
+        return `<div class="home-a">
+          ${siteNav("")}
 
-      /* ───────── 화면: 검색 (app/books/search/page.tsx) ───────── */
-      function searchScreen(params) {
-        const term = params.get("term") || "코드";
-        return `<h1>'${esc(term)}' 검색 결과</h1>
-          ${bookGrid(BOOKS)}
-          <div class="py-6 text-center text-sm theme-muted">마지막 검색 결과입니다.</div>`;
-      }
-
-      /* ───────── 화면: 도서 상세 (app/books/detail/page.tsx) ───────── */
-      function bookScreen(params) {
-        const book = bookOf(Number(params.get("id"))) ?? BOOKS[1];
-        const reviews = REVIEWS.filter((r) => r.bookId === book.id);
-        const wished = isLogin() && state.wished.has(book.id);
-        const recommended = BOOKS.filter((b) => b.id !== book.id);
-        return `<div class="flex flex-col gap-6 p-4 max-w-3xl mx-auto w-full">
-          <div class="flex gap-6">
-            <div class="flex w-40 shrink-0 flex-col gap-2">
-              <div class="rough-cover flex h-56 items-center justify-center overflow-hidden ${book.noCover ? "book-cover-placeholder" : ""}">
-                ${frame("card")}
-                ${thumbnail(book, "w-full h-full object-cover", "flex h-full w-full items-center justify-center text-sm text-gray-400", "text-sm text-gray-400")}
-              </div>
-              ${wishButton(book, wished)}
-            </div>
-            <div class="grid flex-1 gap-4 md:grid-cols-[minmax(0,1fr)_10rem]">
-              <div class="flex min-w-0 flex-col gap-2">
-                <h1 class="text-2xl font-bold">${esc(book.title)}</h1>
-                <div class="text-sm theme-muted">${book.authors.map(esc).join(", ")} · ${esc(book.publisher)} · ${book.date}</div>
-                <p class="mt-1 text-sm theme-description">${DESCRIPTION}</p>
-                ${tagList(book.tags, "flex flex-wrap gap-2 text-sm theme-tag")}
-              </div>
-              <div class="flex min-w-0 flex-col gap-2">
-                <div class="text-right">
-                  <div class="text-4xl font-bold leading-none ${ratingStyle(book.rating).text}">${ratingValue(book.rating, { starCls: "h-9 w-9" })}</div>
-                  <div class="mt-1 text-sm theme-muted">리뷰 ${book.reviewCount}개</div>
-                </div>
-                ${histogram("mt-1 w-full max-w-40")}
-              </div>
-            </div>
-          </div>
-          ${
-            isLogin()
-              ? `<div>
-                  <div class="flex h-8 items-center gap-2">
-                    <h2 class="text-lg font-bold">추천 도서</h2>
-                    <span class="text-sm theme-muted">${recommended.length}권</span>
-                    ${carouselButtons("추천 도서")}
-                  </div>
-                  <ul class="book-scroll-list mt-3 flex gap-3 overflow-x-auto py-2 pb-4">
-                    ${recommended
-                      .map(
-                        (b) => `<li class="shrink-0" data-carousel-item>
-                          <article class="relative h-full w-24 overflow-hidden rounded-xl bg-white">
-                            ${bookCoverCard(
-                              b,
-                              bookTape(`<div class="flex flex-col gap-1">
-                                <div class="truncate text-xs font-bold">${esc(b.title)}</div>
-                                <div class="flex items-center gap-1 text-xs font-bold">
-                                  <span class="relative inline-block h-3.5 w-3.5 shrink-0">${star(ratingStyle(b.rating).fill)}</span>
-                                  <span>${b.rating.toFixed(1)}</span>
-                                </div>
-                              </div>`),
-                            )}
-                          </article>
-                        </li>`,
-                      )
-                      .join("")}
-                  </ul>
-                </div>`
-              : ""
-          }
-          <div>
-            <div class="flex flex-wrap items-center gap-2">
-              <h2 class="text-lg font-bold">리뷰 ${reviews.length}개</h2>
-              ${button(`${icon("review", "h-4 w-4 align-[-0.125em]")} 리뷰 작성하기`, { size: "sm", tone: "history", attrs: `data-act="write-review" data-book-id="${book.id}"` })}
-            </div>
-            ${reviews.length === 0 ? '<div class="mt-2 text-sm theme-muted">아직 리뷰가 없습니다.</div>' : ""}
-            <ul class="mt-2 flex w-full flex-col">
-              ${reviews.map((review, i) => `<li class="relative py-3">${reviewDetailCard(review, { actions: true })}${i < reviews.length - 1 ? roughDivider() : ""}</li>`).join("")}
-            </ul>
-          </div>
-        </div>`;
-      }
-      const wishButton = (book, wished) =>
-        button(`${icon(wished ? "bookmark" : "bookmark-outline", "h-4 w-4 align-[-0.125em]")} ${wished ? "보고 싶어요 취소" : "보고 싶어요"}`, {
-          full: true,
-          size: "sm",
-          tone: wished ? "wishActive" : "wish",
-          attrs: `data-act="wish" data-id="${book.id}"`,
-        });
-
-      /* ───────── 화면: 내 서재·회원 서재 (app/mypage, app/members/detail) ───────── */
-      const widgetPreview = ({ withLink }) =>
-        `<div class="min-w-0 w-full">
-          <div class="flex min-w-0 items-center justify-between gap-2">
-            <h2 class="font-bold">위젯 미리보기</h2>
-            ${
-              withLink
-                ? `<div class="flex flex-wrap justify-end gap-2">
-                    ${button('<span data-copy-label>코드 복사</span>', { size: "sm", tone: "history", attrs: 'data-act="copy-widget"' })}
-                    ${button("README 가이드 보기", { size: "sm", attrs: 'data-act="widget-step" data-step="1"' })}
-                  </div>`
-                : ""
-            }
-          </div>
-          <div class="rough-panel-border relative mt-1 flex min-h-24 items-center justify-center bg-transparent p-2">
-            ${frame("card")}
-            <img class="max-w-full" src="widget-sample.svg" alt="위젯 미리보기" />
-          </div>
-          ${withLink ? `<div class="mt-1">${input({ size: "sm", cls: "text-xs", attrs: `readonly value="${WIDGET_LINK}"` })}</div>` : ""}
-        </div>`;
-
-      const profilePanel = ({ username, githubId, averageLabel, mobileWidget, actions = "" }) =>
-        `<aside class="flex w-48 shrink-0 flex-col items-center gap-1 pt-6 max-sm:w-full max-sm:items-stretch">
-          <div class="flex w-full flex-col items-center gap-3 max-sm:flex-row max-sm:items-center max-sm:justify-start">
-            ${avatar(githubId, "lg")}
-            <div class="min-w-0 text-center max-sm:min-w-0 max-sm:flex-1 max-sm:text-left">
-              <div class="text-sm">아이디 : ${esc(username)}</div>
-              <div class="text-sm">닉네임 : ${esc(githubId)}</div>
-              <a class="theme-link text-sm underline" href="#" data-act="noop">github 주소</a>
-              <div class="mt-3 flex w-full justify-start max-sm:w-auto">${actions}</div>
-            </div>
-          </div>
-          <div class="mt-8 hidden w-full max-sm:block"><div class="max-sm:block sm:hidden">${mobileWidget}</div></div>
-          <div class="mt-2 flex w-full flex-col gap-3 max-sm:flex-row max-sm:items-start">
-            <div class="flex min-w-0 flex-1 flex-col gap-1">
-              <div class="text-xs theme-muted">${averageLabel}</div>
-              <div class="text-lg font-bold ${ratingStyle(3.8).text}">${ratingValue(3.8)}</div>
-            </div>
-            <div class="min-w-0 flex-1">${histogram("mt-0 w-full")}</div>
-          </div>
-        </aside>`;
-
-      const libraryLayout = (sidebar, children) =>
-        `<div class="flex flex-col gap-4 sm:flex-row sm:gap-8">
-          ${sidebar}
-          <div class="flex min-w-0 flex-1 flex-col gap-4 max-sm:gap-1">${children}</div>
-        </div>`;
-
-      const libraryReviewItem = (review, last, withActions) => {
-        const book = bookOf(review.bookId);
-        const rating = `<span class="font-bold ${withActions ? "" : "shrink-0"} ${ratingStyle(review.rating).text}">${ratingValue(review.rating)}</span>`;
-        return `<li class="relative flex items-start gap-3 py-3">
-          ${last ? "" : roughDivider({ full: true })}
-          <a href="${bookHref(book.id)}" class="rough-book-card review-book-thumbnail relative flex h-20 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white" aria-label="${esc(book.title)} 상세 보기">
-            ${frame("card", "rough-overlay rough-card-line rough-book-cover-line")}
-            ${thumbnail(book, "h-full w-full object-cover")}
-          </a>
-          <div class="flex-1 min-w-0">
-            <a class="font-semibold hover:underline" href="${bookHref(book.id)}">${esc(book.title)}</a>
-            ${tagList(review.tags)}
-            <div class="mt-1 text-sm">${esc(review.content)}</div>
-            <div class="mt-1 text-xs theme-subtle">${review.at}</div>
-          </div>
-          ${
-            withActions
-              ? `<div class="flex shrink-0 flex-col items-end gap-2">
-                  ${rating}
-                  <div class="flex flex-wrap items-center justify-end gap-2">
-                    ${button("수정", { size: "sm", cls: "px-2", attrs: `data-act="edit-review" data-id="${review.id}"` })}
-                    ${button("삭제", { size: "sm", tone: "cancel", cls: "px-2", attrs: `data-act="delete-review" data-id="${review.id}"` })}
-                  </div>
-                </div>`
-              : rating
-          }
-        </li>`;
-      };
-
-      function mypageScreen() {
-        const mine = REVIEWS.filter((r) => r.reviewer.id === ME.id);
-        const liked = REVIEWS.filter((r) => r.liked);
-        const tab = (value, label) =>
-          `<div class="theme-tab"><button type="button" class="px-3 py-2 text-sm ${state.mypageTab === value ? "theme-tab-active" : "theme-tab-inactive"}" data-act="mypage-tab" data-tab="${value}">${label}</button></div>`;
-        const panels = {
-          reviews: () =>
-            `${mine.length === 0 ? '<div class="text-sm theme-muted">작성한 리뷰가 없습니다.</div>' : ""}
-            <ul class="flex w-full flex-col">${mine.map((r, i) => libraryReviewItem(r, i === mine.length - 1, true)).join("")}</ul>`,
-          liked: () =>
-            `${liked.length === 0 ? '<div class="text-sm theme-muted">좋아요한 리뷰가 없습니다.</div>' : ""}
-            <ul class="flex w-full flex-col">
-              ${liked
-                .map((review, i) => {
-                  const book = bookOf(review.bookId);
-                  return `<li class="relative py-3">
-                    ${i < liked.length - 1 ? roughDivider({ full: true }) : ""}
-                    <div class="flex gap-3">
-                      <div class="relative w-24 shrink-0">
-                        <a href="${bookHref(book.id)}" class="rough-book-card review-book-thumbnail relative flex h-36 w-24 items-center justify-center overflow-hidden rounded-lg bg-white" aria-label="${esc(book.title)} 상세 보기">
-                          ${frame("card", "rough-overlay rough-card-line rough-book-cover-line")}
-                          ${thumbnail(book, "h-full w-full object-cover")}
-                          ${bookTape(`<div class="flex flex-col gap-1"><div class="line-clamp-1 text-xs font-bold">${esc(book.title)}</div></div>`)}
-                        </a>
-                      </div>
-                      <div class="min-w-0 flex-1">${reviewDetailCard(review, { actions: true })}</div>
-                    </div>
-                  </li>`;
-                })
-                .join("")}
-            </ul>`,
-          wishes: () =>
-            `${WISHES.length === 0 ? '<div class="text-sm theme-muted">보고 싶어요 한 도서가 없습니다.</div>' : ""}
-            <ul class="flex w-full flex-col">
-              ${WISHES.map(
-                (book, i) => `<li class="relative flex items-center justify-between gap-3 py-3">
-                  ${i < WISHES.length - 1 ? roughDivider({ full: true }) : ""}
-                  <a href="${bookHref(book.id)}" class="font-semibold">${esc(book.title)}</a>
-                  <div class="flex items-center gap-3">
-                    <span class="font-bold ${ratingStyle(book.rating).text}">${ratingValue(book.rating)}</span>
-                    ${button(`${icon("bookmark", "h-4 w-4 align-[-0.125em]")} 보고 싶어요 취소`, { size: "sm", tone: "wishActive", cls: "px-2", attrs: `data-act="remove-wish" data-id="${book.id}"` })}
-                  </div>
-                </li>`,
-              ).join("")}
-            </ul>`,
-        };
-        return libraryLayout(
-          profilePanel({
-            username: ME.username,
-            githubId: ME.githubId,
-            averageLabel: "내가 준 평균 별점",
-            mobileWidget: widgetPreview({ withLink: true }),
-            actions: `<div class="mt-4 flex w-full gap-2 max-sm:w-auto max-sm:flex-wrap">
-              ${button("로그아웃", { size: "sm", cls: "flex-1 max-sm:flex-none", attrs: 'data-act="logout"' })}
-              ${button("회원 탈퇴", { size: "sm", tone: "cancel", cls: "flex-1 max-sm:flex-none", attrs: 'data-act="withdraw"' })}
-            </div>`,
-          }),
-          `<div class="max-sm:hidden">${widgetPreview({ withLink: true })}</div>
-          <section class="flex flex-col gap-1">
-            <div class="flex gap-2">
-              ${tab("reviews", `작성한 리뷰 ${mine.length}`)}
-              ${tab("liked", `좋아요한 리뷰 ${liked.length}`)}
-              ${tab("wishes", `보고 싶어요 ${WISHES.length}`)}
-            </div>
-            ${panels[state.mypageTab]()}
-          </section>`,
-        );
-      }
-
-      function memberScreen() {
-        const reviews = REVIEWS.filter((r) => r.reviewer.githubId === "book-lover");
-        return libraryLayout(
-          profilePanel({ username: "book-lover", githubId: "book-lover", averageLabel: "평균 별점", mobileWidget: widgetPreview({ withLink: false }) }),
-          `<div class="max-sm:hidden">${widgetPreview({ withLink: false })}</div>
-          <div>
-            <div class="flex gap-2"><div class="theme-tab"><div class="theme-tab-active px-3 py-2 text-sm">작성한 리뷰 ${reviews.length}</div></div></div>
-            <ul class="flex w-full flex-col">${reviews.map((r, i) => libraryReviewItem(r, i === reviews.length - 1, false)).join("")}</ul>
-          </div>`,
-        );
-      }
-
-      /* ───────── 화면: 관리자 (app/admin) ───────── */
-      const adminPager = () =>
-        `<div class="flex items-center gap-2">
-          ${button("이전", { size: "sm", attrs: "disabled" })}
-          <span class="text-sm">1 / 1</span>
-          ${button("다음", { size: "sm", attrs: "disabled" })}
-        </div>`;
-      const adminTable = (heads, rows) =>
-        `<div class="flex flex-col gap-4">
-          <div class="overflow-x-auto">
-            ${adminDivider()}
-            <table class="w-full text-left text-sm">
-              <thead>
-                <tr>${heads.map((h) => `<th class="p-2">${h}</th>`).join("")}</tr>
-                <tr aria-hidden="true"><td colspan="${heads.length}" class="p-0">${adminDivider()}</td></tr>
-              </thead>
-              <tbody>${rows.join(`<tr aria-hidden="true"><td colspan="${heads.length}" class="p-0">${adminDivider()}</td></tr>`)}</tbody>
-            </table>
-            ${adminDivider()}
-          </div>
-          ${adminPager()}
-        </div>`;
-      const ADMIN_MEMBERS = [
-        { id: 1, username: "admin", nickname: "관리자", githubId: "readthem-admin", admin: true, deleted: false, date: "2026-01-02" },
-        { id: 2, username: "readthem", nickname: "리드뎀", githubId: "readthem-dev", admin: false, deleted: false, date: "2026-03-14" },
-        { id: 3, username: "booklover", nickname: "책벌레", githubId: "book-lover", admin: false, deleted: false, date: "2026-05-21" },
-        { id: 4, username: "left-user", nickname: "떠난회원", githubId: "left-user", admin: false, deleted: true, date: "2026-06-30" },
-      ];
-      const adminBookForm = (b) =>
-        `<form class="sketch-panel flex max-w-md flex-col gap-2 p-3" data-admin-book-form>
-          <h2 class="font-bold">도서 정보 수정 (#${b.id})</h2>
-          ${input({ attrs: `type="text" placeholder="제목" value="${esc(b.title)}"` })}
-          ${textarea({ value: DESCRIPTION, attrs: 'placeholder="설명" rows="3"' })}
-          ${input({ attrs: `type="text" placeholder="저자 (쉼표로 구분)" value="${esc(b.authors.join(", "))}"` })}
-          ${input({ attrs: `type="text" placeholder="출판사" value="${esc(b.publisher)}"` })}
-          ${input({ attrs: 'type="text" placeholder="표지 이미지 URL"' })}
-          <div class="flex gap-2">
-            ${button("저장", { tone: "submit", type: "submit" })}
-            ${button("취소", { tone: "cancel", attrs: 'data-act="admin-edit"' })}
-          </div>
-        </form>`;
-      const adminPanels = {
-        members: () =>
-          adminTable(
-            ["ID", "아이디", "닉네임", "GitHub", "권한", "상태", "가입일", ""],
-            ADMIN_MEMBERS.map(
-              (m) => `<tr>
-                <td class="p-2">${m.id}</td><td class="p-2">${m.username}</td><td class="p-2">${m.nickname}</td><td class="p-2">${m.githubId}</td>
-                <td class="p-2">${m.admin ? "관리자" : "일반"}</td>
-                <td class="p-2 theme-muted">${m.deleted ? "탈퇴" : "정상"}</td>
-                <td class="p-2 theme-subtle">${m.date}</td>
-                <td class="p-2">${!m.admin && !m.deleted ? button("강제 탈퇴", { size: "sm", tone: "cancel", attrs: 'data-act="toast" data-msg="회원을 강제 탈퇴했습니다."' }) : ""}</td>
-              </tr>`,
-            ),
-          ),
-        books: () =>
-          adminTable(
-            ["ID", "제목", "평점", ""],
-            BOOKS.slice(0, 5).map(
-              (b) => `<tr>
-                <td class="p-2">${b.id}</td><td class="p-2">${esc(b.title)}</td><td class="p-2">${b.rating}</td>
-                <td class="flex gap-2 p-2">
-                  ${button("수정", { size: "sm", attrs: `data-act="admin-edit" data-id="${b.id}"` })}
-                  ${button("삭제", { size: "sm", tone: "cancel", attrs: 'data-act="toast" data-msg="도서를 삭제했습니다."' })}
-                </td>
-              </tr>`,
-            ),
-          ),
-        reviews: () =>
-          `<div class="flex flex-col gap-4">
-            <ul class="flex flex-col">
-              <li aria-hidden="true">${adminDivider()}</li>
-              ${REVIEWS.map(
-                (review, i) => `<li class="flex items-start gap-3 py-2">
-                  <div class="min-w-0 flex-1">
-                    <div class="text-sm font-semibold">${esc(bookOf(review.bookId).title)}</div>
-                    <div class="text-xs theme-muted">${esc(review.reviewer.githubId)}</div>
-                    <div class="text-sm">${esc(review.content)}</div>
-                    ${tagList(review.tags)}
-                  </div>
-                  <span class="shrink-0 font-bold ${ratingStyle(review.rating).text}">${ratingValue(review.rating)}</span>
-                  ${button("삭제", { size: "sm", tone: "cancel", attrs: 'data-act="toast" data-msg="리뷰를 삭제했습니다."' })}
-                </li>
-                ${i < REVIEWS.length - 1 ? `<li aria-hidden="true">${adminDivider()}</li>` : ""}`,
-              ).join("")}
-              <li aria-hidden="true">${adminDivider()}</li>
-            </ul>
-            ${adminPager()}
-          </div>`,
-      };
-      function adminScreen() {
-        if (state.auth === "guest") {
-          return `<div class="mx-auto flex min-h-[60vh] w-full max-w-xl items-center justify-center p-4">
-            <div class="relative flex w-full max-w-sm flex-col gap-4 p-6">
-              ${frame("card")}
-              <h1 class="mb-4 text-xl font-bold">관리자 로그인</h1>
-              <form class="flex flex-col gap-2" data-admin-login>
-                ${input({ attrs: 'type="text" placeholder="아이디" maxlength="30"' })}
-                ${input({ attrs: 'type="password" placeholder="비밀번호" maxlength="30"' })}
-                <div class="pt-1">${button('<span class="py-1">로그인</span>', { full: true, tone: "submit", type: "submit" })}</div>
+          <div class="hero">
+            <div class="hero-text">
+              <h1>개발자의<br>도서 리뷰 플랫폼</h1>
+              <p class="lede">개발자들의 <button class="trend-link" data-act="home-jump" data-target="home-rank">독서 트렌드${icon("arrow-up-right", "h-3 w-3")}</button>를 확인하고 찜하세요.<br>나만의 찜 목록을 위젯으로 만들어보세요.</p>
+              <form class="search" data-search-form>
+                <label for="home-q">도서 검색</label>
+                <div><input id="home-q" type="search" maxlength="100" placeholder="제목이나 저자를 입력하세요" value="${esc(state.searchTerm)}"><button class="btn">검색</button></div>
               </form>
             </div>
-          </div>`;
-        }
-        if (state.auth !== "admin") return "<div>관리자 권한이 없는 계정입니다.</div>";
-        return `<div class="flex flex-col gap-4">
-          <h1 class="text-xl font-bold">관리자 페이지</h1>
-          <div class="theme-tab-row flex gap-2">
-            ${[["members", "회원 관리"], ["books", "도서 관리"], ["reviews", "리뷰 관리"]]
-              .map(([value, label]) => `<button type="button" class="px-3 py-2 text-sm ${state.adminTab === value ? "theme-tab-active" : "theme-tab-inactive"}" data-act="admin-tab" data-tab="${value}">${label}</button>`)
-              .join("")}
+            <div class="wall" aria-hidden="true">${wall}</div>
           </div>
-          ${adminPanels[state.adminTab]()}
-          ${state.adminTab === "books" && state.adminEditId ? adminBookForm(bookOf(state.adminEditId)) : ""}
+
+          <section id="home-rank" class="wrap">
+            <h2 class="sr">독서 트렌드</h2>
+            <div class="tabs" role="tablist">${tabs}</div>
+            <div id="home-panel" role="tabpanel">${homeRankPanel(state.homeTab)}</div>
+          </section>
+
+          <section id="home-reviews" class="wrap reveal">
+            <h2>인기 많은 리뷰</h2>
+            <div class="reviews">${reviews}</div>
+          </section>
+
+          <section class="wrap reveal">
+            <div class="head">
+              <h2>최근 리뷰가 추가된 도서</h2>
+              <div class="arrows">
+                <button class="icon-btn" data-act="home-scroll" data-dir="-1" aria-label="이전 도서">${icon("chevron-left")}</button>
+                <button class="icon-btn" data-act="home-scroll" data-dir="1" aria-label="다음 도서">${icon("chevron-right")}</button>
+              </div>
+            </div>
+            <div class="track" id="home-track">${recent}</div>
+          </section>
+
+          <section class="reveal widget-section">
+            <div class="wrap widget">
+              <div>
+                <h2>GitHub 프로필에 붙이는 나만의 책장</h2>
+                <p class="lede">코드 한 줄을 README에 붙이면 프로필에 내 책장이 표시됩니다.</p>
+                ${isLogin() ? `<a class="btn" href="#/mypage">내 서재로 이동</a>` : `<a class="btn" href="#" data-act="login">${icon("github")}GitHub로 3초 만에 시작하기</a>`}
+              </div>
+              <img src="widget-sample.svg" alt="리뷰를 쓰거나 보고 싶어요한 책의 표지가 흐르는 위젯 예시">
+            </div>
+          </section>
+
+          ${siteFoot()}
         </div>`;
       }
-
-      /* ───────── 화면: 로그인·회원가입·오류 ───────── */
-      const accountForm = (title, fields, submit) =>
-        `<h1>${title}</h1>
-        <form class="flex max-w-sm flex-col gap-2 p-2" data-account-form>
-          ${fields.map(([type, placeholder]) => input({ attrs: `type="${type}" placeholder="${placeholder}" maxlength="30"` })).join("")}
-          ${button(submit, { full: true, size: "lg", tone: "submit", type: "submit" })}
-        </form>`;
-      const loginScreen = () => accountForm("로그인", [["text", "아이디"], ["password", "비밀번호"]], "로그인");
-      const joinScreen = () => accountForm("회원가입", [["text", "아이디"], ["password", "비밀번호"], ["text", "GitHub 아이디"]], "가입하기");
-      const errorScreen = () =>
-        `<div class="mx-auto flex min-h-[60vh] w-full max-w-xl items-center justify-center p-4">
-          <div class="relative flex w-full flex-col gap-5 p-6">
-            ${frame("card")}
-            <div class="flex flex-col gap-2">
-              <p class="text-sm font-semibold theme-muted">ERROR</p>
-              <h1 class="text-2xl font-bold">오류가 발생했습니다</h1>
-              <p class="theme-muted">요청을 처리하는 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.</p>
-            </div>
-            <div class="theme-surface relative flex flex-col gap-2 p-4 text-sm">
-              ${frame("card")}
-              <div><span class="font-semibold">코드: </span><span>404-1</span></div>
-              <div><span class="font-semibold">메시지: </span><span>존재하지 않는 도서입니다.</span></div>
-            </div>
-            <div class="flex flex-wrap gap-2">
-              ${button("이전으로", { attrs: 'data-act="back"' })}
-              <a href="#/">${button("홈으로", { tone: "submit" })}</a>
-            </div>
-          </div>
-        </div>`;
-
-      /* ───────── 화면: 디자인 기준 (이 문서 전용) ───────── */
-      const TOKENS = [
-        ["--background", "#fffaf0", "#171b22", "페이지 배경"],
-        ["--foreground", "#1f2933", "#f4f1ea", "본문 글자"],
-        ["--line", "#17202a", "#f4f1ea", "선 기준색"],
-        ["--surface", "#fffdf7", "#1f2630", "버튼, 입력창, 카드"],
-        ["--surface-card", "#ffffff", "#242d38", "책 카드"],
-        ["--surface-soft", "#fff5d9", "#121720", "모달, 토스트, 표지 띠"],
-        ["--surface-muted", "#eef8f4", "#263241", "보조 패널, 취소 버튼"],
-        ["--surface-muted-hover", "#dff3eb", "#314154", "기본·취소 버튼 호버"],
-        ["--surface-hover", "#e8f6ff", "#2e4054", "헤더 메뉴 호버"],
-        ["--accent", "#0f766e", "#5eead4", "강조"],
-        ["--accent-soft", "#ccfbf1", "#134e4a", "라이트 상단 그라데이션"],
-        ["--accent-warm", "#facc15", "#fde68a", "따뜻한 강조"],
-        ["--title-tape-yellow", "rgb(250 204 21 / .42)", "rgb(59 130 246 / .34)", "h1 테이프"],
-        ["--title-tape-mint", "rgb(45 212 191 / .28)", "rgb(45 110 101 / .48)", "h2 테이프"],
-        ["--title-tape-peach", "rgb(251 146 60 / .28)", "rgb(139 88 61 / .46)", "활성 탭 테이프"],
-        ["--book-skeleton", "#f7f2e8", "#202832", "스켈레톤"],
-        ["--book-skeleton-active", "#efe4ce", "#2a3542", "스켈레톤 맥박"],
-      ];
-      const ROUGH_SPECS = [
-        ["search", "버튼, 입력창", "1.4", "1.25", "1.3"],
-        ["card", "카드, 패널, 모달, 토스트", "1.4", "1.2", "1.2"],
-        ["circle", "아바타", "1.7", "1.35", "1.1"],
-        ["softDivider", "관리자 구분선", "0.85 + 0.4", "0.8 / 0.7", "0.65 / 0.55"],
-        ["line", "헤더·푸터·섹션 구분선, 표지 띠", "1", "1.8", "1.4"],
-        ["bar", "별점 분포 막대", "1", "1.25", "1.1"],
-        ["star", "별점 별", "1.15", "1.15", "1"],
-      ];
-      const UX_RULES = [
-        ["테마", "저장값, 없으면 시스템 설정을 따릅니다. 전환하면 Rough 선도 다시 그립니다."],
-        ["검색", "2글자 미만이면 토스트로 안내합니다. 640px 미만에서는 아이콘을 눌러 검색창을 펼칩니다."],
-        ["로그인 유도", "비로그인 상태에서 보고 싶어요, 리뷰 작성, 좋아요를 누르면 로그인 모달을 띄웁니다."],
-        ["피드백", "결과는 하단 중앙 토스트로 1.8초 동안 알립니다. 삭제는 브라우저 확인창을 거칩니다."],
-        ["평점 입력", "0.5점 단위입니다. 드래그와 방향키로 고르고, Delete로 해제합니다."],
-        ["로딩", "실제 화면은 데이터가 올 때까지 같은 크기의 스켈레톤을 보여 줍니다."],
-        ["빈 섹션", "홈 섹션은 데이터가 없으면 숨기고, 그 밖의 목록은 빈 상태 문구를 보여 줍니다."],
-        ["카드 호버", "책 카드는 3px 떠오르고 그림자와 선이 진해집니다. 리뷰 카드 안의 표지는 움직이지 않습니다."],
-      ];
-      const guideBlock = (title, body) => `<section class="mt-8 flex flex-col gap-3"><div><h2 class="text-xl font-bold">${title}</h2></div>${body}</section>`;
-      const specTable = (heads, rows) =>
-        `<div class="overflow-x-auto"><table class="w-full text-left text-sm">
-          <thead><tr>${heads.map((h) => `<th class="p-2 whitespace-nowrap">${h}</th>`).join("")}</tr></thead>
-          <tbody>${rows.map((row) => `<tr>${row.map((cell) => `<td class="p-2 align-middle">${cell}</td>`).join("")}</tr>`).join("")}</tbody>
-        </table></div>`;
-      const swatch = (value) => `<span class="doc-swatch" style="background:${value}"></span> <span class="text-xs theme-muted whitespace-nowrap">${value}</span>`;
-
-      function guideScreen() {
-        const sampleReview = REVIEWS[0];
-        const book = BOOKS[1];
-        return `<div>
-          <h1 class="text-3xl font-bold">디자인 기준</h1>
-          <p class="mt-3 text-sm theme-description">손으로 그린 듯한 선(rough.js), 따뜻한 종이 배경, 형광펜 테이프 제목이 핵심입니다. 위쪽 막대에서 각 화면을 열고, 헤더의 테마 버튼으로 다크 모드를 확인할 수 있습니다.</p>
-        </div>
-        ${guideBlock(
-          "색상 토큰",
-          specTable(
-            ["토큰", "라이트", "다크", "쓰임"],
-            TOKENS.map(([name, light, dark, usage]) => [`<code class="text-xs">${name}</code>`, swatch(light), swatch(dark), usage]),
-          ),
-        )}
-        ${guideBlock(
-          "평점 색상",
-          specTable(
-            ["평점", "별", "글자"],
-            [["4.0 이상", 4.5], ["2.5 이상", 3], ["1.5 이상", 2], ["1.5 미만", 1]].map(([label, value]) => [label, swatch(ratingStyle(value).fill), `<span class="font-bold ${ratingStyle(value).text}">${ratingValue(value)}</span>`]),
-          ),
-        )}
-        ${guideBlock(
-          "글꼴과 크기",
-          `<p class="text-sm theme-muted">강원교육모두체를 기본으로 씁니다. 굵기는 300·400이 Light, 500 이상이 Bold 파일입니다.</p>
-          <div class="flex flex-col gap-1">
-            ${[["text-3xl", "1.9375rem"], ["text-2xl", "1.5625rem"], ["text-xl", "1.3125rem"], ["text-lg", "1.1875rem"], ["text-base", "1.0625rem"], ["text-sm", "0.9375rem"], ["text-xs", "0.8125rem"]]
-              .map(([cls, size]) => `<div class="${cls}">${cls} · ${size} · 개발자의 도서 리뷰</div>`)
-              .join("")}
-          </div>`,
-        )}
-        ${guideBlock(
-          "제목 테이프",
-          `<div class="flex flex-col items-start gap-3">
-            <h1 class="text-2xl font-bold">h1은 노란 테이프</h1>
-            <h2 class="text-xl font-bold">h2는 민트 테이프</h2>
-            <div class="flex gap-2"><span class="theme-tab"><span class="theme-tab-active px-3 py-2 text-sm">활성 탭은 복숭아 테이프</span></span><span class="theme-tab"><span class="theme-tab-inactive px-3 py-2 text-sm">비활성 탭</span></span></div>
-          </div>`,
-        )}
-        ${guideBlock(
-          "Rough 선",
-          specTable(
-            ["종류", "쓰임", "strokeWidth", "roughness", "bowing"],
-            ROUGH_SPECS.map(([kind, ...rest]) => [`<code class="text-xs">${kind}</code>`, ...rest]),
-          ) + `<p class="text-sm theme-muted">선 색은 라이트 #1f1f1f, 다크 #f4f1ea입니다. 리뷰 목록 구분선만 #6b7280 고정 SVG입니다.</p>`,
-        )}
-        ${guideBlock(
-          "버튼",
-          `<div class="flex flex-wrap items-center gap-2">
-            ${button("neutral")}${button("submit", { tone: "submit" })}${button("history", { tone: "history" })}${button("wish", { tone: "wish" })}${button("wishActive", { tone: "wishActive" })}${button("cancel", { tone: "cancel" })}${button("disabled", { attrs: "disabled" })}
-          </div>
-          <div class="flex flex-wrap items-center gap-2">
-            ${button("sm", { size: "sm" })}${button("md")}${button("lg", { size: "lg" })}
-            ${button(icon("chevron-left"), { size: "sm", cls: "flex h-8 w-8 items-center justify-center px-0 text-xl leading-none", attrs: 'aria-label="이전"' })}
-            ${button(`${icon("heart-outline", "h-4 w-4 align-[-0.125em]")} 아이콘 버튼`, { size: "sm", tone: "wish" })}
-          </div>`,
-        )}
-        ${guideBlock(
-          "입력",
-          `<div class="grid gap-3 sm:grid-cols-2">
-            ${input({ attrs: 'type="text" placeholder="neutral"' })}
-            ${input({ tone: "paper", attrs: 'type="text" placeholder="paper"' })}
-            ${input({ tone: "history", attrs: 'type="text" placeholder="history"' })}
-            ${input({ tone: "wish", attrs: 'type="text" placeholder="wish"' })}
-            ${input({ size: "sm", attrs: 'type="text" placeholder="sm"' })}
-            ${input({ size: "compact", attrs: 'type="text" placeholder="compact"' })}
-          </div>
-          ${textarea({ attrs: 'placeholder="textarea" rows="2"' })}
-          ${ratingInput(3.5)}`,
-        )}
-        ${guideBlock(
-          "책 카드",
-          `<div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <div>${bookGridItem(book, 0, false)}</div>
-            <div>${bookGridItem(book, 0, true)}</div>
-            <div>${bookGridItem(BOOKS[9], 9, false)}</div>
-            <div aria-hidden="true">${skeletonCard()}</div>
-          </div>
-          <p class="text-sm theme-muted">왼쪽부터 기본, 순위 표시, 표지 없음, 스켈레톤입니다.</p>
-          <div class="w-28">
-            <article class="relative h-full w-full overflow-hidden rounded-xl bg-white">
-              ${bookCoverCard(book, bookTape(`<div class="flex flex-col gap-1"><div class="line-clamp-1 text-xs font-bold">${esc(book.title)}</div><span class="text-xs font-bold">${ratingValue(book.rating)}</span></div>`))}
-            </article>
-          </div>`,
-        )}
-        ${guideBlock("리뷰 카드", `${likedReviewCard(sampleReview)}<div class="relative py-3">${reviewDetailCard(sampleReview, { actions: true })}${roughDivider()}</div>`)}
-        ${guideBlock(
-          "아바타와 별점 분포",
-          `<div class="flex items-center gap-4">${avatar("readthem-dev")}${avatar("readthem-dev", "lg")}<div class="w-40">${histogram()}</div></div>`,
-        )}
-        ${guideBlock(
-          "모달과 토스트",
-          `<div class="flex flex-wrap gap-2">
-            ${button("로그인 모달", { size: "sm", attrs: 'data-act="login-modal"' })}
-            ${button("리뷰 모달", { size: "sm", attrs: 'data-act="write-review" data-force data-book-id="2"' })}
-            ${button("위젯 가이드 모달", { size: "sm", attrs: 'data-act="widget-step" data-step="1"' })}
-            ${button("토스트", { size: "sm", attrs: 'data-act="toast" data-msg="리뷰를 작성했습니다."' })}
-          </div>`,
-        )}
-        ${guideBlock(
-          "아이콘",
-          `<div class="flex flex-wrap gap-4">${Object.keys(ICONS)
-            .map((name) => `<div class="flex w-24 flex-col items-center gap-1 text-xs theme-muted">${icon(name, "h-5 w-5")}<span class="text-center">${name}</span></div>`)
-            .join("")}</div>`,
-        )}
-        ${guideBlock(
-          "레이아웃",
-          specTable(
-            ["항목", "값"],
-            [
-              ["본문 최대 폭", "max-w-4xl (도서 상세 max-w-3xl)"],
-              ["640px 미만", "헤더 글자 숨김, 검색 접힘, 서재 사이드바를 위로 쌓음"],
-              ["인기 도서", "한 화면 3권, md 4권, xl 5권"],
-              ["최근 리뷰 도서", "한 화면 5권, sm 6권, lg 7권, xl 8권"],
-              ["인기 리뷰", "한 화면 1개, xl 2개"],
-              ["표지 비율", "2:3"],
-            ],
-          ),
-        )}
-        ${guideBlock("UX 규칙", specTable(["항목", "규칙"], UX_RULES))}`;
+      // 화면을 그린 뒤 호출한다: 스크롤하면 섹션이 나타나게 한다
+      function initHome() {
+        const io = new IntersectionObserver(
+          (entries) =>
+            entries.forEach((e) => {
+              if (!e.isIntersecting) return;
+              e.target.classList.add("in");
+              io.unobserve(e.target);
+            }),
+          { threshold: 0.12 },
+        );
+        document.querySelectorAll(".home-a .reveal").forEach((el) => io.observe(el));
       }
 
-      /* ───────── 라우팅 ───────── */
+      /* ───────── 도서 샘플 상세 ───────── */
+      const BOOK_META = {
+        ddia: ["위키북스", "2018", "복제, 파티셔닝, 트랜잭션, 일괄 처리와 스트림 처리를 다루며 데이터 시스템의 트레이드오프를 설명합니다."],
+        ej: ["인사이트", "2018", "자바 언어를 제대로 쓰기 위한 90개 아이템을 규칙과 근거로 정리한 책입니다."],
+        prag: ["인사이트", "2022", "도구, 설계, 협업까지 개발자의 일하는 방식을 실용적인 조언으로 풀어냅니다."],
+        ref: ["한빛미디어", "2020", "동작을 유지하면서 코드 구조를 개선하는 절차를 예제와 카탈로그로 보여 줍니다."],
+        clean: ["인사이트", "2013", "이름, 함수, 주석, 테스트까지 읽기 좋은 코드의 기준을 사례와 함께 다룹니다."],
+        ddd: ["위키북스", "2011", "복잡한 도메인을 모델로 표현하고 코드와 일치시키는 방법을 설명합니다."],
+        apo: ["Yaknyam Press", "2021", "복잡성을 줄이는 설계 원칙을 깊은 모듈이라는 개념을 중심으로 정리합니다."],
+        hf: ["한빛미디어", "2022", "자주 쓰는 디자인 패턴을 그림과 대화체 예제로 익히는 입문서입니다."],
+        cc: ["위키북스", "2020", "변수 이름부터 구조 설계까지 소프트웨어 구현 전반의 실무 지식을 모았습니다."],
+        staff: ["Staff Eng", "2021", "시니어 이후의 기술 리더가 어떤 일을 하고 어떻게 영향력을 만드는지 다룹니다."],
+        mmm: ["인사이트", "2015", "대규모 소프트웨어 프로젝트의 일정과 조직 문제를 다룬 고전입니다."],
+        csapp: ["피어슨", "2015", "프로그래머 관점에서 메모리, 프로세스, 네트워크가 동작하는 원리를 설명합니다."],
+        sicp: ["인사이트", "2016", "프로그램을 추상화하고 조합하는 사고방식을 Scheme으로 배웁니다."],
+        ca: ["인사이트", "2019", "의존성 규칙을 중심으로 시스템 경계를 나누는 아키텍처 원칙을 설명합니다."],
+        ri: ["위키북스", "2018", "운영 환경에서 시스템이 무너지는 패턴과 이를 막는 안정성 패턴을 정리합니다."],
+      };
+      const BOOK_REVIEWS = [
+        { u: "haneul-dev", r: 4.5, l: 96, d: "2026.08.19", t: ["실무 추천", "다시 읽는 책"], q: "한 번 읽고 끝낼 책은 아니에요. 팀에서 같은 문제가 생길 때마다 관련 장을 다시 펴 보고 있습니다." },
+        { u: "gyuri-kang", r: 4, l: 41, d: "2026.10.21", t: ["스터디 추천"], q: "혼자 읽으면 지루한 구간이 있지만 스터디로 한 장씩 토론하니 얻는 게 많았습니다." },
+        { u: "seojun-404", r: 5, l: 27, d: "2026.09.30", t: ["실무 추천"], q: "신규 입사자에게 가장 먼저 권하는 책이 됐습니다. 예제가 지금 봐도 낡지 않았어요." },
+        { u: "dohyun-k", r: 3.5, l: 8, d: "2026.11.02", t: ["입문서 아님"], q: "경력 1년 차에게는 조금 일렀습니다. 실무에서 비슷한 문제를 겪어 본 뒤에 읽으면 좋겠어요." },
+      ];
+      const MEMBERS = [
+        [1, "readthem-admin", "운영자", "readthem-admin", true, false, "2026.03.04"],
+        [38, "mun-seok", "문석", "mun-seok", false, false, "2026.04.17"],
+        [52, "byte-bori", "보리", "byte-bori", false, false, "2026.05.02"],
+        [73, "yoonseul", "윤슬", "yoonseul", false, false, "2026.06.26"],
+        [91, "dohyun-k", "도현", "dohyun-k", false, true, "2026.07.11"],
+        [104, "gyuri-kang", "규리", "gyuri-kang", false, false, "2026.09.08"],
+      ];
+      const ME = { name: "문석", id: "mun-seok", avg: 4.4 };
+
+      /* ───────── 상태와 공통 조각 ───────── */
+      Object.entries(HOME_BOOKS).forEach(([key, b]) => (b.key = key));
+      const state = { auth: "guest", view: "default", homeTab: "인기 도서", reviewSort: "latest", searchTerm: "", myTab: "reviews", adminTab: "members", wished: new Set(["ddd", "staff", "sicp", "ri"]) };
+      const $ = (selector) => document.querySelector(selector);
+      const isLogin = () => state.auth !== "guest";
+      const esc = (value) => String(value).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+      const icon = (name, cls = "") => ICONS[name].replace("<svg ", `<svg class="i ${cls}" aria-hidden="true" `).replaceAll("#000", "currentColor");
+      const like = (count, liked = false) => `<button class="like" data-act="like" aria-pressed="${liked}" aria-label="좋아요">${icon(liked ? "heart" : "heart-outline")}<span>${count}</span></button>`;
+      const avatar = (id, size = 44) => `<span class="avatar" style="--s:${size}px" aria-hidden="true">${esc(id[0].toUpperCase())}<img src="https://github.com/identicons/${esc(id)}.png" alt="" loading="lazy" onerror="this.remove()"></span>`;
+      const rating = (r) => `<span class="metric">${icon("star", "h-3")}<span class="sr">별점 </span><span>${r.toFixed(1)}</span></span>`;
+      const tagList = (tags) => `<ul class="tags">${tags.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>`;
+      const stateMsg = (title, body, extra = "") => `<div class="state"><strong>${title}</strong>${body}${extra ? `<div>${extra}</div>` : ""}</div>`;
+      const allBooks = () => Object.values(HOME_BOOKS);
+
+      function coverWall() {
+        const keys = Object.keys(HOME_BOOKS);
+        // 표지 벽: 세 칸을 두 번씩 이어 붙여 끊김 없이 흐르게 한다
+        return [0, 1, 2]
+          .map((c) => {
+            const col = keys.filter((_, i) => i % 3 === c).map((k) => homeCover(HOME_BOOKS[k], { loading: "eager" })).join("");
+            return `<div class="col">${col + col}</div>`;
+          })
+          .join("");
+      }
+
+      function siteNav(path) {
+        const home = path === "";
+        const jump = (label, target) => (home ? `<button data-act="home-jump" data-target="${target}">${label}</button>` : `<a href="#/?to=${target}">${label}</a>`);
+        const page = (label, key) => `<a href="#/${key}" ${path === key ? 'aria-current="page"' : ""}>${label}</a>`;
+        return `<header class="nav"><div class="wrap">
+          <a class="logo" href="#/">Readthem <em>Lab</em></a>
+          <nav class="links" aria-label="주요 메뉴">
+            ${home ? `<button data-act="home-top">도서 검색</button>` : page("도서 검색", "search")}
+            ${jump("독서 트렌드", "home-rank")}
+            ${jump("리뷰", "home-reviews")}
+            ${isLogin() ? page("내 서재", "mypage") : ""}
+            ${state.auth === "admin" ? `<a class="nav-admin" href="#/admin" ${path === "admin" ? 'aria-current="page"' : ""}>${icon("admin")}관리자</a>` : ""}
+          </nav>
+          <div class="nav-end">
+            <button class="icon-btn" data-act="theme" aria-label="테마 전환">${icon("moon", "theme-light-only h-5")}${icon("sun", "theme-dark-only h-5")}</button>
+            ${
+              isLogin()
+                ? `<button class="btn line" data-act="logout">${icon("logout")}로그아웃</button>`
+                : `<a class="btn line" href="#" data-act="login">${icon("github")}<span><span class="long">GitHub </span>로그인</span></a>`
+            }
+          </div>
+        </div></header>`;
+      }
+      const siteFoot = () => `<footer class="foot"><div class="wrap"><span>Readthem Lab</span><a href="https://github.com/prgrms-be-devcourse/NBE10-12-3-ADP" target="_blank" rel="noreferrer">GitHub Repository</a></div></footer>`;
+      const shell = (path, body) => `${siteNav(path)}<main class="page">${body}</main>${siteFoot()}`;
+
+      /* ───────── 도서 검색 ───────── */
+      const searchForm = (term) => `<form class="search" data-search-form>
+        <label for="search-q">도서 검색</label>
+        <div><input id="search-q" type="search" maxlength="100" placeholder="제목이나 저자를 입력하세요" value="${esc(term)}"><button class="btn">검색</button></div>
+      </form>`;
+      // UI만 있는 필터: 선택해도 결과는 바뀌지 않는다. API가 조건을 받게 되면 연결한다.
+      const chipGroup = (legend, type, name, options) => `<fieldset class="filter-group"><legend>${legend}</legend><div class="chips">${options
+        .map((label, i) => `<label class="chip"><input type="${type}" name="${name}" value="${label}" ${type === "radio" && i === 0 ? "checked" : ""}><span>${label}</span></label>`)
+        .join("")}</div></fieldset>`;
+      const filterForm = () => `<details class="filters" ${matchMedia("(max-width: 860px)").matches ? "" : "open"}>
+        <summary class="btn line">상세 검색</summary>
+        <form aria-label="상세 검색">
+          ${chipGroup("태그", "checkbox", "tag", ["실무 추천", "스터디 추천", "다시 읽는 책", "입문서 아님"])}
+          ${chipGroup("최소 별점", "radio", "rating", ["전체", "3.5 이상", "4.0 이상", "4.5 이상"])}
+          ${chipGroup("출간 연도", "radio", "year", ["전체", "2024년 이후", "2020년 이후", "2015년 이후"])}
+          <button type="reset" class="text-btn">필터 초기화</button>
+        </form>
+      </details>`;
+      function searchScreen(params) {
+        const term = (params.get("term") || "").trim();
+        const needle = term.toLowerCase();
+        const found = allBooks().filter((b) => !needle || `${b.t} ${b.a}`.toLowerCase().includes(needle));
+        const books = state.view === "empty" ? [] : found;
+        const title = term ? `'${esc(term)}' 검색 결과` : "전체 도서";
+        const cards = books
+          .map((b) => `<a href="${homeHref(b)}">${homeCover(b)}<h2>${esc(b.t)}</h2><p class="meta">${esc(b.a)}</p><p class="stats">${rating(b.r)}<span class="meta">리뷰 ${b.n}</span></p></a>`)
+          .join("");
+        const skeleton = `<div class="book-grid">${"<div><span class='sk cover-sk'></span><span class='sk line'></span></div>".repeat(12)}</div>`;
+        const results =
+          state.view === "loading"
+            ? skeleton
+            : books.length
+              ? `<div class="book-grid swap">${cards}</div><p class="end">마지막 검색 결과입니다.</p>`
+              : stateMsg("찾는 도서가 없습니다.", "다른 제목이나 저자 이름으로 검색해 보세요.");
+        return shell("search", `<div class="wrap split">
+          <div class="sticky-col search-col"><h1 class="page-title">${title}</h1><p class="count">${state.view === "loading" ? "불러오는 중" : `${books.length}권`}</p>${searchForm(term)}${filterForm()}</div>
+          <div aria-busy="${state.view === "loading"}">${results}</div>
+        </div>`);
+      }
+
+      /* ───────── 도서 상세 ───────── */
+      const REVIEW_SORT = { latest: (a, b) => b.d.localeCompare(a.d), popular: (a, b) => b.l - a.l };
+      function bookScreen(params) {
+        const key = HOME_BOOKS[params.get("id")] ? params.get("id") : "ddia";
+        const b = HOME_BOOKS[key];
+        const [publisher, year, desc] = BOOK_META[key];
+        if (state.view === "loading")
+          return shell("book", `<div class="band"><div class="wrap book-hero" aria-busy="true"><span class="sk cover-sk"></span><div><span class="sk line" style="height:3rem;max-width:70%"></span><span class="sk line" style="max-width:40%"></span><span class="sk line"></span><span class="sk line" style="max-width:85%"></span></div></div></div>`);
+        const wished = isLogin() && state.wished.has(key);
+        const empty = state.view === "empty";
+        const own = HOME_REVIEWS.filter((v) => v.b === key).map((v) => ({ ...v, d: "2026.10.28", t: ["실무 추천"] }));
+        const reviews = empty ? [] : [...own, ...BOOK_REVIEWS].sort((x, y) => y.l - x.l);
+        const [best, ...others] = reviews;
+        const rest = [...others].sort(REVIEW_SORT[state.reviewSort]);
+        const sortButton = (id, label) => `<button class="text-btn" data-act="review-sort" data-id="${id}" aria-pressed="${id === state.reviewSort}">${label}</button>`;
+        const who = (v, isBest = false) => `<div class="rv-who">${avatar(v.u, 36)}<div><strong>${esc(v.u)}${isBest && v.l > 0 ? `<span class="badge on">베스트 리뷰</span>` : ""}</strong><small>${v.d}<span class="rating">${icon("star", "h-3")}<span class="sr">별점 </span>${v.r.toFixed(1)}</span></small></div>${like(v.l)}</div>`;
+        const shares = [0.58, 0.27, 0.1, 0.03, 0.02];
+        const hist = shares.map((s, i) => `<div><span>${5 - i}</span><i style="width:${s * 100}%" title="${Math.round(b.n * s)}개"></i></div>`).join("");
+        const recommended = allBooks().filter((x) => x.key !== key).slice(0, 8);
+        return shell("book", `<div class="band"><div class="wrap book-hero">
+            ${homeCover(b, { loading: "eager" })}
+            <div>
+              <h1>${esc(b.t)}</h1>
+              <p class="meta" style="margin-top:12px">${esc(b.a)} 지음, ${esc(publisher)}, ${year}년</p>
+              <p class="desc">${esc(desc)}</p>
+              ${tagList(["실무 추천", "다시 읽는 책", "스터디 추천"])}
+              <button class="btn ${wished ? "" : "line"}" data-act="wish" data-key="${key}" aria-pressed="${wished}">${icon(wished ? "bookmark" : "bookmark-outline")}보고 싶어요</button>
+            </div>
+          </div></div>
+          <section class="wrap book-body">
+            <div class="sticky-col">
+              <h2 class="sr">평점</h2>
+              <div class="score">${empty ? "0.0" : b.r.toFixed(1)}</div>
+              <p class="meta" style="margin-top:10px">리뷰 ${empty ? 0 : b.n}개, 조회 ${b.v.toLocaleString()}</p>
+              ${empty ? "" : `<div class="hist" aria-hidden="true">${hist}</div>`}
+              <button class="btn" data-act="write-review" ${empty ? 'style="margin-top:24px"' : ""}>${icon("review")}리뷰 쓰기</button>
+            </div>
+            <div>
+              <h2 class="${empty ? "sr" : ""}" style="margin-bottom:20px">리뷰</h2>
+              ${
+                empty
+                  ? stateMsg("아직 리뷰가 없습니다.", "이 책을 읽었다면 첫 리뷰를 남겨 보세요.")
+                  : `<article class="feature-review">${who(best, true)}<q>${esc(best.q)}</q>${tagList(best.t)}</article>
+                     ${rest.length > 1 ? `<div class="sort" role="group" aria-label="리뷰 정렬">${sortButton("latest", "최신순")}${sortButton("popular", "인기순")}</div>` : ""}
+                     <ul class="rv-list" id="review-list">${rest.map((v) => `<li class="rv-row" data-date="${v.d}">${who(v)}<q>${esc(v.q)}</q>${tagList(v.t)}</li>`).join("")}</ul>`
+              }
+            </div>
+          </section>
+          ${
+            isLogin()
+              ? `<section class="wrap" style="padding-top:0">
+                  <div class="head"><h2>추천 도서</h2><div class="arrows">
+                    <button class="icon-btn" data-act="home-scroll" data-dir="-1" aria-label="이전 도서">${icon("chevron-left")}</button>
+                    <button class="icon-btn" data-act="home-scroll" data-dir="1" aria-label="다음 도서">${icon("chevron-right")}</button>
+                  </div></div>
+                  <div class="track" id="home-track">${recommended.map((x) => `<a href="${homeHref(x)}">${homeCover(x)}<h3>${esc(x.t)}</h3><p class="meta">${esc(x.a)}</p></a>`).join("")}</div>
+                </section>`
+              : ""
+          }`);
+      }
+
+      /* ───────── 내 서재(마이페이지) ───────── */
+      const loginButton = `<a class="btn" href="#" data-act="login">${icon("github")}GitHub 로그인</a>`;
+      function mypageScreen() {
+        if (!isLogin()) return shell("mypage", `<div class="wrap">${stateMsg("로그인이 필요합니다.", "로그인하면 리뷰와 찜한 책을 한곳에서 볼 수 있습니다.", loginButton)}</div>`);
+        if (state.view === "loading")
+          return shell("mypage", `<div class="band"><div class="wrap me" aria-busy="true"><span class="sk" style="width:96px;height:96px;border-radius:999px"></span><div><span class="sk line" style="height:2.4rem;max-width:280px"></span><span class="sk line" style="max-width:160px"></span></div></div></div><div class="wrap">${"<span class='sk line' style='height:96px;margin-top:20px'></span>".repeat(3)}</div>`);
+        const empty = state.view === "empty";
+        const myReviews = empty ? [] : [
+          { b: "ddia", r: 5, l: 214, d: "2026.10.28", q: HOME_REVIEWS[0].q },
+          { b: "ca", r: 4, l: 19, d: "2026.09.15", q: "경계를 어디에 그을지 고민할 때 좋은 기준을 줍니다. 후반부 사례는 조금 오래된 느낌이에요." },
+          { b: "ref", r: 4.5, l: 33, d: "2026.08.22", q: "테스트부터 만드는 첫 장 예제를 따라 하고 나니 작은 단위로 고치는 감각이 생겼습니다." },
+        ];
+        const liked = empty ? [] : [
+          { b: "ej", u: "byte-bori", r: 5, l: 167, q: HOME_REVIEWS[1].q },
+          { b: "apo", u: "yoonseul", r: 4.5, l: 128, q: HOME_REVIEWS[2].q },
+        ];
+        const wishes = empty ? [] : [...state.wished].map((k) => HOME_BOOKS[k]);
+        const coverLink = (b) => `<a href="${homeHref(b)}">${homeCover(b, { size: "M" })}</a>`;
+        const panels = {
+          reviews: () =>
+            myReviews.length
+              ? `<ul class="rv-list">${myReviews.map((v) => {
+                  const b = HOME_BOOKS[v.b];
+                  return `<li class="my-row">${coverLink(b)}<div><h2><a href="${homeHref(b)}">${esc(b.t)}</a></h2><p class="meta">${v.d}<span class="rating">${icon("star", "h-3")}<span class="sr">별점 </span>${v.r.toFixed(1)}</span></p><q>${esc(v.q)}</q></div>
+                    <div class="row-actions"><button class="text-btn" data-act="write-review" data-edit="1">수정</button><button class="text-btn" data-act="confirm" data-msg="리뷰를 삭제하시겠습니까?" data-done="리뷰를 삭제했습니다.">삭제</button></div></li>`;
+                }).join("")}</ul>`
+              : stateMsg("작성한 리뷰가 없습니다.", "읽은 책을 찾아 첫 리뷰를 남겨 보세요.", `<a class="btn" href="#/search">도서 찾기</a>`),
+          liked: () =>
+            liked.length
+              ? `<ul class="rv-list">${liked.map((v) => {
+                  const b = HOME_BOOKS[v.b];
+                  return `<li class="my-row">${coverLink(b)}<div><h2><a href="${homeHref(b)}">${esc(b.t)}</a></h2><p class="meta">${esc(v.u)}<span class="rating">${icon("star", "h-3")}<span class="sr">별점 </span>${v.r.toFixed(1)}</span></p><q>${esc(v.q)}</q></div><div class="row-actions">${like(v.l, true)}</div></li>`;
+                }).join("")}</ul>`
+              : stateMsg("좋아요한 리뷰가 없습니다.", "마음에 드는 리뷰에 좋아요를 눌러 모아 보세요."),
+          wish: () =>
+            wishes.length
+              ? `<div class="book-grid">${wishes.map((b) => `<div class="wish-item"><a href="${homeHref(b)}">${homeCover(b)}<h2>${esc(b.t)}</h2><p class="meta">${esc(b.a)}</p></a><button class="text-btn" data-act="wish" data-key="${b.key}">찜 해제</button></div>`).join("")}</div>`
+              : stateMsg("보고 싶어요에 담은 책이 없습니다.", "관심 있는 책을 담으면 위젯에도 표시됩니다."),
+        };
+        const tabs = [["reviews", "작성한 리뷰"], ["liked", "좋아요한 리뷰"], ["wish", "보고 싶어요"]]
+          .map(([id, label]) => `<button class="tab" role="tab" data-act="my-tab" data-id="${id}" aria-selected="${id === state.myTab}">${label}</button>`)
+          .join("");
+        const snippet = `<img src="https://readthem-lab.example/widget/${ME.id}.svg" alt="내 서재 위젯" />`;
+        return shell("mypage", `<div class="band"><div class="wrap me">
+            ${avatar(ME.id, 96)}
+            <div><h1 class="page-title">${ME.name}의 서재</h1><a class="gh" href="https://github.com/${ME.id}" target="_blank" rel="noreferrer">${icon("github")}${ME.id}</a></div>
+            <dl class="me-stats">
+              <div><dt>작성한 리뷰</dt><dd>${myReviews.length}</dd></div>
+              <div><dt>보고 싶어요</dt><dd>${wishes.length}</dd></div>
+              <div><dt>내 평균 별점</dt><dd>${empty ? "0.0" : ME.avg.toFixed(1)}</dd></div>
+            </dl>
+          </div></div>
+          <section class="wrap" style="padding-block:clamp(40px,5vw,64px)">
+            <div class="tabs" role="tablist">${tabs}</div>
+            <div class="tab-body swap" role="tabpanel">${panels[state.myTab]()}</div>
+          </section>
+          <section class="band"><div class="wrap widget">
+            <div>
+              <h2>GitHub 프로필에 책장 붙이기</h2>
+              <ol class="steps"><li>1. 프로필 저장소의 README.md를 엽니다.</li><li>2. 아래 코드를 복사해 붙여 넣습니다.</li></ol>
+              <div class="code"><code>${esc(snippet)}</code><button class="btn" data-act="copy" data-text="${esc(snippet)}">코드 복사</button></div>
+            </div>
+            <img src="widget-sample.svg" alt="리뷰를 쓰거나 보고 싶어요한 책의 표지가 흐르는 위젯 예시">
+          </div></section>
+          <div class="wrap account"><button class="text-btn" data-act="confirm" data-msg="정말 탈퇴하시겠습니까? 되돌릴 수 없습니다." data-done="회원 탈퇴가 완료되었습니다.">회원 탈퇴</button></div>`);
+      }
+
+      /* ───────── 관리자 ───────── */
+      function adminScreen() {
+        if (state.auth === "guest")
+          return shell("admin", `<div class="wrap gate"><h1 class="page-title">관리자 로그인</h1>
+            <form data-form="admin-login">
+              <label class="field">아이디<input name="username" required maxlength="30" autocomplete="username"></label>
+              <label class="field">비밀번호<input name="password" type="password" required maxlength="30" autocomplete="current-password"></label>
+              <button class="btn">로그인</button>
+            </form></div>`);
+        if (state.auth === "member") return shell("admin", `<div class="wrap">${stateMsg("관리자 권한이 없는 계정입니다.", "관리자 계정으로 다시 로그인해 주세요.", `<a class="btn line" href="#/">홈으로</a>`)}</div>`);
+        const empty = state.view === "empty";
+        const delBtn = (msg, done, label = "삭제") => `<button class="text-btn" data-act="confirm" data-msg="${msg}" data-done="${done}">${label}</button>`;
+        const table = (head, rows) => `<div class="table-wrap"><table><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table></div>`;
+        const panels = {
+          members: () =>
+            empty ? stateMsg("회원이 없습니다.", "") :
+            table(`<th class="num">ID</th><th>아이디</th><th>닉네임</th><th>GitHub</th><th>권한</th><th>상태</th><th>가입일</th><th></th>`,
+              MEMBERS.map(([id, username, nick, gh, admin, gone, date]) => `<tr><td class="num">${id}</td><td class="nowrap">${esc(username)}</td><td class="nowrap">${esc(nick)}</td><td class="nowrap">${esc(gh)}</td><td><span class="badge ${admin ? "on" : ""}">${admin ? "관리자" : "일반"}</span></td><td class="nowrap">${gone ? "탈퇴" : "정상"}</td><td class="nowrap">${date}</td><td class="fit">${gone || admin ? "" : delBtn("이 회원을 강제 탈퇴시키겠습니까?", "회원을 강제 탈퇴시켰습니다.", "강제 탈퇴")}</td></tr>`).join("")),
+          books: () =>
+            empty ? stateMsg("도서가 없습니다.", "") :
+            table(`<th>제목</th><th>저자</th><th class="num">평점</th><th class="num">리뷰</th><th class="num">조회</th><th></th>`,
+              allBooks().slice(0, 8).map((b) => `<tr><td><span class="cell-book">${homeCover(b, { size: "S" })}${esc(b.t)}</span></td><td class="nowrap">${esc(b.a)}</td><td class="num">${b.r.toFixed(1)}</td><td class="num">${b.n}</td><td class="num">${b.v.toLocaleString()}</td><td class="fit"><button class="text-btn" data-act="edit-book" data-key="${b.key}">수정</button>${delBtn("이 도서를 삭제하시겠습니까?", "도서를 삭제했습니다.")}</td></tr>`).join("")),
+          reviews: () =>
+            empty ? stateMsg("리뷰가 없습니다.", "") :
+            table(`<th>도서</th><th>작성자</th><th class="num">별점</th><th>내용</th><th class="num">좋아요</th><th></th>`,
+              [...HOME_REVIEWS.map((v) => ({ ...v, b: HOME_BOOKS[v.b] })), { b: HOME_BOOKS.ca, u: null, r: 3, l: 2, q: "기대보다 사례가 적었습니다." }]
+                .map((v) => `<tr><td><span class="cell-book">${homeCover(v.b, { size: "S" })}${esc(v.b.t)}</span></td><td class="nowrap">${v.u ? esc(v.u) : "탈퇴한 사용자"}</td><td class="num">${v.r.toFixed(1)}</td><td class="clip">${esc(v.q)}</td><td class="num">${v.l}</td><td class="fit">${delBtn("이 리뷰를 삭제하시겠습니까?", "리뷰를 삭제했습니다.")}</td></tr>`).join("")),
+        };
+        const tabs = [["members", "회원 관리"], ["books", "도서 관리"], ["reviews", "리뷰 관리"]]
+          .map(([id, label]) => `<button class="tab" role="tab" data-act="admin-tab" data-id="${id}" aria-selected="${id === state.adminTab}">${label}</button>`)
+          .join("");
+        return shell("admin", `<div class="wrap admin"><h1 class="page-title">관리자 페이지</h1>
+          <div class="tabs" role="tablist">${tabs}</div>
+          ${state.view === "loading" ? `<div aria-busy="true" style="margin-top:28px">${"<span class='sk line' style='height:44px'></span>".repeat(6)}</div>` : `<div class="swap" role="tabpanel">${panels[state.adminTab]()}${empty ? "" : `<nav class="pager" aria-label="페이지"><button aria-current="page">1</button><button>2</button><button>3</button></nav>`}</div>`}
+        </div>`);
+      }
+
+      /* ───────── 회원가입(약관) ───────── */
+      const TERMS = [
+        ["서비스 이용약관", "Readthem Lab은 GitHub 계정으로 도서 리뷰를 작성하고 공유하는 서비스입니다. 회원이 작성한 리뷰는 다른 이용자에게 공개되며, 회원은 언제든 내 서재에서 탈퇴할 수 있습니다."],
+        ["개인정보 수집 및 이용", "수집 항목: GitHub 아이디, 닉네임, 프로필 이미지. 이용 목적: 회원 식별, 리뷰 작성자 표시, 내 서재 위젯 제공. 보유 기간: 회원 탈퇴 시까지."],
+      ];
+      function joinScreen() {
+        const items = TERMS.map(([title, body], i) => `<div class="term">
+          <div class="term-head">
+            <label class="check"><input type="checkbox" data-term required>[필수] ${title}</label>
+            <details><summary aria-label="${title} 내용 보기">보기</summary></details>
+          </div>
+          <p class="term-body" id="term-${i}">${body}</p>
+        </div>`).join("");
+        return shell("join", `<div class="hero join-hero">
+          <div class="join-text">
+            <h1>약관에 동의하면<br>바로 시작할 수 있어요</h1>
+            <div class="gh-account">${avatar(ME.id)}<div><strong>${ME.id}</strong><small>GitHub 계정으로 가입합니다</small></div></div>
+            <form class="terms" data-form="join">
+              <label class="check all"><input type="checkbox" id="agree-all">전체 동의</label>
+              ${items}
+              <div class="join-actions">
+                <button class="btn" id="join-submit" disabled>동의하고 시작하기</button>
+                <a class="text-btn" href="#/">취소</a>
+              </div>
+            </form>
+          </div>
+          <div class="join-side"><div class="wall" aria-hidden="true">${coverWall()}</div></div>
+        </div>`);
+      }
+
+      /* ───────── 상단 패널과 라우팅 ───────── */
       const SCREENS = {
         "": ["홈", homeScreen],
-        search: ["검색", searchScreen],
+        search: ["도서 검색", searchScreen],
         book: ["도서 상세", bookScreen],
-        mypage: ["내 서재", mypageScreen],
-        member: ["회원 서재", memberScreen],
+        mypage: ["마이페이지", mypageScreen],
         admin: ["관리자", adminScreen],
-        login: ["로그인", loginScreen],
         join: ["회원가입", joinScreen],
-        error: ["오류", errorScreen],
-        guide: ["디자인 기준", guideScreen],
       };
+      const NEEDS_AUTH = { mypage: "member", admin: "admin" };
       const currentRoute = () => {
         const [path, query] = location.hash.replace(/^#\/?/, "").split("?");
         return { path: SCREENS[path] ? path : "", params: new URLSearchParams(query) };
       };
-      function renderDocBar(path) {
-        document.getElementById("doc-bar").innerHTML = `<strong>디자인 가이드</strong>
-          ${Object.entries(SCREENS)
-            .map(([key, [label]]) => {
-              const href = key === "book" ? bookHref(2) : `#/${key}`;
-              return `<a href="${href}" ${key === path ? 'class="theme-tab-active" aria-current="page"' : ""}>${label}</a>`;
-            })
-            .join("")}
-          <label class="ml-auto">로그인 상태
-            <select data-auth-select aria-label="로그인 상태">
-              ${[["guest", "비로그인"], ["member", "회원"], ["admin", "관리자"]].map(([value, label]) => `<option value="${value}" ${state.auth === value ? "selected" : ""}>${label}</option>`).join("")}
-            </select>
-          </label>`;
+      function devBar(path) {
+        const options = (list, value) => list.map(([v, label]) => `<option value="${v}" ${v === value ? "selected" : ""}>${label}</option>`).join("");
+        const noStates = path === "" || path === "join";
+        return `<nav class="dev-bar" aria-label="디자인 시안 화면 목록">
+          <strong>디자인 시안</strong>
+          ${Object.entries(SCREENS).map(([key, [label]]) => `<a href="#/${key}" data-need="${NEEDS_AUTH[key] ?? ""}" ${key === path ? 'aria-current="page"' : ""}>${label}</a>`).join("")}
+          <div class="dev-end">
+            ${noStates ? "" : `<label>화면 상태<select data-panel="view">${options([["default", "기본"], ["empty", "비어 있음"], ["loading", "로딩"]], state.view)}</select></label>`}
+            <label>로그인<select data-panel="auth">${options([["guest", "비로그인"], ["member", "회원"], ["admin", "관리자"]], state.auth)}</select></label>
+          </div>
+        </nav>`;
       }
       function render() {
         const { path, params } = currentRoute();
-        if (path === "mypage" && !isLogin()) state.auth = "member"; // 실제 화면은 비로그인이면 이동시키므로, 문서에서는 회원으로 전환해 보여 준다
-        renderDocBar(path);
-        renderHeader();
-        document.getElementById("screen").innerHTML = SCREENS[path][1](params);
+        $("#app").innerHTML = `${devBar(path)}${SCREENS[path][1](params)}<dialog id="dlg"></dialog><div class="toast" id="toast" role="status" aria-live="polite"></div>`;
+        if (path === "") {
+          initHome();
+          const target = params.get("to");
+          if (target) document.getElementById(target)?.scrollIntoView();
+        }
       }
 
-      /* ───────── 이벤트 ───────── */
-      function setAuth(auth) {
-        state.auth = auth;
-        render();
+      /* ───────── 대화상자와 이벤트 ───────── */
+      let toastTimer;
+      function showToast(message) {
+        const toast = $("#toast");
+        toast.textContent = message;
+        toast.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove("show"), 2200);
       }
+      function openDialog(html) {
+        const dialog = $("#dlg");
+        dialog.innerHTML = `<div class="dlg">${html}</div>`;
+        dialog.showModal();
+      }
+      const dialogActions = (label) => `<div class="dlg-actions"><button type="button" class="btn line" data-act="close">취소</button><button class="btn">${label}</button></div>`;
+      const askLogin = () => openDialog(`<h2>로그인이 필요합니다</h2><p>GitHub 계정으로 로그인하면 리뷰를 쓰고 책을 찜할 수 있습니다.</p><div class="dlg-actions"><button type="button" class="btn line" data-act="close">닫기</button>${loginButton}</div>`);
+
       const ACTIONS = {
-        noop() {},
+        "home-tab"(el) {
+          state.homeTab = el.textContent;
+          document.querySelectorAll(".home-a .tab").forEach((tab) => tab.setAttribute("aria-selected", tab === el));
+          $("#home-panel").innerHTML = homeRankPanel(state.homeTab);
+        },
+        "home-top"() { window.scrollTo({ top: 0, behavior: "smooth" }); },
+        "home-jump"(el) { document.getElementById(el.dataset.target).scrollIntoView({ behavior: "smooth" }); },
+        "home-scroll"(el) { $("#home-track").scrollBy({ left: Number(el.dataset.dir) * 400, behavior: "smooth" }); },
         theme() {
           const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
           document.documentElement.dataset.theme = next;
-          try {
-            localStorage.setItem("readthem-theme", next);
-          } catch {}
-          document.querySelectorAll("svg[data-rough]").forEach(draw);
+          try { localStorage.setItem("readthem-theme", next); } catch {}
         },
-        login() {
-          closeModal();
-          setAuth("member");
-          showToast("GitHub 로그인 후의 화면입니다.");
-        },
-        logout() {
-          setAuth("guest");
-          showToast("로그아웃되었습니다.");
-          if (currentRoute().path === "mypage") location.hash = "#/";
-        },
-        withdraw() {
-          if (!confirm("정말 탈퇴하시겠습니까? 되돌릴 수 없습니다.")) return;
-          setAuth("guest");
-          showToast("회원 탈퇴가 완료되었습니다.");
-          location.hash = "#/";
-        },
-        "search-open"() {
-          state.searchOpen = true;
-          renderHeader();
-          document.querySelector('[data-search-form] input').focus();
-        },
-        carousel(el) {
-          const next = el.parentElement.parentElement.nextElementSibling;
-          const list = next.matches("ul") ? next : next.querySelector("ul");
-          const items = list.querySelectorAll("[data-carousel-item]");
-          const distance = items[1].offsetLeft - items[0].offsetLeft;
-          const step =
-            list.dataset.step === "latest"
-              ? matchMedia("(min-width: 640px)").matches ? 3 : 1
-              : list.dataset.step === "review" && distance * 2 > list.clientWidth ? 1 : 2;
-          const max = list.scrollWidth - list.clientWidth;
-          list.scrollTo({ left: Math.min(max, Math.max(0, list.scrollLeft + distance * step * Number(el.dataset.dir))), behavior: "smooth" });
+        login() { $("#dlg").open && $("#dlg").close(); location.hash = "#/join"; },
+        logout() { state.auth = "guest"; render(); showToast("로그아웃되었습니다."); },
+        like(el) {
+          if (!isLogin()) return askLogin();
+          const liked = el.getAttribute("aria-pressed") !== "true";
+          const count = Number(el.querySelector("span").textContent) + (liked ? 1 : -1);
+          el.outerHTML = like(count, liked);
         },
         wish(el) {
-          if (!isLogin()) return openModal(loginModal());
-          const id = Number(el.dataset.id);
-          const wished = !state.wished.has(id);
-          wished ? state.wished.add(id) : state.wished.delete(id);
-          showToast(wished ? "보고 싶어요에 추가했습니다." : "보고 싶어요를 취소했습니다.");
-          el.outerHTML = wishButton(bookOf(id), wished);
+          if (!isLogin()) return askLogin();
+          const { key } = el.dataset;
+          state.wished.has(key) ? state.wished.delete(key) : state.wished.add(key);
+          render();
+          showToast(state.wished.has(key) ? "보고 싶어요에 담았습니다." : "보고 싶어요를 취소했습니다.");
         },
-        like(el) {
-          if (!isLogin()) return openModal(loginModal());
-          const review = REVIEWS.find((r) => r.id === Number(el.dataset.id));
-          review.liked = !review.liked;
-          review.likes += review.liked ? 1 : -1;
-          showToast(review.liked ? "좋아요를 눌렀습니다." : "좋아요를 취소했습니다.");
-          el.outerHTML = likeButton(review);
+        "review-sort"(el) {
+          // 다시 그리지 않고 행만 옮겨 좋아요 상태를 유지한다
+          state.reviewSort = el.dataset.id;
+          document.querySelectorAll("[data-act=review-sort]").forEach((b) => b.setAttribute("aria-pressed", b === el));
+          const list = $("#review-list");
+          const row = (li) => ({ li, d: li.dataset.date, l: Number(li.querySelector(".like span").textContent) });
+          [...list.children].map(row).sort(REVIEW_SORT[state.reviewSort]).forEach(({ li }) => list.append(li));
+        },
+        "my-tab"(el) { state.myTab = el.dataset.id; render(); },
+        "admin-tab"(el) { state.adminTab = el.dataset.id; render(); },
+        close() { $("#dlg").close(); },
+        copy(el) {
+          navigator.clipboard?.writeText(el.dataset.text).catch(() => {});
+          el.textContent = "복사 완료";
+          setTimeout(() => (el.textContent = "코드 복사"), 1600);
+        },
+        confirm(el) {
+          openDialog(`<form data-form="done" data-done="${esc(el.dataset.done)}"><h2>${esc(el.dataset.msg)}</h2>${dialogActions("확인")}</form>`);
         },
         "write-review"(el) {
-          if (!isLogin() && !("force" in el.dataset)) return openModal(loginModal());
-          openModal(reviewModal({ title: "리뷰 작성", submitLabel: "리뷰 작성", bookId: el.dataset.bookId }));
+          if (!isLogin()) return askLogin();
+          const edit = !!el.dataset.edit;
+          openDialog(`<form data-form="done" data-done="${edit ? "리뷰를 수정했습니다." : "리뷰를 등록했습니다."}" class="dlg" style="padding:0">
+            <h2>${edit ? "리뷰 수정" : "리뷰 쓰기"}</h2>
+            <label class="field"><span class="field-head">별점<output id="rating-out">4.5</output></span><input type="range" min="0.5" max="5" step="0.5" value="4.5" data-rating></label>
+            <label class="field"><span class="field-head">리뷰<small><span id="count-out">0</span>/500</small></span><textarea required maxlength="500" data-count></textarea></label>
+            <label class="field">태그<input maxlength="100" aria-describedby="tag-help"><small id="tag-help">쉼표로 구분해 입력합니다.</small></label>
+            ${dialogActions(edit ? "수정 완료" : "등록")}
+          </form>`);
         },
-        "edit-review"(el) {
-          const review = REVIEWS.find((r) => r.id === Number(el.dataset.id));
-          openModal(reviewModal({ title: "리뷰 수정", submitLabel: currentRoute().path === "mypage" ? "수정 완료" : "리뷰 수정", review }));
-        },
-        "delete-review"(el) {
-          if (!confirm("리뷰를 삭제하시겠습니까?")) return;
-          REVIEWS = REVIEWS.filter((r) => r.id !== Number(el.dataset.id));
-          showToast("리뷰를 삭제했습니다.");
-          render();
-        },
-        "remove-wish"(el) {
-          WISHES = WISHES.filter((b) => b.id !== Number(el.dataset.id));
-          showToast("보고 싶어요를 취소했습니다.");
-          render();
-        },
-        "mypage-tab"(el) {
-          state.mypageTab = el.dataset.tab;
-          render();
-        },
-        "admin-tab"(el) {
-          state.adminTab = el.dataset.tab;
-          render();
-        },
-        "admin-edit"(el) {
-          state.adminEditId = Number(el.dataset.id) || null;
-          render();
-        },
-        "login-modal"() {
-          openModal(loginModal());
-        },
-        "modal-close": closeModal,
-        "widget-step"(el) {
-          openModal(widgetGuideModal(Number(el.dataset.step)));
-        },
-        "copy-widget"() {
-          navigator.clipboard?.writeText(widgetCode).catch(() => {});
-          const labels = () => document.querySelectorAll("[data-copy-label]");
-          labels().forEach((label) => (label.textContent = "복사 완료"));
-          setTimeout(() => labels().forEach((label) => (label.textContent = "코드 복사")), 2000);
-        },
-        "rating-clear"(el) {
-          setRating(el.closest("[data-rating-root]"), 0);
-        },
-        toast(el) {
-          showToast(el.dataset.msg);
-        },
-        back() {
-          history.back();
+        "edit-book"(el) {
+          const b = HOME_BOOKS[el.dataset.key];
+          const [publisher, , desc] = BOOK_META[b.key];
+          const field = (label, value) => `<label class="field">${label}<input value="${esc(value)}"></label>`;
+          openDialog(`<form data-form="done" data-done="도서 정보를 수정했습니다." class="dlg" style="padding:0">
+            <h2>도서 수정</h2>
+            ${field("제목", b.t)}
+            <label class="field">설명<textarea>${esc(desc)}</textarea></label>
+            ${field("저자 (쉼표로 구분)", b.a)}
+            ${field("출판사", publisher)}
+            ${field("표지 이미지 URL", `https://covers.openlibrary.org/b/isbn/${b.i}-L.jpg`)}
+            ${dialogActions("저장")}
+          </form>`);
         },
       };
 
       document.addEventListener("click", (e) => {
+        const need = e.target.closest("[data-need]");
+        if (need?.dataset.need && !isLogin()) state.auth = need.dataset.need;
+        if (need?.dataset.need === "admin") state.auth = "admin";
+        if (e.target.id === "dlg") return e.target.close();
         const el = e.target.closest("[data-act]");
         if (!el) return;
-        if (el.tagName === "A") e.preventDefault();
+        if (el.matches("a[href='#']")) e.preventDefault();
         ACTIONS[el.dataset.act](el);
       });
+      document.addEventListener("submit", (e) => {
+        const form = e.target;
+        e.preventDefault();
+        if (form.matches("[data-search-form]")) {
+          const term = form.querySelector("input").value.trim();
+          state.searchTerm = term;
+          location.hash = `#/search?term=${encodeURIComponent(term)}`;
+        } else if (form.dataset.form === "admin-login") {
+          state.auth = "admin";
+          render();
+        } else if (form.dataset.form === "join") {
+          state.auth = "member";
+          location.hash = "#/";
+          showToast("가입이 완료되었습니다.");
+        } else {
+          $("#dlg").close();
+          showToast(form.dataset.done);
+        }
+      });
       document.addEventListener("change", (e) => {
-        if (e.target.matches("[data-auth-select]")) setAuth(e.target.value);
+        const panel = e.target.dataset.panel;
+        if (panel) {
+          state[panel] = e.target.value;
+          return render();
+        }
+        const all = $("#agree-all");
+        if (!all) return;
+        const terms = [...document.querySelectorAll("[data-term]")];
+        if (e.target === all) terms.forEach((t) => (t.checked = all.checked));
+        all.checked = terms.every((t) => t.checked);
+        $("#join-submit").disabled = !all.checked;
       });
       document.addEventListener("input", (e) => {
-        if (e.target.closest("[data-search-form]")) state.searchTerm = e.target.value;
+        if (e.target.matches("[data-rating]")) $("#rating-out").textContent = Number(e.target.value).toFixed(1);
+        if (e.target.matches("[data-count]")) $("#count-out").textContent = e.target.value.length;
       });
-      document.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const form = e.target;
-        if (form.matches("[data-search-form]")) {
-          const term = state.searchTerm.trim();
-          if (term.length < 2) return showToast("검색어는 2글자 이상 입력해주세요.");
-          state.searchOpen = false;
-          location.hash = `#/search?term=${encodeURIComponent(term)}`;
-        } else if (form.matches("[data-review-form]")) {
-          const value = Number(form.querySelector("[data-rating-root]").dataset.value);
-          if (value === 0) return showToast("평점을 선택해주세요.");
-          const fields = {
-            rating: value / 2,
-            content: form.elements.content.value.trim(),
-            tags: form.elements.tags.value.split(",").map((t) => t.trim()).filter(Boolean),
-          };
-          const review = REVIEWS.find((r) => r.id === Number(form.dataset.id));
-          if (review) Object.assign(review, fields);
-          else REVIEWS.unshift({ id: Date.now(), bookId: Number(form.dataset.bookId), reviewer: ME, likes: 0, liked: false, at: "2026-11-04 12:00", ...fields });
-          showToast(review ? "리뷰를 수정했습니다." : "리뷰를 작성했습니다.");
-          closeModal();
-          render();
-        } else if (form.matches("[data-admin-book-form]")) {
-          state.adminEditId = null;
-          showToast("도서 정보를 수정했습니다.");
-          render();
-        } else if (form.matches("[data-admin-login]")) {
-          setAuth("admin");
-        } else if (form.matches("[data-account-form]")) {
-          setAuth("member");
-          location.hash = "#/";
-        }
-      });
-      // 모바일 검색: 포커스를 잃으면 접고, 제출 버튼은 포커스를 잃기 전에 제출한다
-      document.addEventListener("focusout", (e) => {
-        const form = e.target.closest?.("[data-search-form]");
-        if (!form || !state.searchOpen || form.contains(e.relatedTarget) || !matchMedia("(max-width: 639px)").matches) return;
-        state.searchOpen = false;
-        renderHeader();
-      });
-      document.addEventListener("pointerdown", (e) => {
-        const submit = e.target.closest?.(".search-submit-button");
-        if (submit && matchMedia("(max-width: 639px)").matches) {
-          e.preventDefault();
-          submit.form.requestSubmit();
-          return;
-        }
-        const wrap = e.target.closest?.(".rough-rating-input-wrap");
-        if (!wrap) return;
-        e.preventDefault();
-        wrap.dataset.dragging = "";
-        setRating(wrap.closest("[data-rating-root]"), ratingFromPointer(wrap, e.clientX));
-      });
-      document.addEventListener("pointermove", (e) => {
-        const wrap = e.target.closest?.(".rough-rating-input-wrap[data-dragging]");
-        if (wrap) setRating(wrap.closest("[data-rating-root]"), ratingFromPointer(wrap, e.clientX));
-      });
-      document.addEventListener("pointerup", () => {
-        document.querySelectorAll("[data-dragging]").forEach((wrap) => delete wrap.dataset.dragging);
-      });
-      document.addEventListener("keydown", (e) => {
-        const wrap = e.target.closest?.(".rough-rating-input-wrap");
-        if (!wrap) return;
-        const root = wrap.closest("[data-rating-root]");
-        const value = Number(root.dataset.value);
-        if (e.key === "ArrowRight" || e.key === "ArrowUp") setRating(root, Math.min(10, value + 1));
-        else if (e.key === "ArrowLeft" || e.key === "ArrowDown") setRating(root, Math.max(0, value - 1));
-        else if (e.key === "Backspace" || e.key === "Delete") setRating(root, 0);
-        else return;
-        e.preventDefault();
-      });
-      document.addEventListener("focusin", (e) => {
-        if (e.target.matches?.("input[readonly]")) e.target.select();
-      });
-      addEventListener("hashchange", () => {
-        closeModal();
+      window.addEventListener("hashchange", () => {
         render();
-        scrollTo(0, 0);
+        if (!location.hash.includes("to=")) window.scrollTo(0, 0);
       });
       render();
     </script>

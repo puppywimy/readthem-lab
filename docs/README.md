@@ -8,7 +8,7 @@
 docs
 ├── README.md                - docs 소개와 구조입니다.
 ├── api.md                   - API 명세입니다.
-├── conventions.md           - 커밋 메시지, 개발 프로세스, 브랜치 규칙입니다.
+├── conventions.md           - 커밋 메시지, 개발 프로세스, 브랜치, 이슈·PR 제목 규칙입니다.
 ├── design
 │   ├── README.md            - 디자인 가이드라인 안내입니다.
 │   ├── index.html           - 현재 화면을 옮긴 디자인 가이드라인입니다.
