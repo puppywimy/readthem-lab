@@ -1,0 +1,2566 @@
+<!doctype html>
+<!--
+  READTHEM.md 디자인 가이드라인
+
+  - 현재 front/ 의 화면을 API 없이 그대로 보여 주는 정적 프로토타입입니다.
+  - 아래 <style type="text/tailwindcss"> 는 front/src/app/globals.css 의 복사본입니다. (첫 줄 @import 만 제외)
+  - 마크업과 className 은 front/src/app 의 컴포넌트에서 그대로 옮겼습니다.
+  - 도서·리뷰·회원은 샘플 데이터이고, 표지는 실제 표지 대신 만든 임시 이미지입니다.
+-->
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>READTHEM.md 디자인 가이드</title>
+    <meta name="description" content="개발자의 도서 리뷰 공유 플랫폼 READTHEM.md의 현재 디자인" />
+    <script>
+      // layout.tsx 의 themeScript 와 동일
+      (() => {
+        try {
+          const storedTheme = window.localStorage.getItem("readthem-theme");
+          const theme =
+            storedTheme === "light" || storedTheme === "dark"
+              ? storedTheme
+              : window.matchMedia("(prefers-color-scheme: dark)").matches
+                ? "dark"
+                : "light";
+          document.documentElement.dataset.theme = theme;
+        } catch {
+          document.documentElement.dataset.theme = "light";
+        }
+      })();
+    </script>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2032%2032%22%3E%20%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%228%22%20fill%3D%22%23fffaf0%22/%3E%20%3Cpath%20d%3D%22M16%209.5c-2.8-1.7-6.6-2.2-9.5-1.2v15c2.9-1%206.7-.5%209.5%201.2%202.8-1.7%206.6-2.2%209.5-1.2v-15c-2.9-1-6.7-.5-9.5%201.2z%22%20fill%3D%22%230f766e%22%20stroke%3D%22%2317202a%22%20stroke-width%3D%221.5%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22/%3E%20%3Cpath%20d%3D%22M16%209.5v15.2%22%20stroke%3D%22%23fffaf0%22%20stroke-width%3D%221.1%22%20stroke-linecap%3D%22round%22/%3E%20%3Cpath%20d%3D%22M25%207.3l1.05%202.3%202.3%201.05-2.3%201.05-1.05%202.3-1.05-2.3-2.3-1.05%202.3-1.05z%22%20fill%3D%22%23facc15%22%20stroke%3D%22%2317202a%22%20stroke-width%3D%220.7%22%20stroke-linejoin%3D%22round%22/%3E%20%3C/svg%3E" />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/roughjs@4.6.6/bundled/rough.js"></script>
+    <style type="text/tailwindcss">
+/* 주의: 이 style 안에 at-import 문자열을 쓰면 @tailwindcss/browser 가 기본 Tailwind 를 넣지 않습니다. globals.css 의 첫 줄도 그래서 뺐습니다. */
+
+@font-face {
+  font-family: "GangwonEducationModuche";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2201-2@1.0/GangwonEdu_OTFLightA.woff")
+    format("woff");
+  font-weight: 300;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "GangwonEducationModuche";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2201-2@1.0/GangwonEdu_OTFLightA.woff")
+    format("woff");
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "GangwonEducationModuche";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2201-2@1.0/GangwonEdu_OTFBoldA.woff")
+    format("woff");
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "GangwonEducationModuche";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2201-2@1.0/GangwonEdu_OTFBoldA.woff")
+    format("woff");
+  font-weight: 600;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "GangwonEducationModuche";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2201-2@1.0/GangwonEdu_OTFBoldA.woff")
+    format("woff");
+  font-weight: 700;
+  font-display: swap;
+}
+
+:root {
+  --background: #fffaf0;
+  --foreground: #1f2933;
+  --line: #17202a;
+  --surface: #fffdf7;
+  --surface-card: #ffffff;
+  --surface-soft: #fff5d9;
+  --surface-muted: #eef8f4;
+  --surface-transparent: transparent;
+  --surface-muted-hover: #dff3eb;
+  --surface-hover: #e8f6ff;
+  --header-background: rgb(255 253 247 / 0.82);
+  --footer-background: #eef8f4;
+  --accent: #0f766e;
+  --accent-soft: #ccfbf1;
+  --accent-warm: #facc15;
+  --title-tape-yellow: rgb(250 204 21 / 0.42);
+  --title-tape-mint: rgb(45 212 191 / 0.28);
+  --title-tape-peach: rgb(251 146 60 / 0.28);
+  --title-highlight: var(--title-tape-yellow);
+  --book-skeleton: #f7f2e8;
+  --book-skeleton-active: #efe4ce;
+}
+
+:root[data-theme="dark"] {
+  --background: #171b22;
+  --foreground: #f4f1ea;
+  --line: #f4f1ea;
+  --surface: #1f2630;
+  --surface-card: #242d38;
+  --surface-soft: #121720;
+  --surface-muted: #263241;
+  --surface-transparent: transparent;
+  --surface-muted-hover: #314154;
+  --surface-hover: #2e4054;
+  --header-background: rgb(31 38 48 / 0.9);
+  --footer-background: #121720;
+  --accent: #5eead4;
+  --accent-soft: #134e4a;
+  --accent-warm: #fde68a;
+  --title-tape-yellow: rgb(59 130 246 / 0.34);
+  --title-tape-mint: rgb(45 110 101 / 0.48);
+  --title-tape-peach: rgb(139 88 61 / 0.46);
+  --title-highlight: var(--title-tape-yellow);
+  --book-skeleton: #202832;
+  --book-skeleton-active: #2a3542;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans:
+    "GangwonEducationModuche", "Apple SD Gothic Neo", "Malgun Gothic", Arial,
+    Helvetica, sans-serif;
+  --text-xs: 0.8125rem;
+  --text-sm: 0.9375rem;
+  --text-base: 1.0625rem;
+  --text-lg: 1.1875rem;
+  --text-xl: 1.3125rem;
+  --text-2xl: 1.5625rem;
+  --text-3xl: 1.9375rem;
+}
+
+html,
+body,
+button,
+input,
+textarea,
+select {
+  font-family:
+    "GangwonEducationModuche", "Apple SD Gothic Neo", "Malgun Gothic", Arial,
+    Helvetica, sans-serif;
+}
+
+body {
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--accent-soft) 30%, transparent),
+      transparent 18rem
+    ),
+    var(--background);
+  color: var(--foreground);
+  font-size: 1.0625rem;
+  overflow-x: clip;
+}
+
+:root[data-theme="dark"] body {
+  background: var(--background);
+}
+
+h1,
+h2 {
+  display: inline-block;
+  position: relative;
+  z-index: 0;
+  width: fit-content;
+  max-width: 100%;
+}
+
+h1 {
+  --title-tape: var(--title-tape-yellow);
+}
+
+h2 {
+  --title-tape: var(--title-tape-mint);
+}
+
+.main-section-heading {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  align-items: center;
+  gap: 0.375rem;
+  white-space: nowrap;
+}
+
+.main-section-heading svg {
+  display: inline-block;
+  flex: 0 0 auto;
+}
+
+h1::before,
+h2::before {
+  position: absolute;
+  inset: 0.06em -0.18em 0.04em;
+  z-index: -1;
+  display: block;
+  border-radius: 0.08em;
+  background: var(--title-tape);
+  clip-path: polygon(1.5% 7%, 98.5% 0, 100% 88%, 0 100%);
+  content: "";
+  opacity: 0.82;
+  transform: rotate(-0.45deg);
+  transform-origin: center;
+}
+
+a,
+button,
+input,
+textarea {
+  transition: transform 160ms ease;
+}
+
+a:hover {
+  transform: translateY(-1px);
+}
+
+button:hover {
+  transform: none;
+}
+
+.theme-site-header {
+  position: relative;
+  z-index: 60;
+  isolation: isolate;
+  background: var(--header-background);
+  backdrop-filter: blur(10px);
+}
+
+.theme-site-footer {
+  position: relative;
+  z-index: 60;
+  isolation: isolate;
+  background: var(--footer-background);
+}
+
+.theme-rough-divider-bar {
+  position: relative;
+  left: 50%;
+  z-index: 100;
+  height: 12px;
+  width: 100vw;
+  flex: 0 0 12px;
+  overflow: visible;
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+
+.theme-rough-divider-bar svg {
+  position: relative;
+  z-index: 100;
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+.sketch-shell {
+  position: relative;
+  border: 1px solid color-mix(in srgb, var(--line) 22%, transparent);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.sketch-card {
+  position: relative;
+  border: 1px solid color-mix(in srgb, var(--line) 18%, transparent);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.sketch-panel {
+  position: relative;
+  border: 1px solid color-mix(in srgb, var(--line) 18%, transparent);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.sketch-input {
+  border: 1px solid color-mix(in srgb, var(--line) 28%, transparent);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.sketch-input:focus {
+  outline: none;
+  border-color: var(--line);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--line) 8%, transparent);
+}
+
+.sketch-button {
+  position: relative;
+  border: 1px solid color-mix(in srgb, var(--line) 28%, transparent);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.sketch-button:hover {
+  background: var(--surface-hover);
+}
+
+.sketch-dashed {
+  border-style: dashed;
+}
+
+.rough-overlay {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.ink-muted {
+  color: rgb(107 114 128);
+}
+
+.book-cover-placeholder {
+  background: var(--surface-muted);
+}
+
+.rough-border {
+  position: relative;
+  border-radius: 8px;
+}
+
+.rough-border > .rough-overlay {
+  inset: -2px;
+}
+
+.rough-input-border {
+  position: relative;
+  display: block;
+  box-sizing: border-box;
+  height: 34px;
+  width: 100%;
+  border: 0;
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.rough-input-border > .rough-overlay {
+  inset: 0;
+}
+
+.rough-input-paper {
+  background: var(--surface-soft);
+}
+
+.rough-input-history {
+  background: #e0f7ff;
+}
+
+.rough-input-wish {
+  background: #fff0f4;
+}
+
+.rough-input-sm {
+  height: 30px;
+}
+
+.rough-search-button {
+  position: relative;
+  box-sizing: border-box;
+  height: 34px;
+  min-width: 48px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--surface);
+  padding: 0 0.5rem;
+  font-size: 0.875rem;
+}
+
+.rough-search-button:hover {
+  background: var(--surface-hover);
+}
+
+.rough-search-button-frame {
+  position: absolute;
+  inset: 0;
+  display: block;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.rough-search-button-frame > .rough-overlay {
+  inset: 0;
+}
+
+.rough-github-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--surface);
+  padding: 0.35rem 0.5rem;
+  white-space: nowrap;
+}
+
+.rough-github-link:hover {
+  background: var(--surface-hover);
+}
+
+.rough-github-link:focus-visible {
+  outline: 2px solid rgb(31 35 40 / 0.35);
+  outline-offset: 2px;
+}
+
+.rough-github-link-framed {
+  border: 1px solid color-mix(in srgb, var(--line) 45%, transparent);
+  background: color-mix(in srgb, var(--surface) 88%, #ffffff);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.65),
+    0 1px 0 rgb(17 24 39 / 0.05);
+  padding: 0.45rem 0.9rem;
+  min-height: 2.25rem;
+}
+
+.rough-github-link-framed:hover {
+  background: color-mix(in srgb, var(--surface-hover) 82%, #ffffff);
+}
+
+.rough-github-image {
+  display: block;
+  width: 88px;
+  height: 34px;
+  object-fit: contain;
+}
+
+.rough-github-button-icon {
+  display: block;
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+.auth-action-enter {
+  animation: auth-action-fade-in 180ms ease-out;
+}
+
+@keyframes auth-action-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+:root[data-theme="dark"] .rough-github-image {
+  filter: brightness(0) invert(1);
+}
+
+:root[data-theme="dark"] .rough-github-inline-image {
+  filter: brightness(0) invert(1);
+}
+
+.rough-github-inline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  line-height: 1;
+  opacity: 0.75;
+  transform: translateY(0);
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
+}
+
+.rough-github-inline:hover {
+  opacity: 1;
+  transform: translateY(-3px);
+}
+
+.rough-github-inline-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  vertical-align: middle;
+}
+
+.rough-input-compact {
+  width: 5rem;
+  flex: none;
+}
+
+.rough-textarea-border {
+  position: relative;
+  display: block;
+  min-height: 58px;
+  width: 100%;
+  border: 0;
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.rough-textarea-border > .rough-overlay {
+  inset: 0;
+}
+
+.rough-divider {
+  position: relative;
+  height: 10px;
+  width: calc(100% + 12px);
+  margin-left: -6px;
+}
+
+.rough-book-card {
+  position: relative;
+  overflow: hidden;
+  border: 0;
+  border-radius: 12px;
+  background: var(--surface-card);
+  box-shadow:
+    0 1px 4px rgb(15 118 110 / 0.06),
+    0 10px 20px rgb(15 118 110 / 0.1);
+  transition:
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+:root[data-theme="dark"] .rough-book-card {
+  box-shadow:
+    0 1px 5px rgb(0 0 0 / 0.18),
+    0 10px 22px rgb(0 0 0 / 0.28);
+}
+
+.book-link,
+.book-link:hover {
+  transform: none;
+}
+
+.book-link .book-title,
+.book-link .book-rating,
+.book-link:hover .book-title,
+.book-link:hover .book-rating {
+  color: inherit;
+  transform: none;
+  transition: none;
+}
+
+.rough-book-card:hover {
+  box-shadow:
+    0 4px 10px rgb(15 118 110 / 0.12),
+    0 16px 28px rgb(15 118 110 / 0.18);
+  transform: translateY(-3px);
+}
+
+.rough-book-card.review-book-thumbnail:hover {
+  box-shadow:
+    0 1px 4px rgb(15 118 110 / 0.06),
+    0 10px 20px rgb(15 118 110 / 0.1);
+  transform: none;
+}
+
+:root[data-theme="dark"] .rough-book-card:hover {
+  box-shadow:
+    0 4px 12px rgb(0 0 0 / 0.24),
+    0 16px 30px rgb(0 0 0 / 0.34);
+}
+
+:root[data-theme="dark"] .rough-book-card.review-book-thumbnail:hover {
+  box-shadow:
+    0 1px 5px rgb(0 0 0 / 0.18),
+    0 10px 22px rgb(0 0 0 / 0.28);
+}
+
+.book-scroll-fade {
+  --book-scroll-gutter: 0px;
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+.book-scroll-fade::before,
+.book-scroll-fade::after {
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 30;
+  width: 0.35rem;
+  content: "";
+}
+
+.book-scroll-fade::before {
+  left: 0;
+  background: linear-gradient(to right, var(--background), transparent);
+}
+
+.book-scroll-fade::after {
+  right: 0;
+  background: linear-gradient(to left, var(--background), transparent);
+}
+
+.book-scroll-list {
+  padding-right: var(--book-scroll-gutter);
+  padding-left: var(--book-scroll-gutter);
+  scrollbar-width: none;
+}
+
+.book-scroll-list::-webkit-scrollbar {
+  display: none;
+}
+
+.theme-section-divider-bar {
+  height: 10px;
+  width: 100%;
+  padding-block: 2px;
+  overflow: visible;
+}
+
+.theme-section-divider-bar svg {
+  display: block;
+  width: 100%;
+}
+
+.book-skeleton {
+  background-color: var(--book-skeleton);
+  animation: book-skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes book-skeleton-pulse {
+  0%,
+  100% {
+    background-color: var(--book-skeleton);
+  }
+
+  50% {
+    background-color: var(--book-skeleton-active);
+  }
+}
+
+.book-title {
+  display: -webkit-box;
+  overflow: hidden;
+  padding: 0 0.25rem;
+  line-height: 1.5rem;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.book-rating {
+  display: block;
+  height: 1.5rem;
+  line-height: 1.5rem;
+  padding: 0 0.25rem;
+}
+
+.book-rank-overlay {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background: linear-gradient(
+    to top right,
+    rgb(255 255 255 / 0.7),
+    rgb(255 255 255 / 0.24) 28%,
+    rgb(255 255 255 / 0.08) 48%,
+    transparent 72%
+  );
+}
+
+.book-rank-number {
+  position: absolute;
+  bottom: 0.5rem;
+  left: 0.75rem;
+  z-index: 20;
+  color: #000000;
+  font-size: 3rem;
+  font-weight: 700;
+  line-height: 1;
+  filter: drop-shadow(0 2px 8px rgb(255 255 255 / 0.55));
+}
+
+:root[data-theme="dark"] .book-rank-overlay {
+  background: linear-gradient(
+    to top right,
+    rgb(0 0 0 / 0.7),
+    rgb(0 0 0 / 0.24) 28%,
+    rgb(0 0 0 / 0.08) 48%,
+    transparent 72%
+  );
+}
+
+:root[data-theme="dark"] .book-rank-number {
+  color: #ffffff;
+  filter: drop-shadow(0 2px 8px rgb(0 0 0 / 0.55));
+}
+
+.rough-card-line {
+  inset: 0;
+  opacity: 0.68;
+  transition: opacity 180ms ease;
+}
+
+.rough-book-cover-line {
+  z-index: 2;
+}
+
+.theme-nav-button {
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+}
+
+.theme-nav-control {
+  display: inline-flex;
+  box-sizing: border-box;
+  height: 34px;
+  min-width: 34px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
+.theme-nav-button:hover {
+  background: var(--surface-hover);
+}
+
+.theme-dark-only {
+  display: none;
+}
+
+:root[data-theme="dark"] .theme-light-only {
+  display: none;
+}
+
+:root[data-theme="dark"] .theme-dark-only {
+  display: block;
+}
+
+.theme-toggle-label::before {
+  content: "다크";
+}
+
+:root[data-theme="dark"] .theme-toggle-label::before {
+  content: "라이트";
+}
+
+.theme-nav-link {
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+}
+
+.theme-nav-link.theme-nav-control {
+  padding: 0 0.5rem;
+}
+
+.theme-nav-link:hover {
+  background: var(--surface-hover);
+}
+
+.mobile-search-toggle {
+  display: none;
+}
+
+.search-submit-button {
+  display: inline-flex;
+}
+
+@media (width < 640px) {
+  .mobile-search-toggle {
+    display: inline-flex;
+  }
+
+  .search-submit-button {
+    display: none;
+  }
+
+  .search-submit-button.search-submit-button-open {
+    display: inline-flex;
+  }
+
+  .theme-nav-label {
+    display: none;
+  }
+}
+
+.theme-tag {
+  color: #0f766e;
+}
+
+:root[data-theme="dark"] .theme-tag {
+  color: #5eead4;
+}
+
+.theme-muted {
+  color: #6b7280;
+}
+
+:root[data-theme="dark"] .theme-muted {
+  color: #9ca3af;
+}
+
+.theme-description {
+  color: #374151;
+}
+
+:root[data-theme="dark"] .theme-description {
+  color: #e5e7eb;
+}
+
+.theme-subtle {
+  color: #9ca3af;
+}
+
+:root[data-theme="dark"] .theme-subtle {
+  color: #d4d4d8;
+}
+
+.theme-link {
+  color: #2563eb;
+}
+
+:root[data-theme="dark"] .theme-link {
+  color: #93c5fd;
+}
+
+.theme-tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-tab-active {
+  display: inline-flex;
+  position: relative;
+  z-index: 0;
+  isolation: isolate;
+  color: var(--foreground);
+  font-weight: 700;
+}
+
+.theme-tab-active::before {
+  position: absolute;
+  inset: 0.22em -0.15em 0.14em;
+  z-index: -1;
+  border-radius: 0.1em;
+  background: var(--title-tape-peach);
+  clip-path: polygon(1.5% 8%, 99% 0, 100% 88%, 0 100%);
+  content: "";
+  opacity: 0.9;
+  transform: rotate(0.35deg);
+}
+
+.theme-tab-inactive {
+  border-color: transparent;
+  color: #9ca3af;
+}
+
+:root[data-theme="dark"] .theme-tab-inactive {
+  color: #737373;
+}
+
+.rough-book-card:hover .rough-card-line {
+  opacity: 1;
+}
+
+.rough-cover {
+  position: relative;
+  border: 0;
+  border-radius: 12px;
+}
+
+.rough-panel-border {
+  position: relative;
+  border: 0;
+  border-radius: 10px;
+}
+
+.rough-panel-border > *:not(.rough-overlay),
+.rough-cover > *:not(.rough-overlay),
+.rough-book-card > *:not(.rough-overlay):not(.rough-review-tape) {
+  position: relative;
+  z-index: 1;
+}
+
+.rough-list-divider {
+  position: absolute;
+  bottom: -5px;
+  left: -6px;
+  height: 10px;
+  width: calc(100% + 12px);
+  overflow: visible;
+}
+
+.rough-list-divider-full {
+  left: -6px;
+  width: calc(100% + 12px);
+}
+
+.rough-action-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 9999px;
+  background: var(--surface);
+  padding: 0.25rem 0.75rem;
+  line-height: 1.25rem;
+}
+
+.rough-action-button:hover {
+  transform: none;
+}
+
+.rough-action-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.rough-action-sm {
+  font-size: 0.875rem;
+}
+
+.rough-action-lg {
+  padding-block: 0.5rem;
+}
+
+.rough-action-neutral {
+  background: var(--surface);
+}
+
+.rough-action-neutral:hover {
+  background: var(--surface-muted-hover);
+}
+
+.rough-action-wish {
+  background: #fff0f4;
+  color: #be123c;
+}
+
+.rough-action-wish:hover {
+  background: #ffe1e9;
+}
+
+.rough-action-wish-active {
+  background: #ffe1e9;
+  color: #be123c;
+}
+
+.rough-action-history {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.rough-action-history:hover {
+  background: #bbf7d0;
+}
+
+.rough-action-submit {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.rough-action-submit:hover {
+  background: #fde68a;
+}
+
+.rough-action-cancel {
+  background: var(--surface-muted);
+  color: var(--foreground);
+}
+
+.rough-action-cancel:hover {
+  background: var(--surface-muted-hover);
+}
+
+.rough-action-button-frame {
+  position: absolute;
+  inset: 0;
+  display: block;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.rough-action-button-frame > .rough-overlay {
+  inset: 0;
+}
+
+.rough-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    linear-gradient(
+      color-mix(in srgb, var(--surface-soft) 84%, transparent),
+      color-mix(in srgb, var(--surface-soft) 84%, transparent)
+    ),
+    rgb(17 24 39 / 0.38);
+  padding: 1rem;
+}
+
+.rough-modal-card {
+  position: relative;
+  width: min(100%, 24rem);
+  border: 0;
+  border-radius: 16px;
+  background: var(--surface-soft);
+  padding: 1.25rem;
+  box-shadow: 0 18px 45px rgb(17 24 39 / 0.16);
+}
+
+.rough-modal-card > *:not(.rough-overlay) {
+  position: relative;
+  z-index: 1;
+}
+
+.rough-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 1.5rem;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: calc(100vw - 2rem);
+  transform: translateX(-50%);
+  border: 0;
+  border-radius: 14px;
+  background: var(--surface-soft);
+  padding: 0.625rem 1rem;
+  color: var(--ink);
+  font-size: 0.875rem;
+  font-weight: 600;
+  box-shadow:
+    0 6px 16px rgb(15 118 110 / 0.14),
+    0 16px 32px rgb(17 24 39 / 0.16);
+  animation: rough-toast-in 180ms ease-out;
+  overflow: hidden;
+  text-align: center;
+  overflow-wrap: anywhere;
+  isolation: isolate;
+}
+
+@keyframes rough-toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 0.5rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.rough-rating-chart {
+  display: flex;
+  align-items: end;
+  gap: 0.35rem;
+  height: 5rem;
+  width: 100%;
+  padding: 0.25rem 0;
+}
+
+.rough-rating-column {
+  display: flex;
+  flex: 1;
+  align-items: end;
+  height: 100%;
+}
+
+.rough-rating-bar {
+  position: relative;
+  width: 100%;
+  min-height: 0.5rem;
+  border: 0;
+  border-radius: 0.25rem;
+  background: transparent;
+}
+
+.rough-rating-bar > .rough-overlay {
+  inset: 0;
+}
+
+.rough-rating-input-wrap {
+  position: relative;
+  width: fit-content;
+  cursor: pointer;
+  border-radius: 9999px;
+}
+
+.rough-rating-input-stars {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0;
+}
+
+.rough-rating-input-wrap:focus-visible {
+  outline: 2px solid rgb(245 158 11 / 0.45);
+  outline-offset: 2px;
+}
+
+/* ── 여기부터는 이 문서 전용입니다. front 에는 없는 스타일입니다. ── */
+.doc-bar {
+  position: relative;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--surface-muted);
+  padding: 0.375rem 1rem;
+  font-size: 0.875rem;
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: none;
+}
+
+.doc-bar select {
+  border-radius: 0.5rem;
+  background: var(--surface);
+  padding: 0.125rem 0.25rem;
+}
+
+.doc-swatch {
+  display: inline-block;
+  height: 1.5rem;
+  width: 2.5rem;
+  border: 1px solid color-mix(in srgb, var(--line) 28%, transparent);
+  border-radius: 0.375rem;
+  vertical-align: middle;
+}
+    </style>
+  </head>
+  <body class="flex min-h-screen flex-col antialiased">
+    <nav id="doc-bar" class="doc-bar" aria-label="디자인 가이드 화면 목록"></nav>
+    <div id="header"></div>
+    <main class="relative z-0 mx-auto flex w-full max-w-4xl flex-grow flex-col p-4">
+      <div class="relative flex flex-1 flex-col">
+        <div id="screen" class="contents"></div>
+        <div id="modal"></div>
+      </div>
+    </main>
+    <footer class="theme-site-footer text-center text-sm theme-muted">
+      <div class="theme-rough-divider-bar">
+        <svg data-rough="line" data-inset="0" aria-hidden="true" class="h-full w-full" preserveAspectRatio="none"></svg>
+      </div>
+      <div class="px-2 py-6">
+        <a href="https://github.com/prgrms-be-devcourse/NBE10-12-3-ADP" target="_blank" rel="noreferrer" class="theme-link">GitHub Repository</a>
+      </div>
+    </footer>
+    <div id="toast"></div>
+
+    <script>
+      /* ───────── 아이콘: front/public/icons/*.svg ───────── */
+      const STROKE = (w, body) =>
+        `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
+      const FILLED = (d) =>
+        `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#000" d="${d}"/></svg>`;
+      const GITHUB_PATH =
+        "M12 2C6.48 2 2 6.58 2 12.22c0 4.52 2.87 8.35 6.84 9.71.5.09.68-.22.68-.49 0-.24-.01-.88-.01-1.73-2.78.62-3.37-1.37-3.37-1.37-.45-1.18-1.11-1.5-1.11-1.5-.91-.63.07-.62.07-.62 1 .07 1.53 1.05 1.53 1.05.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.36-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.27 2.75 1.05A9.33 9.33 0 0 1 12 6.95c.85 0 1.7.12 2.5.34 1.9-1.32 2.74-1.05 2.74-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.8-4.57 5.05.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.59.69.49A10.08 10.08 0 0 0 22 12.22C22 6.58 17.52 2 12 2Z";
+      const BOOKMARK_PATH = "M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z";
+      const HEART_PATH =
+        "M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z";
+      const ICONS = {
+        admin: STROKE(2, '<path d="M12 3l7 4v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V7l7-4Z"/><path d="M9.5 12l1.7 1.7 3.6-3.7"/>'),
+        "bookmark-outline": STROKE(2, `<path d="${BOOKMARK_PATH}"/>`),
+        bookmark: FILLED(BOOKMARK_PATH),
+        "chevron-left": STROKE(2.4, '<path d="M15 18l-6-6 6-6"/>'),
+        "chevron-right": STROKE(2.4, '<path d="M9 18l6-6-6-6"/>'),
+        clock: STROKE(2, '<circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.8 1.6"/>'),
+        fire: STROKE(2, '<path d="M12 22c4 0 7-2.8 7-6.7 0-2.3-1-4.2-2.9-5.9.1 1.9-.8 3.2-2.2 3.8.4-3.8-1.4-6.8-5-9.2.3 3-1.3 4.9-2.6 6.6A7.2 7.2 0 0 0 5 15.3C5 19.2 8 22 12 22Z"/><path d="M10 17c0-1.4.8-2.4 2.1-3.4.8 1.1 1.9 2.2 1.9 3.7A2 2 0 0 1 12 19a2 2 0 0 1-2-2Z"/>'),
+        github: FILLED(GITHUB_PATH),
+        "heart-outline": STROKE(2, `<path d="${HEART_PATH}"/>`),
+        heart: FILLED(HEART_PATH),
+        library: STROKE(2, '<path d="M4 19.5V5a2 2 0 0 1 2-2h12"/><path d="M6 17h12"/><path d="M6 21h12a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2"/>'),
+        logout: STROKE(2, '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/>'),
+        moon: STROKE(2, '<path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a7 7 0 1 0 11 11Z"/>'),
+        review: STROKE(2, '<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>'),
+        search: STROKE(2, '<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>'),
+        "stacked-books": STROKE(2, '<path d="M4 6.5 15.5 4 20 6.5v13L8.5 22 4 19.5v-13Z"/><path d="M8.5 9 20 6.5"/><path d="M8.5 22V9L4 6.5"/><path d="M12 6.7v13"/>'),
+        star: STROKE(2, '<path d="m12 3 2.7 5.5 6 .9-4.3 4.2 1 6-5.4-2.9-5.4 2.9 1-6-4.3-4.2 6-.9L12 3Z"/>'),
+        sun: STROKE(2, '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M4.93 19.07l1.41-1.41"/><path d="M17.66 6.34l1.41-1.41"/>'),
+      };
+      const GITHUB_IMG = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#1f2328" d="${GITHUB_PATH}"/></svg>`)}`;
+
+      /* ───────── 샘플 데이터 ───────── */
+      const BOOKS = [
+        { id: 1, title: "클린 코드", authors: ["로버트 C. 마틴"], publisher: "인사이트", date: "2013-12-24", rating: 4.5, reviewCount: 3, color: "#2f5d62", tags: ["클린코드", "입문"] },
+        { id: 2, title: "오브젝트", authors: ["조영호"], publisher: "위키북스", date: "2019-06-17", rating: 4.8, reviewCount: 3, color: "#7c3f58", tags: ["객체지향", "설계"] },
+        { id: 3, title: "이펙티브 자바", authors: ["조슈아 블로크"], publisher: "인사이트", date: "2018-11-01", rating: 4.2, reviewCount: 2, color: "#b45f06", tags: ["자바"] },
+        { id: 4, title: "리팩터링 2판", authors: ["마틴 파울러"], publisher: "한빛미디어", date: "2020-04-01", rating: 3.9, reviewCount: 2, color: "#22577a", tags: ["리팩터링"] },
+        { id: 5, title: "HTTP 완벽 가이드", authors: ["데이빗 고울리"], publisher: "인사이트", date: "2014-12-15", rating: 3.2, reviewCount: 1, color: "#5f6f52", tags: ["네트워크"] },
+        { id: 6, title: "데이터 중심 애플리케이션 설계", authors: ["마틴 클레프만"], publisher: "위키북스", date: "2018-04-12", rating: 5, reviewCount: 1, color: "#3d3b6e", tags: ["데이터"] },
+        { id: 7, title: "코틀린 인 액션", authors: ["드미트리 제메로프"], publisher: "에이콘출판", date: "2017-10-11", rating: 2, reviewCount: 1, color: "#8e4162", tags: ["코틀린"] },
+        { id: 8, title: "실용주의 프로그래머", authors: ["데이비드 토머스", "앤드류 헌트"], publisher: "인사이트", date: "2022-02-28", rating: 4.1, reviewCount: 1, color: "#54717a", tags: ["습관"] },
+        { id: 9, title: "도메인 주도 설계", authors: ["에릭 에반스"], publisher: "위키북스", date: "2011-07-21", rating: 1, reviewCount: 1, color: "#7a5c2e", tags: ["DDD"] },
+        { id: 10, title: "표지가 아직 없는 책", authors: ["저자 미상"], publisher: "샘플출판", date: "2024-01-01", rating: 3, reviewCount: 0, tags: ["표지없음"], noCover: true },
+      ];
+      const DESCRIPTION = "도서 소개 샘플 문구입니다. 실제 화면에서는 카카오 도서 검색에서 가져온 소개글이 이 자리에 표시됩니다. 길이가 길어져도 표지 옆 영역 안에서 줄바꿈됩니다.";
+      const ME = { id: 1, username: "readthem", githubId: "readthem-dev" };
+      let REVIEWS = [
+        { id: 1, bookId: 2, reviewer: { id: 2, githubId: "book-lover" }, rating: 5, content: "역할과 책임을 다시 생각하게 된 책", tags: ["객체지향", "추천"], likes: 12, liked: false, at: "2026-10-30 21:14" },
+        { id: 2, bookId: 1, reviewer: { id: 3, githubId: "kotlin-fan" }, rating: 4.5, content: "이름 짓기 장은 매년 다시 읽어요", tags: ["습관"], likes: 9, liked: true, at: "2026-10-28 09:42" },
+        { id: 3, bookId: 2, reviewer: ME, rating: 4, content: "예제가 탄탄해서 따라가기 좋았어요", tags: ["설계"], likes: 5, liked: false, at: "2026-10-25 18:03" },
+        { id: 4, bookId: 3, reviewer: ME, rating: 3, content: "두고두고 찾아보는 책", tags: ["자바", "참고서"], likes: 3, liked: false, at: "2026-10-20 11:27" },
+        { id: 5, bookId: 7, reviewer: { id: 4, githubId: "spring-dev" }, rating: 2, content: "번역본은 조금 아쉬웠어요", tags: [], likes: 1, liked: true, at: "2026-10-18 22:50" },
+        { id: 6, bookId: 9, reviewer: { id: 2, githubId: "book-lover" }, rating: 1, content: "지금 제 수준엔 너무 어려웠습니다", tags: ["DDD"], likes: 0, liked: false, at: "2026-10-12 08:15" },
+      ];
+      const HISTOGRAM = { "0.5": 0, "1.0": 1, "1.5": 0, "2.0": 1, "2.5": 2, "3.0": 3, "3.5": 5, "4.0": 8, "4.5": 6, "5.0": 4 };
+      let WISHES = [BOOKS[5], BOOKS[7], BOOKS[9]];
+      const WIDGET_LINK = "https://readthem.example/api/v2/widgets/readthem-dev";
+
+      const bookOf = (id) => BOOKS.find((b) => b.id === id);
+      const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+
+      function coverUrl(book) {
+        const chunks = book.title.match(/.{1,7}(\s|$)|.{1,7}/g).map((s) => s.trim());
+        const lines = chunks.map((line, i) => `<text x="28" y="${110 + i * 46}" font-size="36" font-weight="700" fill="#fff">${esc(line)}</text>`).join("");
+        return `data:image/svg+xml,${encodeURIComponent(
+          `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" font-family="sans-serif"><rect width="300" height="450" fill="${book.color}"/><rect x="14" y="0" width="5" height="450" fill="#fff" opacity=".25"/>${lines}<text x="28" y="410" font-size="18" fill="#fff" opacity=".85">${esc(book.authors[0])}</text></svg>`,
+        )}`;
+      }
+
+      /* ───────── 상태 ───────── */
+      const state = { auth: "guest", searchOpen: false, searchTerm: "", mypageTab: "reviews", adminTab: "members", wished: new Set([1]) };
+      const isLogin = () => state.auth !== "guest";
+
+      /* ───────── lib/ratingColor.ts ───────── */
+      const RATING_STYLES = [
+        { min: 4, text: "text-green-600", fill: "#4ade80" },
+        { min: 2.5, text: "text-sky-500", fill: "#38bdf8" },
+        { min: 1.5, text: "text-orange-500", fill: "#fb923c" },
+        { min: 0, text: "text-red-500", fill: "#f87171" },
+      ];
+      const ratingStyle = (r) => RATING_STYLES.find(({ min }) => r >= min) ?? RATING_STYLES[3];
+
+      /* ───────── Rough 그리기: RoughFrame / RoughBar / RoughStarIcon 과 같은 수치 ───────── */
+      const inkColor = () => (document.documentElement.dataset.theme === "dark" ? "#f4f1ea" : "#1f1f1f");
+      const roundedRect = (l, t, r, b, radius) =>
+        [
+          `M ${l + radius} ${t}`, `L ${r - radius} ${t}`, `Q ${r} ${t} ${r} ${t + radius}`,
+          `L ${r} ${b - radius}`, `Q ${r} ${b} ${r - radius} ${b}`, `L ${l + radius} ${b}`,
+          `Q ${l} ${b} ${l} ${b - radius}`, `L ${l} ${t + radius}`, `Q ${l} ${t} ${l + radius} ${t}`, "Z",
+        ].join(" ");
+      const starPoints = (w, h) => {
+        const outer = Math.min(w, h) * 0.42;
+        return Array.from({ length: 10 }, (_, i) => {
+          const angle = -Math.PI / 2 + (i * Math.PI) / 5;
+          const radius = i % 2 === 0 ? outer : outer * 0.48;
+          return [w / 2 + Math.cos(angle) * radius, h / 2 + Math.sin(angle) * radius];
+        });
+      };
+
+      function draw(svg) {
+        const { width: w, height: h } = svg.parentElement.getBoundingClientRect();
+        if (w === 0 || h === 0) return;
+        const rc = rough.svg(svg);
+        const stroke = inkColor();
+        const { rough: kind, fill, inset } = svg.dataset;
+        svg.setAttribute("width", `${w}`);
+        svg.setAttribute("height", `${h}`);
+        svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+        svg.replaceChildren();
+
+        if (kind === "search" || kind === "card") {
+          const pad = kind === "search" ? 3 : 4;
+          const radius = kind === "search" ? Math.min(10, h / 2 - 4) : 12;
+          const options =
+            kind === "search"
+              ? { stroke, strokeWidth: 1.4, roughness: 1.25, bowing: 1.3, fill: "transparent", preserveVertices: true }
+              : { stroke, strokeWidth: 1.4, roughness: 1.2, bowing: 1.2, fill: "transparent", preserveVertices: true };
+          svg.append(rc.path(roundedRect(pad, pad, w - pad, h - pad, radius), options));
+        } else if (kind === "circle") {
+          const d = Math.max(0, Math.min(w, h) - 3);
+          svg.append(rc.ellipse(w / 2, h / 2, d, d, { stroke, strokeWidth: 1.7, roughness: 1.35, bowing: 1.1, fill: "transparent" }));
+        } else if (kind === "softDivider") {
+          const over = Math.max(6, w * 0.015);
+          const color = document.documentElement.dataset.theme === "dark" ? "#a8a29e" : "#9ca3af";
+          svg.setAttribute("viewBox", `${-over} 0 ${w + over * 2} ${h}`);
+          svg.append(
+            rc.line(-over, h / 2, w + over, h / 2 - 0.5, { stroke: color, strokeWidth: 0.85, roughness: 0.8, bowing: 0.65 }),
+            rc.line(-over, h / 2 + 1.25, w + over, h / 2 + 0.75, { stroke: color, strokeWidth: 0.4, roughness: 0.7, bowing: 0.55 }),
+          );
+        } else if (kind === "line") {
+          svg.style.overflow = "visible";
+          const pad = inset != null ? Number(inset) : Math.max(2, Math.min(w, h) * 0.25);
+          svg.append(rc.line(pad, h / 2, w - pad, h / 2, { stroke, strokeWidth: 1, roughness: 1.8, bowing: 1.4 }));
+        } else if (kind === "bar") {
+          const radius = Math.min(5, (w - 2) / 2, (h - 2) / 2);
+          svg.append(rc.path(roundedRect(1, 1, w - 1, h - 1, radius), { stroke, strokeWidth: 1, roughness: 1.25, bowing: 1.1, fill, fillStyle: "solid" }));
+        } else if (kind === "star") {
+          svg.append(rc.polygon(starPoints(w, h), { stroke, strokeWidth: 1.15, roughness: 1.15, bowing: 1, fill, fillStyle: "solid" }));
+        }
+      }
+
+      // 컴포넌트마다 있던 ResizeObserver 를 한 곳으로 모았다. 새 svg 가 DOM 에 들어오면 자동으로 그려진다.
+      const resizeObserver = new ResizeObserver((entries) => {
+        for (const { target } of entries) target.querySelectorAll(":scope > svg[data-rough]").forEach(draw);
+      });
+      new MutationObserver(() => {
+        document.querySelectorAll("svg[data-rough]").forEach((svg) => resizeObserver.observe(svg.parentElement));
+      }).observe(document.body, { childList: true, subtree: true });
+
+      /* ───────── 공통 컴포넌트: front/src/app/_components ───────── */
+      const icon = (name, cls = "h-4 w-4") => {
+        const url = `url('data:image/svg+xml,${encodeURIComponent(ICONS[name])}') center / contain no-repeat`;
+        return `<span aria-hidden="true" class="inline-block shrink-0 bg-current ${cls}" style="-webkit-mask:${url};mask:${url}"></span>`;
+      };
+      const frame = (kind = "card", cls = "rough-overlay") => `<svg data-rough="${kind}" aria-hidden="true" class="${cls}"></svg>`;
+      const roughLine = (cls = "h-full w-full") => `<svg data-rough="line" data-inset="0" aria-hidden="true" class="${cls}" preserveAspectRatio="none"></svg>`;
+      const star = (fill, cls = "rough-overlay") => `<svg data-rough="star" data-fill="${fill}" aria-hidden="true" class="${cls}"></svg>`;
+
+      const TONES = { neutral: "rough-action-neutral", submit: "rough-action-submit", history: "rough-action-history", wish: "rough-action-wish", wishActive: "rough-action-wish-active", cancel: "rough-action-cancel" };
+      const SIZES = { sm: "rough-action-sm", md: "", lg: "rough-action-lg" };
+      const button = (children, { tone = "neutral", size = "md", cls = "", full = false, attrs = "", type = "button" } = {}) =>
+        `<button type="${type}" class="rough-action-button ${TONES[tone]} ${SIZES[size]} ${full ? "w-full" : ""} ${cls}" ${attrs}>
+          <span class="rough-action-button-frame">${frame("search")}</span>
+          <span class="relative z-10 inline-flex items-center justify-center gap-1.5 whitespace-nowrap">${children}</span>
+        </button>`;
+
+      const INPUT_TONES = { neutral: "", paper: "rough-input-paper", history: "rough-input-history", wish: "rough-input-wish" };
+      const input = ({ tone = "neutral", size = "md", wrap = "", cls = "", attrs = "" } = {}) =>
+        `<span class="rough-input-border ${{ sm: "rough-input-sm", md: "", compact: "rough-input-compact" }[size]} ${INPUT_TONES[tone]} ${wrap}">
+          ${frame("search")}
+          <input class="relative z-10 h-full w-full border-0 bg-transparent px-3 py-1 text-sm outline-none ${cls}" ${attrs} />
+        </span>`;
+      const textarea = ({ tone = "neutral", attrs = "", value = "" } = {}) =>
+        `<span class="rough-textarea-border ${INPUT_TONES[tone]}">
+          ${frame("search")}
+          <textarea class="relative z-10 w-full resize-none border-0 bg-transparent p-2 text-sm outline-none" ${attrs}>${esc(value)}</textarea>
+        </span>`;
+
+      const ratingValue = (rating, { cls = "", starCls = "h-5 w-5" } = {}) =>
+        `<span class="inline-flex items-center gap-1 ${cls}">
+          <span class="relative inline-block shrink-0 ${starCls}">${star(ratingStyle(rating).fill)}</span>
+          <span>${rating}</span>
+        </span>`;
+
+      const avatar = (label, size = "sm") =>
+        `<div class="${{ sm: "w-10 h-10 text-base", lg: "w-24 h-24 text-3xl" }[size]} relative shrink-0 rounded-full bg-gray-200 flex items-center justify-center font-bold text-gray-600">
+          ${frame("circle")}
+          <span class="relative z-10">${label ? esc(label.charAt(0).toUpperCase()) : "?"}</span>
+        </div>`;
+
+      const thumbnail = (book, cls, placeholderCls = "flex h-full w-full items-center justify-center", altCls = "text-xs text-gray-400") =>
+        book.noCover
+          ? `<div class="${placeholderCls}"><span class="${altCls}">표지 없음</span></div>`
+          : `<img src="${coverUrl(book)}" alt="${esc(book.title)}" class="${cls}" />`;
+
+      const tagList = (tags, cls = "flex flex-wrap gap-1 text-xs theme-tag") =>
+        `<div class="${cls}">${tags.map((tag) => `<span>#${esc(tag)}</span>`).join("")}</div>`;
+
+      const bookTape = (children, { overlay = true, cls = "" } = {}) =>
+        `<div class="rough-review-tape z-0 w-full overflow-hidden bg-[var(--surface-soft)] text-[var(--foreground)] ${overlay ? "!absolute !bottom-0" : "relative !bottom-auto !left-auto !right-auto !top-auto"} ${cls}">
+          ${roughLine(`w-full ${overlay ? "h-4" : "h-5"}`)}
+          <div class="px-2 py-2">${children}</div>
+        </div>`;
+
+      const bookHref = (id) => `#/book?id=${id}`;
+
+      const bookCoverCard = (book, children) =>
+        `<a href="${bookHref(book.id)}" class="rough-book-card group relative block overflow-hidden rounded-xl bg-white aspect-[2/3] w-full" aria-label="${esc(book.title)} 상세 보기">
+          ${frame("card", "rough-overlay rough-card-line rough-book-cover-line !z-30")}
+          <div class="relative h-full w-full">
+            ${thumbnail(book, "absolute inset-0 z-0 h-full w-full object-cover", "absolute inset-x-0 top-0 bottom-[4.25rem] flex items-center justify-center text-center bg-[var(--surface-card)]", "text-xs text-gray-500")}
+          </div>
+          <div class="absolute inset-x-0 bottom-0 z-10">${children}</div>
+        </a>`;
+
+      const COVER_CLS = "relative flex aspect-[2/3] w-full items-center justify-center overflow-hidden rounded-xl";
+
+      const bookGridItem = (book, index, horizontal) =>
+        `<a href="${bookHref(book.id)}" class="book-link flex h-full flex-col gap-2">
+          <div class="rough-book-card rounded-xl bg-white">
+            ${frame("card", "rough-overlay rough-card-line rough-book-cover-line")}
+            <div class="${COVER_CLS} ${book.noCover ? "book-cover-placeholder" : ""}">
+              ${thumbnail(book, "relative z-0 h-full w-full object-cover", "text-sm text-gray-400", "text-sm text-gray-400")}
+              ${horizontal ? `<span class="book-rank-overlay"></span><span class="book-rank-number">${index + 1}</span>` : ""}
+            </div>
+          </div>
+          <span class="book-title">${esc(book.title)}</span>
+          <span class="book-rating font-bold ${ratingStyle(book.rating).text}">${ratingValue(book.rating)}</span>
+        </a>`;
+
+      const skeletonCard = () =>
+        `<div class="flex h-full flex-col gap-2">
+          <div class="${COVER_CLS}"><div class="h-full w-full rounded-xl book-skeleton"></div></div>
+          <span class="book-title">
+            <span class="block h-5 w-full rounded book-skeleton"></span>
+            <span class="mt-2 block h-5 w-3/4 rounded book-skeleton"></span>
+          </span>
+          <span class="book-rating block h-6"><span class="block h-5 w-16 rounded book-skeleton"></span></span>
+        </div>`;
+
+      const bookGrid = (books, cls = "grid grid-cols-2 gap-4 p-2 sm:grid-cols-4") =>
+        `<ul class="${cls}">${books.map((book, i) => `<li class="group flex flex-col relative">${bookGridItem(book, i, false)}</li>`).join("")}</ul>`;
+
+      const carouselButtons = (title) =>
+        `<div class="ml-auto flex shrink-0 items-center gap-1">
+          ${button(icon("chevron-left"), { size: "sm", cls: "flex h-8 w-8 items-center justify-center px-0 text-xl leading-none", attrs: `data-act="carousel" data-dir="-1" aria-label="${title} 이전 목록"` })}
+          ${button(icon("chevron-right"), { size: "sm", cls: "flex h-8 w-8 items-center justify-center px-0 text-xl leading-none", attrs: `data-act="carousel" data-dir="1" aria-label="${title} 다음 목록"` })}
+        </div>`;
+
+      const sectionHead = (title, iconName) =>
+        `<div class="mb-2 flex w-full items-center gap-3">
+          <h1 class="main-section-heading text-2xl font-bold">
+            <span class="shrink-0" aria-hidden="true">${icon(iconName, "h-5 w-5")}</span>
+            <span>${title}</span>
+          </h1>
+          ${carouselButtons(title)}
+        </div>`;
+
+      const reviewerHref = (reviewer) => (isLogin() && reviewer.id === ME.id ? "#/mypage" : "#/member");
+
+      const reviewDetailCard = (review, { actions = false } = {}) => {
+        const mine = isLogin() && review.reviewer.id === ME.id;
+        const href = reviewerHref(review.reviewer);
+        return `<div class="flex h-full flex-col gap-2">
+          <div class="flex items-center gap-3">
+            <a href="${href}">${avatar(review.reviewer.githubId)}</a>
+            <div class="flex min-w-0 flex-1 flex-col gap-1">
+              <div class="flex items-center gap-1">
+                <a class="font-semibold hover:underline" href="${href}">${esc(review.reviewer.githubId)}</a>
+                <a class="rough-github-inline" href="#" data-act="noop" aria-label="${esc(review.reviewer.githubId)} GitHub">
+                  <img class="rough-github-inline-image" src="${GITHUB_IMG}" alt="" />
+                </a>
+              </div>
+              ${tagList(review.tags)}
+            </div>
+            <div class="flex shrink-0 items-center gap-2">
+              <span class="font-bold ${ratingStyle(review.rating).text}">${ratingValue(review.rating)}</span>
+            </div>
+          </div>
+          <div class="flex flex-1 items-start gap-3">
+            <div class="flex min-w-0 flex-1 flex-col self-stretch">
+              <div class="text-sm">${esc(review.content)}</div>
+              <div class="mt-auto pt-2 text-xs theme-subtle">${review.at}</div>
+            </div>
+            ${
+              actions
+                ? `<div class="ml-auto flex shrink-0 flex-col items-end gap-2">
+                    <div class="flex flex-wrap justify-end gap-2">
+                      ${mine ? button("수정", { size: "sm", cls: "px-2", attrs: `data-act="edit-review" data-id="${review.id}"` }) : ""}
+                      ${mine ? button("삭제", { size: "sm", tone: "cancel", cls: "px-2", attrs: `data-act="delete-review" data-id="${review.id}"` }) : ""}
+                      ${likeButton(review)}
+                    </div>
+                  </div>`
+                : ""
+            }
+          </div>
+        </div>`;
+      };
+
+      const likeButton = (review) =>
+        button(`${icon(review.liked ? "heart" : "heart-outline", "h-4 w-4 align-[-0.125em]")} 좋아요 ${review.likes}`, {
+          size: "sm",
+          tone: review.liked ? "wishActive" : "wish",
+          cls: "px-2",
+          attrs: `data-act="like" data-id="${review.id}" aria-label="${review.liked ? "좋아요 취소" : "좋아요"}"`,
+        });
+
+      const likedReviewCard = (review) => {
+        const book = bookOf(review.bookId);
+        return `<div class="relative flex min-w-0 gap-3 w-full rounded-2xl bg-[var(--surface)] p-3 shadow-sm">
+          ${frame("card")}
+          <div class="relative flex w-24 shrink-0 flex-col">
+            <a href="${bookHref(book.id)}" class="rough-book-card review-book-thumbnail relative flex h-36 w-24 items-center justify-center overflow-hidden rounded-lg bg-white" aria-label="${esc(book.title)} 상세 보기">
+              ${frame("card", "rough-overlay rough-card-line rough-book-cover-line")}
+              ${thumbnail(book, "h-full w-full object-cover")}
+            </a>
+            ${bookTape(`<div class="line-clamp-1 text-xs font-bold">${esc(book.title)}</div>`, { cls: "mt-0" })}
+          </div>
+          <div class="min-w-0 flex-1 p-0">${reviewDetailCard(review)}</div>
+        </div>`;
+      };
+
+      const histogram = (cls = "") => {
+        const buckets = Object.keys(HISTOGRAM);
+        const max = Math.max(1, ...Object.values(HISTOGRAM));
+        return `<div class="flex flex-col gap-1 ${cls}">
+          <div class="rough-rating-chart">
+            ${buckets
+              .map(
+                (bucket) => `<div class="rough-rating-column">
+                  <div class="rough-rating-bar" style="height:${(HISTOGRAM[bucket] / max) * 100}%">
+                    <svg data-rough="bar" data-fill="${ratingStyle(Number(bucket)).fill}" aria-hidden="true" class="rough-overlay" preserveAspectRatio="none"></svg>
+                  </div>
+                </div>`,
+              )
+              .join("")}
+          </div>
+          <div class="flex justify-between text-xs text-gray-500"><span>0.5</span><span>5</span></div>
+        </div>`;
+      };
+
+      const roughDivider = ({ full = false } = {}) =>
+        `<svg aria-hidden="true" class="rough-list-divider ${full ? "rough-list-divider-full" : ""}" width="900" height="10" viewBox="-18 0 936 10" preserveAspectRatio="none">
+          <g>
+            <path d="M-18 4.3 C210 2.8, 360 6.1, 450 5 C540 3.9, 690 6.2, 918 4.7" stroke="#6b7280" stroke-width="1" fill="none" />
+            <path d="M-18 5.8 C210 7.2, 360 3.9, 450 5 C540 6.1, 690 3.8, 918 5.3" stroke="#6b7280" stroke-width="0.6" fill="none" />
+          </g>
+        </svg>`;
+      const adminDivider = () => `<div class="relative h-2 w-full opacity-70 ">${frame("softDivider")}</div>`;
+      const sectionDivider = () => `<div class="theme-section-divider-bar mt-7 opacity-25">${roughLine()}</div>`;
+
+      /* ───────── RoughRatingInput ───────── */
+      const starPreview = (percent, fill) =>
+        `<span class="relative inline-block h-7 w-7 shrink-0">
+          ${star("#e5e7eb")}
+          ${percent > 0 ? `<span class="absolute inset-y-0 left-0 overflow-hidden" style="width:${percent}%">${star(fill)}</span>` : ""}
+        </span>`;
+      const ratingStars = (active) => {
+        const fill = active === 0 ? "#e5e7eb" : ratingStyle(active / 2).fill;
+        return Array.from({ length: 5 }, (_, i) => {
+          const threshold = (i + 1) * 2;
+          return starPreview(active >= threshold ? 100 : active === threshold - 1 ? 50 : 0, fill);
+        }).join("");
+      };
+      const ratingText = (value) => (value === 0 ? "미선택" : `${value / 2}점`);
+      const ratingTextCls = (value) => `min-w-12 ${value === 0 ? "text-gray-600" : ratingStyle(value / 2).text}`;
+      const ratingInput = (defaultValue) => {
+        const value = defaultValue != null ? Math.round(defaultValue * 2) : 0;
+        return `<div class="flex min-w-0 flex-col gap-2" data-rating-root data-value="${value}">
+          <div class="flex flex-wrap items-center gap-2 text-sm">
+            <span>평점</span>
+            <span data-rating-text class="${ratingTextCls(value)}">${ratingText(value)}</span>
+            <button class="text-xs text-gray-500 underline" type="button" data-act="rating-clear">선택 해제</button>
+          </div>
+          <div class="rough-rating-input-wrap" role="slider" aria-label="평점" aria-valuemin="0" aria-valuemax="5" aria-valuenow="${value / 2}" aria-valuetext="${ratingText(value)}" tabindex="0">
+            <div class="rough-rating-input-stars" aria-hidden="true">${ratingStars(value)}</div>
+          </div>
+        </div>`;
+      };
+      function setRating(root, value, committed = true) {
+        if (committed) root.dataset.value = value;
+        const selected = Number(root.dataset.value);
+        const text = root.querySelector("[data-rating-text]");
+        const wrap = root.querySelector(".rough-rating-input-wrap");
+        text.className = ratingTextCls(selected);
+        text.textContent = ratingText(selected);
+        wrap.setAttribute("aria-valuenow", selected / 2);
+        wrap.setAttribute("aria-valuetext", ratingText(selected));
+        wrap.firstElementChild.innerHTML = ratingStars(value);
+      }
+      const ratingFromPointer = (wrap, clientX) => {
+        const rect = wrap.getBoundingClientRect();
+        const x = Math.min(Math.max(clientX - rect.left, 0), rect.width);
+        return x === 0 ? 0 : Math.min(10, Math.max(1, Math.ceil((x / rect.width) * 10)));
+      };
+
+      /* ───────── 모달 ───────── */
+      const loginModal = () =>
+        `<div class="rough-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="login-required-title">
+          <div class="rough-modal-card">
+            ${frame("card")}
+            <h2 id="login-required-title" class="text-xl font-bold">로그인이 필요한 기능입니다</h2>
+            <p class="mt-2 text-sm text-gray-600">이 기능을 사용하려면 로그인이 필요합니다. 로그인하시겠습니까?</p>
+            <div class="mt-5 flex justify-end gap-2">
+              ${button("취소", { size: "sm", tone: "cancel", attrs: 'data-act="modal-close"' })}
+              ${button(`<img class="rough-github-button-icon shrink-0 !inline-block" src="${GITHUB_IMG}" alt="" /><span> GitHub로 로그인</span>`, { size: "sm", tone: "history", cls: "flex items-center gap-1.5 whitespace-nowrap", attrs: 'data-act="login" aria-label="GitHub로 로그인"' })}
+            </div>
+          </div>
+        </div>`;
+
+      const reviewModal = ({ title, submitLabel, review, bookId }) =>
+        `<div class="rough-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="review-form-title">
+          <form class="rough-modal-card flex w-full max-w-md flex-col gap-3" data-review-form data-id="${review?.id ?? ""}" data-book-id="${bookId ?? ""}">
+            ${frame("card")}
+            <h2 id="review-form-title" class="text-xl font-bold">${title}</h2>
+            ${ratingInput(review?.rating)}
+            ${textarea({ value: review?.content ?? "", attrs: 'name="content" maxlength="30" placeholder="리뷰 내용 (2~30자)" rows="2"' })}
+            ${input({ cls: "px-2", attrs: `type="text" name="tags" value="${esc((review?.tags ?? []).join(", "))}" placeholder="태그 (쉼표로 구분)"` })}
+            <div class="flex justify-end gap-2">
+              ${button("취소", { size: "sm", tone: "cancel", attrs: 'data-act="modal-close"' })}
+              ${button(submitLabel, { size: "sm", tone: "submit", type: "submit" })}
+            </div>
+          </form>
+        </div>`;
+
+      const WIDGET_STEPS = [
+        ["1. GitHub 프로필 README 레포지토리 생성", "GitHub에서 사용자 이름과 같은 이름의 공개 레포지토리를 만들고, `README.md` 파일을 준비해 주세요."],
+        ["2. 위젯 코드 복사", "README에서 이미지를 표시할 수 있도록 준비된 `img` 태그를 복사합니다."],
+        ["3. README.md에 붙여넣기", "복사한 `img` 태그를 README.md에 붙여 넣으면 프로필에서 바로 위젯이 보입니다."],
+      ];
+      const widgetCode = `<img src="${WIDGET_LINK}" alt="내 서재 위젯" />`;
+      const widgetGuideModal = (step) =>
+        `<div class="rough-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="widget-guide-title">
+          <div class="rough-modal-card">
+            ${frame("card")}
+            <h2 id="widget-guide-title" class="text-xl font-bold">README에 위젯 넣는 방법</h2>
+            <div class="rough-panel-border mt-2 bg-[var(--surface-muted)] px-3 py-2 text-sm theme-muted">
+              ${frame("card")}
+              <p>버튼을 눌러 단계를 바꿔가며 확인할 수 있어요.</p>
+            </div>
+            <div class="mt-4 flex flex-wrap gap-2">
+              ${[1, 2, 3].map((n) => button(`${n}단계`, { size: "sm", tone: step === n ? "history" : "neutral", attrs: `data-act="widget-step" data-step="${n}"` })).join("")}
+            </div>
+            <div class="rough-panel-border mt-4 bg-[var(--surface-muted)] p-3 text-sm">
+              ${frame("card")}
+              <div>
+                <div class="font-semibold">${WIDGET_STEPS[step - 1][0]}</div>
+                <div class="mt-1 theme-muted">${WIDGET_STEPS[step - 1][1]}</div>
+              </div>
+            </div>
+            <div class="rough-panel-border mt-4 flex flex-col gap-2 bg-[var(--surface-muted)] p-3">
+              ${frame("card")}
+              <div class="text-sm font-semibold">복사할 코드</div>
+              ${input({ size: "sm", cls: "font-mono text-xs", attrs: `readonly value="${esc(widgetCode)}"` })}
+              <div class="flex flex-wrap gap-2">
+                ${button('<span data-copy-label>코드 복사</span>', { size: "sm", tone: "history", attrs: 'data-act="copy-widget"' })}
+                <span class="self-center text-xs theme-muted">GitHub 프로필 README.md에 그대로 붙여 넣으면 됩니다.</span>
+              </div>
+            </div>
+            <div class="mt-5 flex justify-end gap-2">
+              ${button("취소", { size: "sm", tone: "cancel", attrs: 'data-act="modal-close"' })}
+            </div>
+          </div>
+        </div>`;
+
+      const openModal = (html) => (document.getElementById("modal").innerHTML = html);
+      const closeModal = () => openModal("");
+
+      /* ───────── 토스트: 1.8초 뒤 사라짐 ───────── */
+      let toastTimer = null;
+      function showToast(message) {
+        document.getElementById("toast").innerHTML = `<div class="rough-toast" role="status" aria-live="polite">${frame("card")}<span class="relative z-10">${esc(message)}</span></div>`;
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => (document.getElementById("toast").innerHTML = ""), 1800);
+      }
+
+      /* ───────── 헤더 ───────── */
+      const navLink = (href, iconName, label, attrs = "") =>
+        `<a href="${href}" class="theme-nav-link theme-nav-control" ${attrs}>${icon(iconName)}<span class="theme-nav-label">${label}</span></a>`;
+      function renderHeader() {
+        const open = state.searchOpen;
+        document.getElementById("header").innerHTML = `<header class="theme-site-header relative">
+          <nav class="mx-auto flex w-full max-w-4xl items-center gap-3 px-4 py-2">
+            <div class="shrink-0 ${open ? "max-sm:hidden" : ""}">
+              <a href="#/" class="shrink-0 text-xl font-bold whitespace-nowrap">READTHEM.md</a>
+            </div>
+            ${open ? "" : `<button type="button" class="mobile-search-toggle theme-nav-link theme-nav-control shrink-0" data-act="search-open" aria-label="검색창 열기">${icon("search")}<span class="theme-nav-label">검색</span></button>`}
+            <form data-search-form class="min-w-0 items-center gap-1 ${open ? "flex flex-1" : "hidden w-72 shrink-0 sm:flex lg:w-80"}">
+              <label class="min-w-0 flex-1">
+                ${input({ wrap: "w-full", attrs: `type="text" name="q" placeholder="제목/저자 검색" maxlength="100" value="${esc(state.searchTerm)}"` })}
+              </label>
+              ${button(`${icon("search")}<span class="search-submit-label">검색</span>`, { size: "sm", type: "submit", cls: `search-submit-button theme-nav-control shrink-0 whitespace-nowrap px-2 ${open ? "search-submit-button-open" : ""}` })}
+            </form>
+            <div class="ml-auto shrink-0 items-center justify-end gap-2 whitespace-nowrap ${open ? "hidden sm:flex" : "flex"}">
+              <button type="button" class="theme-nav-link theme-nav-control shrink-0" data-act="theme" aria-label="테마 전환">
+                ${icon("moon", "theme-light-only h-4 w-4")}${icon("sun", "theme-dark-only h-4 w-4")}
+                <span class="theme-nav-label theme-toggle-label"></span>
+              </button>
+              ${
+                isLogin()
+                  ? `<div class="auth-action-enter flex min-w-0 items-center gap-2 whitespace-nowrap">
+                      ${navLink("#/mypage", "library", "내 서재")}
+                      ${state.auth === "admin" ? navLink("#/admin", "admin", "관리자") : ""}
+                      <button type="button" class="theme-nav-link theme-nav-control" data-act="logout" aria-label="로그아웃">${icon("logout")}<span class="theme-nav-label">로그아웃</span></button>
+                    </div>`
+                  : `<div class="auth-action-enter">
+                      <a href="#" class="theme-nav-link theme-nav-control gap-1.5" data-act="login" aria-label="GitHub로 로그인">${icon("github")}<span class="theme-nav-label">GitHub로 로그인</span></a>
+                    </div>`
+              }
+            </div>
+          </nav>
+          <div class="theme-rough-divider-bar">${roughLine()}</div>
+        </header>`;
+      }
+
+      /* ───────── 화면: 홈 (app/page.tsx) ───────── */
+      function homeScreen() {
+        const horizontal = "book-scroll-list flex snap-x snap-mandatory gap-5 overflow-x-auto py-2 pb-4";
+        const bookSection = (title, iconName, books, cls) =>
+          `<section class="${cls}">
+            ${sectionHead(title, iconName)}
+            <div class="book-scroll-fade">
+              <ul class="${horizontal}">
+                ${books
+                  .map(
+                    (book, i) => `<li class="book-horizontal-item group flex shrink-0 flex-col basis-[calc((100%_-_2.5rem)/3)] md:basis-[calc((100%_-_3.75rem)/4)] xl:basis-[calc((100%_-_5rem)/5)] relative ${i === books.length - 1 ? "snap-end" : "snap-start"}" data-carousel-item>
+                      ${bookGridItem(book, i, true)}
+                    </li>`,
+                  )
+                  .join("")}
+              </ul>
+            </div>
+          </section>`;
+        const reviews = [...REVIEWS].sort((a, b) => b.likes - a.likes);
+        const popularReviews = `<section class="mt-6">
+          ${sectionHead("인기 많은 리뷰", "fire")}
+          <div class="book-scroll-fade">
+            <ul data-step="review" class="book-scroll-list flex snap-x snap-mandatory gap-4 overflow-x-auto py-2 pb-4">
+              ${reviews
+                .map(
+                  (review, i) => `<li class="min-w-0 basis-full shrink-0 xl:basis-[calc((100%_-_1rem)/2)] ${i === reviews.length - 1 ? "snap-end" : "snap-start"}" data-carousel-item>
+                    ${likedReviewCard(review)}
+                  </li>`,
+                )
+                .join("")}
+            </ul>
+          </div>
+        </section>`;
+        const latest = [...BOOKS.slice(0, 9), ...BOOKS.slice(0, 3)];
+        const latestReviews = `<section class="mt-6">
+          ${sectionHead("최근 리뷰가 추가된 도서", "clock")}
+          <div class="book-scroll-fade">
+            <ul data-step="latest" class="book-scroll-list flex snap-x snap-mandatory gap-3 overflow-x-auto py-2 pb-4">
+              ${latest
+                .map(
+                  (book, i) => `<li class="basis-[calc((100%_-_3rem)/5)] shrink-0 sm:basis-[calc((100%_-_3.75rem)/6)] lg:basis-[calc((100%_-_4.5rem)/7)] xl:basis-[calc((100%_-_5.25rem)/8)] ${i === latest.length - 1 ? "snap-end" : "snap-start"}" data-carousel-item>
+                    <article class="relative h-full w-full overflow-hidden rounded-xl bg-white">
+                      ${bookCoverCard(
+                        book,
+                        bookTape(`<div class="flex flex-col gap-1">
+                          <div class="line-clamp-1 text-xs font-bold">${esc(book.title)}</div>
+                          <span class="text-xs font-bold">${ratingValue(book.rating)}</span>
+                        </div>`),
+                      )}
+                    </article>
+                  </li>`,
+                )
+                .join("")}
+            </ul>
+          </div>
+        </section>`;
+        const byRating = [...BOOKS].sort((a, b) => b.rating - a.rating);
+        const byReviews = [...BOOKS].sort((a, b) => b.reviewCount - a.reviewCount);
+        return [
+          bookSection("인기 도서", "fire", BOOKS, "mt-4"),
+          popularReviews,
+          latestReviews,
+          bookSection("평점 좋은 도서", "star", byRating, "mt-6"),
+          bookSection("리뷰 많은 도서", "stacked-books", byReviews, "mt-6"),
+        ].join(sectionDivider());
+      }
+
+      /* ───────── 화면: 검색 (app/books/search/page.tsx) ───────── */
+      function searchScreen(params) {
+        const term = params.get("term") || "코드";
+        return `<h1>'${esc(term)}' 검색 결과</h1>
+          ${bookGrid(BOOKS)}
+          <div class="py-6 text-center text-sm theme-muted">마지막 검색 결과입니다.</div>`;
+      }
+
+      /* ───────── 화면: 도서 상세 (app/books/detail/page.tsx) ───────── */
+      function bookScreen(params) {
+        const book = bookOf(Number(params.get("id"))) ?? BOOKS[1];
+        const reviews = REVIEWS.filter((r) => r.bookId === book.id);
+        const wished = isLogin() && state.wished.has(book.id);
+        const recommended = BOOKS.filter((b) => b.id !== book.id);
+        return `<div class="flex flex-col gap-6 p-4 max-w-3xl mx-auto w-full">
+          <div class="flex gap-6">
+            <div class="flex w-40 shrink-0 flex-col gap-2">
+              <div class="rough-cover flex h-56 items-center justify-center overflow-hidden ${book.noCover ? "book-cover-placeholder" : ""}">
+                ${frame("card")}
+                ${thumbnail(book, "w-full h-full object-cover", "flex h-full w-full items-center justify-center text-sm text-gray-400", "text-sm text-gray-400")}
+              </div>
+              ${wishButton(book, wished)}
+            </div>
+            <div class="grid flex-1 gap-4 md:grid-cols-[minmax(0,1fr)_10rem]">
+              <div class="flex min-w-0 flex-col gap-2">
+                <h1 class="text-2xl font-bold">${esc(book.title)}</h1>
+                <div class="text-sm theme-muted">${book.authors.map(esc).join(", ")} · ${esc(book.publisher)} · ${book.date}</div>
+                <p class="mt-1 text-sm theme-description">${DESCRIPTION}</p>
+                ${tagList(book.tags, "flex flex-wrap gap-2 text-sm theme-tag")}
+              </div>
+              <div class="flex min-w-0 flex-col gap-2">
+                <div class="text-right">
+                  <div class="text-4xl font-bold leading-none ${ratingStyle(book.rating).text}">${ratingValue(book.rating, { starCls: "h-9 w-9" })}</div>
+                  <div class="mt-1 text-sm theme-muted">리뷰 ${book.reviewCount}개</div>
+                </div>
+                ${histogram("mt-1 w-full max-w-40")}
+              </div>
+            </div>
+          </div>
+          ${
+            isLogin()
+              ? `<div>
+                  <div class="flex h-8 items-center gap-2">
+                    <h2 class="text-lg font-bold">추천 도서</h2>
+                    <span class="text-sm theme-muted">${recommended.length}권</span>
+                    ${carouselButtons("추천 도서")}
+                  </div>
+                  <ul class="book-scroll-list mt-3 flex gap-3 overflow-x-auto py-2 pb-4">
+                    ${recommended
+                      .map(
+                        (b) => `<li class="shrink-0" data-carousel-item>
+                          <article class="relative h-full w-24 overflow-hidden rounded-xl bg-white">
+                            ${bookCoverCard(
+                              b,
+                              bookTape(`<div class="flex flex-col gap-1">
+                                <div class="truncate text-xs font-bold">${esc(b.title)}</div>
+                                <div class="flex items-center gap-1 text-xs font-bold">
+                                  <span class="relative inline-block h-3.5 w-3.5 shrink-0">${star(ratingStyle(b.rating).fill)}</span>
+                                  <span>${b.rating.toFixed(1)}</span>
+                                </div>
+                              </div>`),
+                            )}
+                          </article>
+                        </li>`,
+                      )
+                      .join("")}
+                  </ul>
+                </div>`
+              : ""
+          }
+          <div>
+            <div class="flex flex-wrap items-center gap-2">
+              <h2 class="text-lg font-bold">리뷰 ${reviews.length}개</h2>
+              ${button(`${icon("review", "h-4 w-4 align-[-0.125em]")} 리뷰 작성하기`, { size: "sm", tone: "history", attrs: `data-act="write-review" data-book-id="${book.id}"` })}
+            </div>
+            ${reviews.length === 0 ? '<div class="mt-2 text-sm theme-muted">아직 리뷰가 없습니다.</div>' : ""}
+            <ul class="mt-2 flex w-full flex-col">
+              ${reviews.map((review, i) => `<li class="relative py-3">${reviewDetailCard(review, { actions: true })}${i < reviews.length - 1 ? roughDivider() : ""}</li>`).join("")}
+            </ul>
+          </div>
+        </div>`;
+      }
+      const wishButton = (book, wished) =>
+        button(`${icon(wished ? "bookmark" : "bookmark-outline", "h-4 w-4 align-[-0.125em]")} ${wished ? "보고 싶어요 취소" : "보고 싶어요"}`, {
+          full: true,
+          size: "sm",
+          tone: wished ? "wishActive" : "wish",
+          attrs: `data-act="wish" data-id="${book.id}"`,
+        });
+
+      /* ───────── 화면: 내 서재·회원 서재 (app/mypage, app/members/detail) ───────── */
+      const widgetPreview = ({ withLink }) =>
+        `<div class="min-w-0 w-full">
+          <div class="flex min-w-0 items-center justify-between gap-2">
+            <h2 class="font-bold">위젯 미리보기</h2>
+            ${
+              withLink
+                ? `<div class="flex flex-wrap justify-end gap-2">
+                    ${button('<span data-copy-label>코드 복사</span>', { size: "sm", tone: "history", attrs: 'data-act="copy-widget"' })}
+                    ${button("README 가이드 보기", { size: "sm", attrs: 'data-act="widget-step" data-step="1"' })}
+                  </div>`
+                : ""
+            }
+          </div>
+          <div class="rough-panel-border relative mt-1 flex min-h-24 items-center justify-center bg-transparent p-2">
+            ${frame("card")}
+            <img class="max-w-full" src="widget-sample.svg" alt="위젯 미리보기" />
+          </div>
+          ${withLink ? `<div class="mt-1">${input({ size: "sm", cls: "text-xs", attrs: `readonly value="${WIDGET_LINK}"` })}</div>` : ""}
+        </div>`;
+
+      const profilePanel = ({ username, githubId, averageLabel, mobileWidget, actions = "" }) =>
+        `<aside class="flex w-48 shrink-0 flex-col items-center gap-1 pt-6 max-sm:w-full max-sm:items-stretch">
+          <div class="flex w-full flex-col items-center gap-3 max-sm:flex-row max-sm:items-center max-sm:justify-start">
+            ${avatar(githubId, "lg")}
+            <div class="min-w-0 text-center max-sm:min-w-0 max-sm:flex-1 max-sm:text-left">
+              <div class="text-sm">아이디 : ${esc(username)}</div>
+              <div class="text-sm">닉네임 : ${esc(githubId)}</div>
+              <a class="theme-link text-sm underline" href="#" data-act="noop">github 주소</a>
+              <div class="mt-3 flex w-full justify-start max-sm:w-auto">${actions}</div>
+            </div>
+          </div>
+          <div class="mt-8 hidden w-full max-sm:block"><div class="max-sm:block sm:hidden">${mobileWidget}</div></div>
+          <div class="mt-2 flex w-full flex-col gap-3 max-sm:flex-row max-sm:items-start">
+            <div class="flex min-w-0 flex-1 flex-col gap-1">
+              <div class="text-xs theme-muted">${averageLabel}</div>
+              <div class="text-lg font-bold ${ratingStyle(3.8).text}">${ratingValue(3.8)}</div>
+            </div>
+            <div class="min-w-0 flex-1">${histogram("mt-0 w-full")}</div>
+          </div>
+        </aside>`;
+
+      const libraryLayout = (sidebar, children) =>
+        `<div class="flex flex-col gap-4 sm:flex-row sm:gap-8">
+          ${sidebar}
+          <div class="flex min-w-0 flex-1 flex-col gap-4 max-sm:gap-1">${children}</div>
+        </div>`;
+
+      const libraryReviewItem = (review, last, withActions) => {
+        const book = bookOf(review.bookId);
+        const rating = `<span class="font-bold ${withActions ? "" : "shrink-0"} ${ratingStyle(review.rating).text}">${ratingValue(review.rating)}</span>`;
+        return `<li class="relative flex items-start gap-3 py-3">
+          ${last ? "" : roughDivider({ full: true })}
+          <a href="${bookHref(book.id)}" class="rough-book-card review-book-thumbnail relative flex h-20 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white" aria-label="${esc(book.title)} 상세 보기">
+            ${frame("card", "rough-overlay rough-card-line rough-book-cover-line")}
+            ${thumbnail(book, "h-full w-full object-cover")}
+          </a>
+          <div class="flex-1 min-w-0">
+            <a class="font-semibold hover:underline" href="${bookHref(book.id)}">${esc(book.title)}</a>
+            ${tagList(review.tags)}
+            <div class="mt-1 text-sm">${esc(review.content)}</div>
+            <div class="mt-1 text-xs theme-subtle">${review.at}</div>
+          </div>
+          ${
+            withActions
+              ? `<div class="flex shrink-0 flex-col items-end gap-2">
+                  ${rating}
+                  <div class="flex flex-wrap items-center justify-end gap-2">
+                    ${button("수정", { size: "sm", cls: "px-2", attrs: `data-act="edit-review" data-id="${review.id}"` })}
+                    ${button("삭제", { size: "sm", tone: "cancel", cls: "px-2", attrs: `data-act="delete-review" data-id="${review.id}"` })}
+                  </div>
+                </div>`
+              : rating
+          }
+        </li>`;
+      };
+
+      function mypageScreen() {
+        const mine = REVIEWS.filter((r) => r.reviewer.id === ME.id);
+        const liked = REVIEWS.filter((r) => r.liked);
+        const tab = (value, label) =>
+          `<div class="theme-tab"><button type="button" class="px-3 py-2 text-sm ${state.mypageTab === value ? "theme-tab-active" : "theme-tab-inactive"}" data-act="mypage-tab" data-tab="${value}">${label}</button></div>`;
+        const panels = {
+          reviews: () =>
+            `${mine.length === 0 ? '<div class="text-sm theme-muted">작성한 리뷰가 없습니다.</div>' : ""}
+            <ul class="flex w-full flex-col">${mine.map((r, i) => libraryReviewItem(r, i === mine.length - 1, true)).join("")}</ul>`,
+          liked: () =>
+            `${liked.length === 0 ? '<div class="text-sm theme-muted">좋아요한 리뷰가 없습니다.</div>' : ""}
+            <ul class="flex w-full flex-col">
+              ${liked
+                .map((review, i) => {
+                  const book = bookOf(review.bookId);
+                  return `<li class="relative py-3">
+                    ${i < liked.length - 1 ? roughDivider({ full: true }) : ""}
+                    <div class="flex gap-3">
+                      <div class="relative w-24 shrink-0">
+                        <a href="${bookHref(book.id)}" class="rough-book-card review-book-thumbnail relative flex h-36 w-24 items-center justify-center overflow-hidden rounded-lg bg-white" aria-label="${esc(book.title)} 상세 보기">
+                          ${frame("card", "rough-overlay rough-card-line rough-book-cover-line")}
+                          ${thumbnail(book, "h-full w-full object-cover")}
+                          ${bookTape(`<div class="flex flex-col gap-1"><div class="line-clamp-1 text-xs font-bold">${esc(book.title)}</div></div>`)}
+                        </a>
+                      </div>
+                      <div class="min-w-0 flex-1">${reviewDetailCard(review, { actions: true })}</div>
+                    </div>
+                  </li>`;
+                })
+                .join("")}
+            </ul>`,
+          wishes: () =>
+            `${WISHES.length === 0 ? '<div class="text-sm theme-muted">보고 싶어요 한 도서가 없습니다.</div>' : ""}
+            <ul class="flex w-full flex-col">
+              ${WISHES.map(
+                (book, i) => `<li class="relative flex items-center justify-between gap-3 py-3">
+                  ${i < WISHES.length - 1 ? roughDivider({ full: true }) : ""}
+                  <a href="${bookHref(book.id)}" class="font-semibold">${esc(book.title)}</a>
+                  <div class="flex items-center gap-3">
+                    <span class="font-bold ${ratingStyle(book.rating).text}">${ratingValue(book.rating)}</span>
+                    ${button(`${icon("bookmark", "h-4 w-4 align-[-0.125em]")} 보고 싶어요 취소`, { size: "sm", tone: "wishActive", cls: "px-2", attrs: `data-act="remove-wish" data-id="${book.id}"` })}
+                  </div>
+                </li>`,
+              ).join("")}
+            </ul>`,
+        };
+        return libraryLayout(
+          profilePanel({
+            username: ME.username,
+            githubId: ME.githubId,
+            averageLabel: "내가 준 평균 별점",
+            mobileWidget: widgetPreview({ withLink: true }),
+            actions: `<div class="mt-4 flex w-full gap-2 max-sm:w-auto max-sm:flex-wrap">
+              ${button("로그아웃", { size: "sm", cls: "flex-1 max-sm:flex-none", attrs: 'data-act="logout"' })}
+              ${button("회원 탈퇴", { size: "sm", tone: "cancel", cls: "flex-1 max-sm:flex-none", attrs: 'data-act="withdraw"' })}
+            </div>`,
+          }),
+          `<div class="max-sm:hidden">${widgetPreview({ withLink: true })}</div>
+          <section class="flex flex-col gap-1">
+            <div class="flex gap-2">
+              ${tab("reviews", `작성한 리뷰 ${mine.length}`)}
+              ${tab("liked", `좋아요한 리뷰 ${liked.length}`)}
+              ${tab("wishes", `보고 싶어요 ${WISHES.length}`)}
+            </div>
+            ${panels[state.mypageTab]()}
+          </section>`,
+        );
+      }
+
+      function memberScreen() {
+        const reviews = REVIEWS.filter((r) => r.reviewer.githubId === "book-lover");
+        return libraryLayout(
+          profilePanel({ username: "book-lover", githubId: "book-lover", averageLabel: "평균 별점", mobileWidget: widgetPreview({ withLink: false }) }),
+          `<div class="max-sm:hidden">${widgetPreview({ withLink: false })}</div>
+          <div>
+            <div class="flex gap-2"><div class="theme-tab"><div class="theme-tab-active px-3 py-2 text-sm">작성한 리뷰 ${reviews.length}</div></div></div>
+            <ul class="flex w-full flex-col">${reviews.map((r, i) => libraryReviewItem(r, i === reviews.length - 1, false)).join("")}</ul>
+          </div>`,
+        );
+      }
+
+      /* ───────── 화면: 관리자 (app/admin) ───────── */
+      const adminPager = () =>
+        `<div class="flex items-center gap-2">
+          ${button("이전", { size: "sm", attrs: "disabled" })}
+          <span class="text-sm">1 / 1</span>
+          ${button("다음", { size: "sm", attrs: "disabled" })}
+        </div>`;
+      const adminTable = (heads, rows) =>
+        `<div class="flex flex-col gap-4">
+          <div class="overflow-x-auto">
+            ${adminDivider()}
+            <table class="w-full text-left text-sm">
+              <thead>
+                <tr>${heads.map((h) => `<th class="p-2">${h}</th>`).join("")}</tr>
+                <tr aria-hidden="true"><td colspan="${heads.length}" class="p-0">${adminDivider()}</td></tr>
+              </thead>
+              <tbody>${rows.join(`<tr aria-hidden="true"><td colspan="${heads.length}" class="p-0">${adminDivider()}</td></tr>`)}</tbody>
+            </table>
+            ${adminDivider()}
+          </div>
+          ${adminPager()}
+        </div>`;
+      const ADMIN_MEMBERS = [
+        { id: 1, username: "admin", nickname: "관리자", githubId: "readthem-admin", admin: true, deleted: false, date: "2026-01-02" },
+        { id: 2, username: "readthem", nickname: "리드뎀", githubId: "readthem-dev", admin: false, deleted: false, date: "2026-03-14" },
+        { id: 3, username: "booklover", nickname: "책벌레", githubId: "book-lover", admin: false, deleted: false, date: "2026-05-21" },
+        { id: 4, username: "left-user", nickname: "떠난회원", githubId: "left-user", admin: false, deleted: true, date: "2026-06-30" },
+      ];
+      const adminBookForm = (b) =>
+        `<form class="sketch-panel flex max-w-md flex-col gap-2 p-3" data-admin-book-form>
+          <h2 class="font-bold">도서 정보 수정 (#${b.id})</h2>
+          ${input({ attrs: `type="text" placeholder="제목" value="${esc(b.title)}"` })}
+          ${textarea({ value: DESCRIPTION, attrs: 'placeholder="설명" rows="3"' })}
+          ${input({ attrs: `type="text" placeholder="저자 (쉼표로 구분)" value="${esc(b.authors.join(", "))}"` })}
+          ${input({ attrs: `type="text" placeholder="출판사" value="${esc(b.publisher)}"` })}
+          ${input({ attrs: 'type="text" placeholder="표지 이미지 URL"' })}
+          <div class="flex gap-2">
+            ${button("저장", { tone: "submit", type: "submit" })}
+            ${button("취소", { tone: "cancel", attrs: 'data-act="admin-edit"' })}
+          </div>
+        </form>`;
+      const adminPanels = {
+        members: () =>
+          adminTable(
+            ["ID", "아이디", "닉네임", "GitHub", "권한", "상태", "가입일", ""],
+            ADMIN_MEMBERS.map(
+              (m) => `<tr>
+                <td class="p-2">${m.id}</td><td class="p-2">${m.username}</td><td class="p-2">${m.nickname}</td><td class="p-2">${m.githubId}</td>
+                <td class="p-2">${m.admin ? "관리자" : "일반"}</td>
+                <td class="p-2 theme-muted">${m.deleted ? "탈퇴" : "정상"}</td>
+                <td class="p-2 theme-subtle">${m.date}</td>
+                <td class="p-2">${!m.admin && !m.deleted ? button("강제 탈퇴", { size: "sm", tone: "cancel", attrs: 'data-act="toast" data-msg="회원을 강제 탈퇴했습니다."' }) : ""}</td>
+              </tr>`,
+            ),
+          ),
+        books: () =>
+          adminTable(
+            ["ID", "제목", "평점", ""],
+            BOOKS.slice(0, 5).map(
+              (b) => `<tr>
+                <td class="p-2">${b.id}</td><td class="p-2">${esc(b.title)}</td><td class="p-2">${b.rating}</td>
+                <td class="flex gap-2 p-2">
+                  ${button("수정", { size: "sm", attrs: `data-act="admin-edit" data-id="${b.id}"` })}
+                  ${button("삭제", { size: "sm", tone: "cancel", attrs: 'data-act="toast" data-msg="도서를 삭제했습니다."' })}
+                </td>
+              </tr>`,
+            ),
+          ),
+        reviews: () =>
+          `<div class="flex flex-col gap-4">
+            <ul class="flex flex-col">
+              <li aria-hidden="true">${adminDivider()}</li>
+              ${REVIEWS.map(
+                (review, i) => `<li class="flex items-start gap-3 py-2">
+                  <div class="min-w-0 flex-1">
+                    <div class="text-sm font-semibold">${esc(bookOf(review.bookId).title)}</div>
+                    <div class="text-xs theme-muted">${esc(review.reviewer.githubId)}</div>
+                    <div class="text-sm">${esc(review.content)}</div>
+                    ${tagList(review.tags)}
+                  </div>
+                  <span class="shrink-0 font-bold ${ratingStyle(review.rating).text}">${ratingValue(review.rating)}</span>
+                  ${button("삭제", { size: "sm", tone: "cancel", attrs: 'data-act="toast" data-msg="리뷰를 삭제했습니다."' })}
+                </li>
+                ${i < REVIEWS.length - 1 ? `<li aria-hidden="true">${adminDivider()}</li>` : ""}`,
+              ).join("")}
+              <li aria-hidden="true">${adminDivider()}</li>
+            </ul>
+            ${adminPager()}
+          </div>`,
+      };
+      function adminScreen() {
+        if (state.auth === "guest") {
+          return `<div class="mx-auto flex min-h-[60vh] w-full max-w-xl items-center justify-center p-4">
+            <div class="relative flex w-full max-w-sm flex-col gap-4 p-6">
+              ${frame("card")}
+              <h1 class="mb-4 text-xl font-bold">관리자 로그인</h1>
+              <form class="flex flex-col gap-2" data-admin-login>
+                ${input({ attrs: 'type="text" placeholder="아이디" maxlength="30"' })}
+                ${input({ attrs: 'type="password" placeholder="비밀번호" maxlength="30"' })}
+                <div class="pt-1">${button('<span class="py-1">로그인</span>', { full: true, tone: "submit", type: "submit" })}</div>
+              </form>
+            </div>
+          </div>`;
+        }
+        if (state.auth !== "admin") return "<div>관리자 권한이 없는 계정입니다.</div>";
+        return `<div class="flex flex-col gap-4">
+          <h1 class="text-xl font-bold">관리자 페이지</h1>
+          <div class="theme-tab-row flex gap-2">
+            ${[["members", "회원 관리"], ["books", "도서 관리"], ["reviews", "리뷰 관리"]]
+              .map(([value, label]) => `<button type="button" class="px-3 py-2 text-sm ${state.adminTab === value ? "theme-tab-active" : "theme-tab-inactive"}" data-act="admin-tab" data-tab="${value}">${label}</button>`)
+              .join("")}
+          </div>
+          ${adminPanels[state.adminTab]()}
+          ${state.adminTab === "books" && state.adminEditId ? adminBookForm(bookOf(state.adminEditId)) : ""}
+        </div>`;
+      }
+
+      /* ───────── 화면: 로그인·회원가입·오류 ───────── */
+      const accountForm = (title, fields, submit) =>
+        `<h1>${title}</h1>
+        <form class="flex max-w-sm flex-col gap-2 p-2" data-account-form>
+          ${fields.map(([type, placeholder]) => input({ attrs: `type="${type}" placeholder="${placeholder}" maxlength="30"` })).join("")}
+          ${button(submit, { full: true, size: "lg", tone: "submit", type: "submit" })}
+        </form>`;
+      const loginScreen = () => accountForm("로그인", [["text", "아이디"], ["password", "비밀번호"]], "로그인");
+      const joinScreen = () => accountForm("회원가입", [["text", "아이디"], ["password", "비밀번호"], ["text", "GitHub 아이디"]], "가입하기");
+      const errorScreen = () =>
+        `<div class="mx-auto flex min-h-[60vh] w-full max-w-xl items-center justify-center p-4">
+          <div class="relative flex w-full flex-col gap-5 p-6">
+            ${frame("card")}
+            <div class="flex flex-col gap-2">
+              <p class="text-sm font-semibold theme-muted">ERROR</p>
+              <h1 class="text-2xl font-bold">오류가 발생했습니다</h1>
+              <p class="theme-muted">요청을 처리하는 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.</p>
+            </div>
+            <div class="theme-surface relative flex flex-col gap-2 p-4 text-sm">
+              ${frame("card")}
+              <div><span class="font-semibold">코드: </span><span>404-1</span></div>
+              <div><span class="font-semibold">메시지: </span><span>존재하지 않는 도서입니다.</span></div>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              ${button("이전으로", { attrs: 'data-act="back"' })}
+              <a href="#/">${button("홈으로", { tone: "submit" })}</a>
+            </div>
+          </div>
+        </div>`;
+
+      /* ───────── 화면: 디자인 기준 (이 문서 전용) ───────── */
+      const TOKENS = [
+        ["--background", "#fffaf0", "#171b22", "페이지 배경"],
+        ["--foreground", "#1f2933", "#f4f1ea", "본문 글자"],
+        ["--line", "#17202a", "#f4f1ea", "선 기준색"],
+        ["--surface", "#fffdf7", "#1f2630", "버튼, 입력창, 카드"],
+        ["--surface-card", "#ffffff", "#242d38", "책 카드"],
+        ["--surface-soft", "#fff5d9", "#121720", "모달, 토스트, 표지 띠"],
+        ["--surface-muted", "#eef8f4", "#263241", "보조 패널, 취소 버튼"],
+        ["--surface-muted-hover", "#dff3eb", "#314154", "기본·취소 버튼 호버"],
+        ["--surface-hover", "#e8f6ff", "#2e4054", "헤더 메뉴 호버"],
+        ["--accent", "#0f766e", "#5eead4", "강조"],
+        ["--accent-soft", "#ccfbf1", "#134e4a", "라이트 상단 그라데이션"],
+        ["--accent-warm", "#facc15", "#fde68a", "따뜻한 강조"],
+        ["--title-tape-yellow", "rgb(250 204 21 / .42)", "rgb(59 130 246 / .34)", "h1 테이프"],
+        ["--title-tape-mint", "rgb(45 212 191 / .28)", "rgb(45 110 101 / .48)", "h2 테이프"],
+        ["--title-tape-peach", "rgb(251 146 60 / .28)", "rgb(139 88 61 / .46)", "활성 탭 테이프"],
+        ["--book-skeleton", "#f7f2e8", "#202832", "스켈레톤"],
+        ["--book-skeleton-active", "#efe4ce", "#2a3542", "스켈레톤 맥박"],
+      ];
+      const ROUGH_SPECS = [
+        ["search", "버튼, 입력창", "1.4", "1.25", "1.3"],
+        ["card", "카드, 패널, 모달, 토스트", "1.4", "1.2", "1.2"],
+        ["circle", "아바타", "1.7", "1.35", "1.1"],
+        ["softDivider", "관리자 구분선", "0.85 + 0.4", "0.8 / 0.7", "0.65 / 0.55"],
+        ["line", "헤더·푸터·섹션 구분선, 표지 띠", "1", "1.8", "1.4"],
+        ["bar", "별점 분포 막대", "1", "1.25", "1.1"],
+        ["star", "별점 별", "1.15", "1.15", "1"],
+      ];
+      const UX_RULES = [
+        ["테마", "저장값, 없으면 시스템 설정을 따릅니다. 전환하면 Rough 선도 다시 그립니다."],
+        ["검색", "2글자 미만이면 토스트로 안내합니다. 640px 미만에서는 아이콘을 눌러 검색창을 펼칩니다."],
+        ["로그인 유도", "비로그인 상태에서 보고 싶어요, 리뷰 작성, 좋아요를 누르면 로그인 모달을 띄웁니다."],
+        ["피드백", "결과는 하단 중앙 토스트로 1.8초 동안 알립니다. 삭제는 브라우저 확인창을 거칩니다."],
+        ["평점 입력", "0.5점 단위입니다. 드래그와 방향키로 고르고, Delete로 해제합니다."],
+        ["로딩", "실제 화면은 데이터가 올 때까지 같은 크기의 스켈레톤을 보여 줍니다."],
+        ["빈 섹션", "홈 섹션은 데이터가 없으면 숨기고, 그 밖의 목록은 빈 상태 문구를 보여 줍니다."],
+        ["카드 호버", "책 카드는 3px 떠오르고 그림자와 선이 진해집니다. 리뷰 카드 안의 표지는 움직이지 않습니다."],
+      ];
+      const guideBlock = (title, body) => `<section class="mt-8 flex flex-col gap-3"><div><h2 class="text-xl font-bold">${title}</h2></div>${body}</section>`;
+      const specTable = (heads, rows) =>
+        `<div class="overflow-x-auto"><table class="w-full text-left text-sm">
+          <thead><tr>${heads.map((h) => `<th class="p-2 whitespace-nowrap">${h}</th>`).join("")}</tr></thead>
+          <tbody>${rows.map((row) => `<tr>${row.map((cell) => `<td class="p-2 align-middle">${cell}</td>`).join("")}</tr>`).join("")}</tbody>
+        </table></div>`;
+      const swatch = (value) => `<span class="doc-swatch" style="background:${value}"></span> <span class="text-xs theme-muted whitespace-nowrap">${value}</span>`;
+
+      function guideScreen() {
+        const sampleReview = REVIEWS[0];
+        const book = BOOKS[1];
+        return `<div>
+          <h1 class="text-3xl font-bold">디자인 기준</h1>
+          <p class="mt-3 text-sm theme-description">손으로 그린 듯한 선(rough.js), 따뜻한 종이 배경, 형광펜 테이프 제목이 핵심입니다. 위쪽 막대에서 각 화면을 열고, 헤더의 테마 버튼으로 다크 모드를 확인할 수 있습니다.</p>
+        </div>
+        ${guideBlock(
+          "색상 토큰",
+          specTable(
+            ["토큰", "라이트", "다크", "쓰임"],
+            TOKENS.map(([name, light, dark, usage]) => [`<code class="text-xs">${name}</code>`, swatch(light), swatch(dark), usage]),
+          ),
+        )}
+        ${guideBlock(
+          "평점 색상",
+          specTable(
+            ["평점", "별", "글자"],
+            [["4.0 이상", 4.5], ["2.5 이상", 3], ["1.5 이상", 2], ["1.5 미만", 1]].map(([label, value]) => [label, swatch(ratingStyle(value).fill), `<span class="font-bold ${ratingStyle(value).text}">${ratingValue(value)}</span>`]),
+          ),
+        )}
+        ${guideBlock(
+          "글꼴과 크기",
+          `<p class="text-sm theme-muted">강원교육모두체를 기본으로 씁니다. 굵기는 300·400이 Light, 500 이상이 Bold 파일입니다.</p>
+          <div class="flex flex-col gap-1">
+            ${[["text-3xl", "1.9375rem"], ["text-2xl", "1.5625rem"], ["text-xl", "1.3125rem"], ["text-lg", "1.1875rem"], ["text-base", "1.0625rem"], ["text-sm", "0.9375rem"], ["text-xs", "0.8125rem"]]
+              .map(([cls, size]) => `<div class="${cls}">${cls} · ${size} · 개발자의 도서 리뷰</div>`)
+              .join("")}
+          </div>`,
+        )}
+        ${guideBlock(
+          "제목 테이프",
+          `<div class="flex flex-col items-start gap-3">
+            <h1 class="text-2xl font-bold">h1은 노란 테이프</h1>
+            <h2 class="text-xl font-bold">h2는 민트 테이프</h2>
+            <div class="flex gap-2"><span class="theme-tab"><span class="theme-tab-active px-3 py-2 text-sm">활성 탭은 복숭아 테이프</span></span><span class="theme-tab"><span class="theme-tab-inactive px-3 py-2 text-sm">비활성 탭</span></span></div>
+          </div>`,
+        )}
+        ${guideBlock(
+          "Rough 선",
+          specTable(
+            ["종류", "쓰임", "strokeWidth", "roughness", "bowing"],
+            ROUGH_SPECS.map(([kind, ...rest]) => [`<code class="text-xs">${kind}</code>`, ...rest]),
+          ) + `<p class="text-sm theme-muted">선 색은 라이트 #1f1f1f, 다크 #f4f1ea입니다. 리뷰 목록 구분선만 #6b7280 고정 SVG입니다.</p>`,
+        )}
+        ${guideBlock(
+          "버튼",
+          `<div class="flex flex-wrap items-center gap-2">
+            ${button("neutral")}${button("submit", { tone: "submit" })}${button("history", { tone: "history" })}${button("wish", { tone: "wish" })}${button("wishActive", { tone: "wishActive" })}${button("cancel", { tone: "cancel" })}${button("disabled", { attrs: "disabled" })}
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            ${button("sm", { size: "sm" })}${button("md")}${button("lg", { size: "lg" })}
+            ${button(icon("chevron-left"), { size: "sm", cls: "flex h-8 w-8 items-center justify-center px-0 text-xl leading-none", attrs: 'aria-label="이전"' })}
+            ${button(`${icon("heart-outline", "h-4 w-4 align-[-0.125em]")} 아이콘 버튼`, { size: "sm", tone: "wish" })}
+          </div>`,
+        )}
+        ${guideBlock(
+          "입력",
+          `<div class="grid gap-3 sm:grid-cols-2">
+            ${input({ attrs: 'type="text" placeholder="neutral"' })}
+            ${input({ tone: "paper", attrs: 'type="text" placeholder="paper"' })}
+            ${input({ tone: "history", attrs: 'type="text" placeholder="history"' })}
+            ${input({ tone: "wish", attrs: 'type="text" placeholder="wish"' })}
+            ${input({ size: "sm", attrs: 'type="text" placeholder="sm"' })}
+            ${input({ size: "compact", attrs: 'type="text" placeholder="compact"' })}
+          </div>
+          ${textarea({ attrs: 'placeholder="textarea" rows="2"' })}
+          ${ratingInput(3.5)}`,
+        )}
+        ${guideBlock(
+          "책 카드",
+          `<div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <div>${bookGridItem(book, 0, false)}</div>
+            <div>${bookGridItem(book, 0, true)}</div>
+            <div>${bookGridItem(BOOKS[9], 9, false)}</div>
+            <div aria-hidden="true">${skeletonCard()}</div>
+          </div>
+          <p class="text-sm theme-muted">왼쪽부터 기본, 순위 표시, 표지 없음, 스켈레톤입니다.</p>
+          <div class="w-28">
+            <article class="relative h-full w-full overflow-hidden rounded-xl bg-white">
+              ${bookCoverCard(book, bookTape(`<div class="flex flex-col gap-1"><div class="line-clamp-1 text-xs font-bold">${esc(book.title)}</div><span class="text-xs font-bold">${ratingValue(book.rating)}</span></div>`))}
+            </article>
+          </div>`,
+        )}
+        ${guideBlock("리뷰 카드", `${likedReviewCard(sampleReview)}<div class="relative py-3">${reviewDetailCard(sampleReview, { actions: true })}${roughDivider()}</div>`)}
+        ${guideBlock(
+          "아바타와 별점 분포",
+          `<div class="flex items-center gap-4">${avatar("readthem-dev")}${avatar("readthem-dev", "lg")}<div class="w-40">${histogram()}</div></div>`,
+        )}
+        ${guideBlock(
+          "모달과 토스트",
+          `<div class="flex flex-wrap gap-2">
+            ${button("로그인 모달", { size: "sm", attrs: 'data-act="login-modal"' })}
+            ${button("리뷰 모달", { size: "sm", attrs: 'data-act="write-review" data-force data-book-id="2"' })}
+            ${button("위젯 가이드 모달", { size: "sm", attrs: 'data-act="widget-step" data-step="1"' })}
+            ${button("토스트", { size: "sm", attrs: 'data-act="toast" data-msg="리뷰를 작성했습니다."' })}
+          </div>`,
+        )}
+        ${guideBlock(
+          "아이콘",
+          `<div class="flex flex-wrap gap-4">${Object.keys(ICONS)
+            .map((name) => `<div class="flex w-24 flex-col items-center gap-1 text-xs theme-muted">${icon(name, "h-5 w-5")}<span class="text-center">${name}</span></div>`)
+            .join("")}</div>`,
+        )}
+        ${guideBlock(
+          "레이아웃",
+          specTable(
+            ["항목", "값"],
+            [
+              ["본문 최대 폭", "max-w-4xl (도서 상세 max-w-3xl)"],
+              ["640px 미만", "헤더 글자 숨김, 검색 접힘, 서재 사이드바를 위로 쌓음"],
+              ["인기 도서", "한 화면 3권, md 4권, xl 5권"],
+              ["최근 리뷰 도서", "한 화면 5권, sm 6권, lg 7권, xl 8권"],
+              ["인기 리뷰", "한 화면 1개, xl 2개"],
+              ["표지 비율", "2:3"],
+            ],
+          ),
+        )}
+        ${guideBlock("UX 규칙", specTable(["항목", "규칙"], UX_RULES))}`;
+      }
+
+      /* ───────── 라우팅 ───────── */
+      const SCREENS = {
+        "": ["홈", homeScreen],
+        search: ["검색", searchScreen],
+        book: ["도서 상세", bookScreen],
+        mypage: ["내 서재", mypageScreen],
+        member: ["회원 서재", memberScreen],
+        admin: ["관리자", adminScreen],
+        login: ["로그인", loginScreen],
+        join: ["회원가입", joinScreen],
+        error: ["오류", errorScreen],
+        guide: ["디자인 기준", guideScreen],
+      };
+      const currentRoute = () => {
+        const [path, query] = location.hash.replace(/^#\/?/, "").split("?");
+        return { path: SCREENS[path] ? path : "", params: new URLSearchParams(query) };
+      };
+      function renderDocBar(path) {
+        document.getElementById("doc-bar").innerHTML = `<strong>디자인 가이드</strong>
+          ${Object.entries(SCREENS)
+            .map(([key, [label]]) => {
+              const href = key === "book" ? bookHref(2) : `#/${key}`;
+              return `<a href="${href}" ${key === path ? 'class="theme-tab-active" aria-current="page"' : ""}>${label}</a>`;
+            })
+            .join("")}
+          <label class="ml-auto">로그인 상태
+            <select data-auth-select aria-label="로그인 상태">
+              ${[["guest", "비로그인"], ["member", "회원"], ["admin", "관리자"]].map(([value, label]) => `<option value="${value}" ${state.auth === value ? "selected" : ""}>${label}</option>`).join("")}
+            </select>
+          </label>`;
+      }
+      function render() {
+        const { path, params } = currentRoute();
+        if (path === "mypage" && !isLogin()) state.auth = "member"; // 실제 화면은 비로그인이면 이동시키므로, 문서에서는 회원으로 전환해 보여 준다
+        renderDocBar(path);
+        renderHeader();
+        document.getElementById("screen").innerHTML = SCREENS[path][1](params);
+      }
+
+      /* ───────── 이벤트 ───────── */
+      function setAuth(auth) {
+        state.auth = auth;
+        render();
+      }
+      const ACTIONS = {
+        noop() {},
+        theme() {
+          const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+          document.documentElement.dataset.theme = next;
+          try {
+            localStorage.setItem("readthem-theme", next);
+          } catch {}
+          document.querySelectorAll("svg[data-rough]").forEach(draw);
+        },
+        login() {
+          closeModal();
+          setAuth("member");
+          showToast("GitHub 로그인 후의 화면입니다.");
+        },
+        logout() {
+          setAuth("guest");
+          showToast("로그아웃되었습니다.");
+          if (currentRoute().path === "mypage") location.hash = "#/";
+        },
+        withdraw() {
+          if (!confirm("정말 탈퇴하시겠습니까? 되돌릴 수 없습니다.")) return;
+          setAuth("guest");
+          showToast("회원 탈퇴가 완료되었습니다.");
+          location.hash = "#/";
+        },
+        "search-open"() {
+          state.searchOpen = true;
+          renderHeader();
+          document.querySelector('[data-search-form] input').focus();
+        },
+        carousel(el) {
+          const next = el.parentElement.parentElement.nextElementSibling;
+          const list = next.matches("ul") ? next : next.querySelector("ul");
+          const items = list.querySelectorAll("[data-carousel-item]");
+          const distance = items[1].offsetLeft - items[0].offsetLeft;
+          const step =
+            list.dataset.step === "latest"
+              ? matchMedia("(min-width: 640px)").matches ? 3 : 1
+              : list.dataset.step === "review" && distance * 2 > list.clientWidth ? 1 : 2;
+          const max = list.scrollWidth - list.clientWidth;
+          list.scrollTo({ left: Math.min(max, Math.max(0, list.scrollLeft + distance * step * Number(el.dataset.dir))), behavior: "smooth" });
+        },
+        wish(el) {
+          if (!isLogin()) return openModal(loginModal());
+          const id = Number(el.dataset.id);
+          const wished = !state.wished.has(id);
+          wished ? state.wished.add(id) : state.wished.delete(id);
+          showToast(wished ? "보고 싶어요에 추가했습니다." : "보고 싶어요를 취소했습니다.");
+          el.outerHTML = wishButton(bookOf(id), wished);
+        },
+        like(el) {
+          if (!isLogin()) return openModal(loginModal());
+          const review = REVIEWS.find((r) => r.id === Number(el.dataset.id));
+          review.liked = !review.liked;
+          review.likes += review.liked ? 1 : -1;
+          showToast(review.liked ? "좋아요를 눌렀습니다." : "좋아요를 취소했습니다.");
+          el.outerHTML = likeButton(review);
+        },
+        "write-review"(el) {
+          if (!isLogin() && !("force" in el.dataset)) return openModal(loginModal());
+          openModal(reviewModal({ title: "리뷰 작성", submitLabel: "리뷰 작성", bookId: el.dataset.bookId }));
+        },
+        "edit-review"(el) {
+          const review = REVIEWS.find((r) => r.id === Number(el.dataset.id));
+          openModal(reviewModal({ title: "리뷰 수정", submitLabel: currentRoute().path === "mypage" ? "수정 완료" : "리뷰 수정", review }));
+        },
+        "delete-review"(el) {
+          if (!confirm("리뷰를 삭제하시겠습니까?")) return;
+          REVIEWS = REVIEWS.filter((r) => r.id !== Number(el.dataset.id));
+          showToast("리뷰를 삭제했습니다.");
+          render();
+        },
+        "remove-wish"(el) {
+          WISHES = WISHES.filter((b) => b.id !== Number(el.dataset.id));
+          showToast("보고 싶어요를 취소했습니다.");
+          render();
+        },
+        "mypage-tab"(el) {
+          state.mypageTab = el.dataset.tab;
+          render();
+        },
+        "admin-tab"(el) {
+          state.adminTab = el.dataset.tab;
+          render();
+        },
+        "admin-edit"(el) {
+          state.adminEditId = Number(el.dataset.id) || null;
+          render();
+        },
+        "login-modal"() {
+          openModal(loginModal());
+        },
+        "modal-close": closeModal,
+        "widget-step"(el) {
+          openModal(widgetGuideModal(Number(el.dataset.step)));
+        },
+        "copy-widget"() {
+          navigator.clipboard?.writeText(widgetCode).catch(() => {});
+          const labels = () => document.querySelectorAll("[data-copy-label]");
+          labels().forEach((label) => (label.textContent = "복사 완료"));
+          setTimeout(() => labels().forEach((label) => (label.textContent = "코드 복사")), 2000);
+        },
+        "rating-clear"(el) {
+          setRating(el.closest("[data-rating-root]"), 0);
+        },
+        toast(el) {
+          showToast(el.dataset.msg);
+        },
+        back() {
+          history.back();
+        },
+      };
+
+      document.addEventListener("click", (e) => {
+        const el = e.target.closest("[data-act]");
+        if (!el) return;
+        if (el.tagName === "A") e.preventDefault();
+        ACTIONS[el.dataset.act](el);
+      });
+      document.addEventListener("change", (e) => {
+        if (e.target.matches("[data-auth-select]")) setAuth(e.target.value);
+      });
+      document.addEventListener("input", (e) => {
+        if (e.target.closest("[data-search-form]")) state.searchTerm = e.target.value;
+      });
+      document.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const form = e.target;
+        if (form.matches("[data-search-form]")) {
+          const term = state.searchTerm.trim();
+          if (term.length < 2) return showToast("검색어는 2글자 이상 입력해주세요.");
+          state.searchOpen = false;
+          location.hash = `#/search?term=${encodeURIComponent(term)}`;
+        } else if (form.matches("[data-review-form]")) {
+          const value = Number(form.querySelector("[data-rating-root]").dataset.value);
+          if (value === 0) return showToast("평점을 선택해주세요.");
+          const fields = {
+            rating: value / 2,
+            content: form.elements.content.value.trim(),
+            tags: form.elements.tags.value.split(",").map((t) => t.trim()).filter(Boolean),
+          };
+          const review = REVIEWS.find((r) => r.id === Number(form.dataset.id));
+          if (review) Object.assign(review, fields);
+          else REVIEWS.unshift({ id: Date.now(), bookId: Number(form.dataset.bookId), reviewer: ME, likes: 0, liked: false, at: "2026-11-04 12:00", ...fields });
+          showToast(review ? "리뷰를 수정했습니다." : "리뷰를 작성했습니다.");
+          closeModal();
+          render();
+        } else if (form.matches("[data-admin-book-form]")) {
+          state.adminEditId = null;
+          showToast("도서 정보를 수정했습니다.");
+          render();
+        } else if (form.matches("[data-admin-login]")) {
+          setAuth("admin");
+        } else if (form.matches("[data-account-form]")) {
+          setAuth("member");
+          location.hash = "#/";
+        }
+      });
+      // 모바일 검색: 포커스를 잃으면 접고, 제출 버튼은 포커스를 잃기 전에 제출한다
+      document.addEventListener("focusout", (e) => {
+        const form = e.target.closest?.("[data-search-form]");
+        if (!form || !state.searchOpen || form.contains(e.relatedTarget) || !matchMedia("(max-width: 639px)").matches) return;
+        state.searchOpen = false;
+        renderHeader();
+      });
+      document.addEventListener("pointerdown", (e) => {
+        const submit = e.target.closest?.(".search-submit-button");
+        if (submit && matchMedia("(max-width: 639px)").matches) {
+          e.preventDefault();
+          submit.form.requestSubmit();
+          return;
+        }
+        const wrap = e.target.closest?.(".rough-rating-input-wrap");
+        if (!wrap) return;
+        e.preventDefault();
+        wrap.dataset.dragging = "";
+        setRating(wrap.closest("[data-rating-root]"), ratingFromPointer(wrap, e.clientX));
+      });
+      document.addEventListener("pointermove", (e) => {
+        const wrap = e.target.closest?.(".rough-rating-input-wrap[data-dragging]");
+        if (wrap) setRating(wrap.closest("[data-rating-root]"), ratingFromPointer(wrap, e.clientX));
+      });
+      document.addEventListener("pointerup", () => {
+        document.querySelectorAll("[data-dragging]").forEach((wrap) => delete wrap.dataset.dragging);
+      });
+      document.addEventListener("keydown", (e) => {
+        const wrap = e.target.closest?.(".rough-rating-input-wrap");
+        if (!wrap) return;
+        const root = wrap.closest("[data-rating-root]");
+        const value = Number(root.dataset.value);
+        if (e.key === "ArrowRight" || e.key === "ArrowUp") setRating(root, Math.min(10, value + 1));
+        else if (e.key === "ArrowLeft" || e.key === "ArrowDown") setRating(root, Math.max(0, value - 1));
+        else if (e.key === "Backspace" || e.key === "Delete") setRating(root, 0);
+        else return;
+        e.preventDefault();
+      });
+      document.addEventListener("focusin", (e) => {
+        if (e.target.matches?.("input[readonly]")) e.target.select();
+      });
+      addEventListener("hashchange", () => {
+        closeModal();
+        render();
+        scrollTo(0, 0);
+      });
+      render();
+    </script>
+  </body>
+</html>

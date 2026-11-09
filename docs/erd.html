@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>READTHEM.md ERD</title>
+    <style>
+      :root {
+        --background: #f7f8fa;
+        --surface: #ffffff;
+        --head: #f1f3f5;
+        --text: #1f2937;
+        --muted: #6b7280;
+        --border: #d8dce2;
+        --edge: #7b8494;
+        --pk: #2563eb;
+        --fk: #b45309;
+        --uk: #6b7280;
+        --member: #0d9488;
+        --book: #d97706;
+        --review: #7c3aed;
+        --batch: #9ca3af;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --background: #14171c;
+          --surface: #1c2027;
+          --head: #252a33;
+          --text: #e8eaed;
+          --muted: #9aa3af;
+          --border: #363c47;
+          --edge: #8a93a3;
+          --pk: #7aa7ff;
+          --fk: #f0b35a;
+          --uk: #9aa3af;
+          --member: #2dd4bf;
+          --book: #fbbf24;
+          --review: #a78bfa;
+          --batch: #6b7280;
+        }
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--background);
+        color: var(--text);
+        font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+        font-size: 15px;
+        line-height: 1.6;
+      }
+      main { margin: 0 auto; padding: 40px 16px 64px; max-width: 1384px; }
+      h1 { margin: 0 0 32px; font-size: 24px; font-weight: 700; }
+      h2 { margin: 0 0 12px; font-size: 16px; font-weight: 700; }
+      code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; }
+
+      .scroll { overflow-x: auto; padding-bottom: 12px; }
+      .stage { position: relative; width: 1320px; height: 710px; }
+      .stage > svg { position: absolute; inset: 0; width: 100%; height: 100%; fill: none; stroke: var(--edge); stroke-width: 1.25; stroke-linejoin: round; }
+
+      .card { overflow: hidden; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
+      .stage .card { position: absolute; }
+      .card-head { display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 12px; border-top: 3px solid var(--tone); background: var(--head); font-weight: 700; }
+      .card-head small { color: var(--muted); font-size: 13px; font-weight: 400; white-space: nowrap; }
+      .row { display: flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px; border-top: 1px solid var(--border); font-size: 13px; }
+      .key { flex: none; width: 22px; font-size: 11px; font-weight: 700; }
+      .key-PK { color: var(--pk); }
+      .key-FK { color: var(--fk); }
+      .key-UK { color: var(--uk); }
+      .col-name { flex: 1; min-width: 0; white-space: nowrap; }
+      .col-type { color: var(--muted); font-size: 12px; white-space: nowrap; }
+
+      .label { position: absolute; transform: translate(-50%, -50%); padding: 0 4px; background: var(--background); color: var(--muted); font-size: 12px; line-height: 1.35; text-align: center; white-space: nowrap; }
+
+      section { margin-top: 48px; }
+      .solo { display: flex; flex-wrap: wrap; gap: 24px; }
+      .notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)); gap: 40px; }
+      .notes section { margin-top: 0; }
+      ul { margin: 0; padding-left: 18px; }
+      li { margin-bottom: 4px; }
+      .legend { list-style: none; padding: 0; }
+      .legend li { display: flex; align-items: center; gap: 10px; }
+      .swatch { flex: none; width: 24px; height: 3px; background: var(--tone); }
+      .legend svg { flex: none; width: 24px; height: 16px; fill: none; stroke: var(--edge); stroke-width: 1.25; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>READTHEM.md ERD</h1>
+
+      <div class="scroll"><div class="stage" id="stage"><svg id="lines" aria-hidden="true"></svg></div></div>
+
+      <section>
+        <h2>다른 테이블과 연결되지 않는 테이블</h2>
+        <div class="solo" id="solo"></div>
+      </section>
+
+      <section class="notes">
+        <section>
+          <h2>읽는 법</h2>
+          <ul class="legend">
+            <li><span class="swatch" style="--tone: var(--member)"></span>회원과 위시</li>
+            <li><span class="swatch" style="--tone: var(--book)"></span>책</li>
+            <li><span class="swatch" style="--tone: var(--review)"></span>리뷰</li>
+            <li><span class="swatch" style="--tone: var(--batch)"></span>책 수집 진행 상태</li>
+            <li><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M0 8H24M6 2V14" /></svg>이 방향으로 하나</li>
+            <li><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M0 8H24M12 8L24 2M12 8L24 14" /></svg>이 방향으로 여러 개</li>
+            <li><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M0 8H24" stroke-dasharray="4 3" /></svg>FK 없이 값으로만 연결</li>
+          </ul>
+        </section>
+        <section>
+          <h2>규칙</h2>
+          <ul>
+            <li>모든 테이블에 <code>created_date</code>와 <code>modified_date</code>가 있습니다. 그림에서는 생략했습니다.</li>
+            <li><code>review_like</code>는 <code>(review_id, member_id)</code> 조합이 유일합니다.</li>
+            <li><code>member</code>는 <code>deleted_date</code>로 탈퇴 여부를 표시합니다.</li>
+          </ul>
+        </section>
+        <section>
+          <h2>인덱스</h2>
+          <ul>
+            <li><code>review (like_count DESC, id DESC)</code></li>
+            <li><code>book_operational (average_rating DESC, id DESC)</code></li>
+            <li><code>book_operational (review_count DESC, id DESC)</code></li>
+            <li><code>book_operational (view_count DESC, id DESC)</code></li>
+          </ul>
+        </section>
+      </section>
+    </main>
+
+    <script>
+      const HEAD = 44;
+      const ROW = 30;
+
+      const tables = {
+        member: { x: 0, y: 0, w: 270, tone: "member", ko: "회원", cols: [
+          ["id", "bigint", "PK"], ["username", "varchar", "UK"], ["password", "varchar"], ["nickname", "varchar"],
+          ["github_id", "varchar", "UK"], ["img_url", "varchar"], ["refresh_token", "varchar", "UK"],
+          ["github_link", "varchar", "UK"], ["widget_link", "varchar", "UK"], ["deleted_date", "datetime"],
+          ["role", "USER, ADMIN"],
+        ] },
+        wish: { x: 370, y: 40, w: 210, tone: "member", ko: "위시", cols: [
+          ["id", "bigint", "PK"], ["member_id", "bigint", "FK"], ["book_id", "bigint", "FK"],
+        ] },
+        book: { x: 670, y: 0, w: 280, tone: "book", ko: "책", cols: [
+          ["id", "bigint", "PK"], ["title", "longtext"], ["description", "longtext"], ["isbn", "varchar", "UK"],
+          ["authors", "longtext"], ["published_date", "datetime"], ["publisher", "varchar"], ["img_url", "varchar"],
+          ["img_url_fetched_at", "datetime"],
+        ] },
+        book_operational: { x: 1060, y: 60, w: 260, tone: "book", ko: "책 운영 지표", cols: [
+          ["id", "bigint", "PK"], ["isbn", "varchar", "UK"], ["view_count", "int"], ["average_rating", "double"],
+          ["review_count", "int"],
+        ] },
+        review_like: { x: 0, y: 560, w: 230, tone: "review", ko: "좋아요", cols: [
+          ["id", "bigint", "PK"], ["review_id", "bigint", "FK"], ["member_id", "bigint", "FK"],
+        ] },
+        review: { x: 340, y: 480, w: 280, tone: "review", ko: "리뷰", cols: [
+          ["id", "bigint", "PK"], ["book_id", "bigint", "FK"], ["reviewer_id", "bigint", "FK"], ["rating", "float"],
+          ["content", "varchar(500)"], ["like_count", "int"],
+        ] },
+        review_tag: { x: 710, y: 540, w: 220, tone: "review", ko: "리뷰-태그", cols: [
+          ["id", "bigint", "PK"], ["review_id", "bigint", "FK"], ["tag_id", "bigint", "FK"],
+        ] },
+        tag: { x: 1060, y: 600, w: 220, tone: "review", ko: "태그", cols: [
+          ["id", "bigint", "PK"], ["name", "varchar", "UK"],
+        ] },
+      };
+
+      const soloTables = {
+        book_fetch_progress: { w: 310, tone: "batch", ko: "수집 진행 상태", cols: [
+          ["id", "bigint", "PK"], ["current_page", "int"], ["current_api_key_index", "int"], ["daily_call_count", "int"],
+          ["last_call_date", "date"],
+        ] },
+        book_last_fetched_page: { w: 310, tone: "batch", ko: "마지막 페이지", cols: [
+          ["id", "bigint", "PK"], ["number", "int"],
+        ] },
+      };
+
+      const rowY = (name, col) => {
+        const t = tables[name];
+        return t.y + HEAD + ROW * t.cols.findIndex((c) => c[0] === col) + ROW / 2;
+      };
+      const y = {
+        wishMember: rowY("wish", "member_id"),
+        wishBook: rowY("wish", "book_id"),
+        reviewBook: rowY("review", "book_id"),
+        reviewer: rowY("review", "reviewer_id"),
+        likeReview: rowY("review_like", "review_id"),
+        tagReview: rowY("review_tag", "review_id"),
+        tagTag: rowY("review_tag", "tag_id"),
+        isbn: rowY("book", "isbn"),
+      };
+
+      // 각 선은 "하나" 쪽에서 시작해 끝점 쪽으로 그립니다. 끝점은 기본이 "여러 개"입니다.
+      const edges = [
+        { pts: [[270, y.wishMember], [370, y.wishMember]], label: "담음" },
+        { pts: [[670, y.wishBook], [580, y.wishBook]], label: "담김" },
+        { pts: [[250, 374], [250, y.reviewer], [340, y.reviewer]], label: "작성" },
+        { pts: [[690, 314], [690, y.reviewBook], [620, y.reviewBook]], label: "리뷰 대상" },
+        { pts: [[115, 374], [115, 560]], label: "좋아요 누름" },
+        { pts: [[340, y.likeReview], [230, y.likeReview]], label: "좋아요 받음" },
+        { pts: [[620, y.tagReview], [710, y.tagReview]], label: "태그 달림" },
+        { pts: [[1060, y.tagTag], [930, y.tagTag]], label: "사용됨" },
+        { pts: [[950, y.isbn], [1060, y.isbn]], label: "isbn 값으로 연결<br />FK 없음", labelDy: -26, dashed: true, endOne: true },
+      ];
+
+      function card(name, t) {
+        const el = document.createElement("div");
+        el.className = "card";
+        el.style.setProperty("--tone", `var(--${t.tone})`);
+        el.style.width = `${t.w}px`;
+        el.style.height = `${HEAD + ROW * t.cols.length + 2}px`;
+        if (t.x !== undefined) {
+          el.style.left = `${t.x}px`;
+          el.style.top = `${t.y}px`;
+        }
+        el.innerHTML =
+          `<div class="card-head">${name}<small>${t.ko}</small></div>` +
+          t.cols.map(([col, type, key]) =>
+            `<div class="row"><span class="key ${key ? `key-${key}` : ""}">${key ?? ""}</span>` +
+            `<span class="col-name">${col}</span><span class="col-type">${type}</span></div>`
+          ).join("");
+        return el;
+      }
+
+      function drawEdge(svg, stage, { pts, label, labelDy = 0, dashed, endOne }) {
+        const path = (d, dash) => {
+          const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
+          p.setAttribute("d", d);
+          if (dash) p.setAttribute("stroke-dasharray", "5 4");
+          svg.appendChild(p);
+        };
+        const unit = ([ax, ay], [bx, by]) => {
+          const len = Math.hypot(bx - ax, by - ay);
+          return [(bx - ax) / len, (by - ay) / len];
+        };
+        const bar = ([x, y], [dx, dy]) => {
+          const [cx, cy] = [x + dx * 10, y + dy * 10];
+          path(`M${cx - dy * 7} ${cy + dx * 7}L${cx + dy * 7} ${cy - dx * 7}`);
+        };
+
+        path(`M${pts.map((p) => p.join(" ")).join("L")}`, dashed);
+        bar(pts[0], unit(pts[0], pts[1]));
+
+        const end = pts[pts.length - 1];
+        const [ex, ey] = unit(end, pts[pts.length - 2]);
+        if (endOne) {
+          bar(end, [ex, ey]);
+        } else {
+          const [fx, fy] = [end[0] + ex * 12, end[1] + ey * 12];
+          path(`M${end[0] - ey * 7} ${end[1] + ex * 7}L${fx} ${fy}L${end[0] + ey * 7} ${end[1] - ex * 7}`);
+        }
+
+        // 라벨은 가장 긴 구간의 가운데에 둡니다.
+        let longest = [pts[0], pts[1]];
+        for (let i = 1; i < pts.length - 1; i++) {
+          const size = (a, b) => Math.hypot(b[0] - a[0], b[1] - a[1]);
+          if (size(pts[i], pts[i + 1]) > size(...longest)) longest = [pts[i], pts[i + 1]];
+        }
+        const tag = document.createElement("div");
+        tag.className = "label";
+        tag.innerHTML = label;
+        tag.style.left = `${(longest[0][0] + longest[1][0]) / 2}px`;
+        tag.style.top = `${(longest[0][1] + longest[1][1]) / 2 + labelDy}px`;
+        stage.appendChild(tag);
+      }
+
+      const stage = document.getElementById("stage");
+      const lines = document.getElementById("lines");
+      edges.forEach((edge) => drawEdge(lines, stage, edge));
+      Object.entries(tables).forEach(([name, t]) => stage.appendChild(card(name, t)));
+      Object.entries(soloTables).forEach(([name, t]) => document.getElementById("solo").appendChild(card(name, t)));
+    </script>
+  </body>
+</html>
