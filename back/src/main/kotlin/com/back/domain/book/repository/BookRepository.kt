@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 
-interface BookRepository : JpaRepository<Book, Long> {
+interface BookRepository : JpaRepository<Book, Long>, BookRepositoryCustom {
 
     fun existsByIsbn(isbn: String): Boolean
     fun findByIsbn(isbn: String): Book?
