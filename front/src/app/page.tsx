@@ -64,12 +64,17 @@ function RankPanel({ books }: { books: BookDto[] | undefined }) {
   if (books == null) {
     return (
       <div className="panel" aria-busy="true">
-        <span className="sk cover-sk" style={{ maxWidth: 220 }} />
-        <div>
-          {Array.from({ length: 5 }).map((_, index) => (
-            <span key={index} className="sk line" style={{ height: 64 }} />
-          ))}
+        {/* 실제 패널과 같은 클래스를 써서 높이를 맞춘다 (행 = 표지 72px + 여백 24px) */}
+        <div className="top">
+          <span className="sk cover-sk" />
         </div>
+        <ol className="rows">
+          {Array.from({ length: RANK_SIZE - 1 }).map((_, index) => (
+            <li key={index} style={{ paddingBlock: 12 }}>
+              <span className="sk" style={{ height: 72 }} />
+            </li>
+          ))}
+        </ol>
       </div>
     );
   }
@@ -276,6 +281,10 @@ export default function Page() {
           </div>
         ) : (
           <div className="reviews" aria-busy={popularReviews == null}>
+            {popularReviews == null &&
+              [0, 1, 2].map((index) => (
+                <div key={index} className="rv" style={{ minHeight: 200 }} />
+              ))}
             {(popularReviews ?? []).map((review) => (
               <article className="rv" key={review.id}>
                 <q>{review.content}</q>
@@ -319,6 +328,17 @@ export default function Page() {
           </>
         ) : (
           <BookTrack title="최근 리뷰가 추가된 도서">
+            {latestReviews == null &&
+              Array.from({ length: 8 }).map((_, index) => (
+                <div key={index} aria-hidden="true">
+                  <span className="sk cover-sk" />
+                  <span className="sk line" style={{ height: 42 }} />
+                  <span
+                    className="sk line"
+                    style={{ height: 14, marginTop: 8, maxWidth: "60%" }}
+                  />
+                </div>
+              ))}
             {(latestReviews ?? []).map((review) => (
               <Link key={review.id} href={bookHref(review.bookId)}>
                 <BookCover

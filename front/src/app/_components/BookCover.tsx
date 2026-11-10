@@ -13,6 +13,8 @@ type BookCoverProps = {
   imgUrl?: string | null;
   title?: string | null;
   loading?: "lazy" | "eager";
+  // 실제 표지가 불러와지기 전(또는 없을 때) 글자 표지 대신 보여 줄 정적 이미지
+  fallbackSrc?: string;
 };
 
 function hasRecentMissingThumbnail(bookId: number) {
@@ -63,6 +65,7 @@ export default function BookCover({
   imgUrl,
   title,
   loading = "lazy",
+  fallbackSrc,
 }: BookCoverProps) {
   const [failedUrl, setFailedUrl] = useState<string | null>(null);
   const normalizedImgUrl = imgUrl?.trim() || null;
@@ -110,13 +113,19 @@ export default function BookCover({
 
   return (
     <span className="cover" style={{ "--h": hue } as CSSProperties}>
-      <span>{title}</span>
+      {fallbackSrc != null ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={fallbackSrc} alt="" />
+      ) : (
+        <span>{title}</span>
+      )}
       {thumbnailUrl != null && thumbnailUrl !== failedUrl && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           loading={loading}
           src={thumbnailUrl}
-          alt={`${title ?? "도서"} 표지`}
+          // 정적 표지 위에 겹칠 때는 불러오는 동안 대체 글자가 비치지 않게 비운다
+          alt={fallbackSrc != null ? "" : `${title ?? "도서"} 표지`}
           onError={() => setFailedUrl(thumbnailUrl)}
         />
       )}

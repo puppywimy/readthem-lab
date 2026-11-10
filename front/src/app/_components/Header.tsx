@@ -76,8 +76,12 @@ export default function Header() {
             <SvgIcon name="sun" className="i h-5 theme-dark-only" />
           </button>
           {isLoginMemberPending ? (
+            // 비로그인 버튼과 같은 폭으로 자리를 잡아 둔다
             <span className="btn line invisible" aria-hidden="true">
-              로그아웃
+              <SvgIcon name="github" />
+              <span>
+                <span className="long">GitHub </span>로그인
+              </span>
             </span>
           ) : isLogin ? (
             <button type="button" className="btn line" onClick={handleLogout}>
