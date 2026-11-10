@@ -1,22 +1,19 @@
 "use client";
 
-import { Fragment, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { apiFetch } from "@/lib/backend/client";
+
+import type { components } from "@/lib/backend/apiV1/schema";
 import { goToErrorPage } from "@/lib/error/goToErrorPage";
 import { useToast } from "@/lib/toast/ToastProvider";
 
-import type { components } from "@/lib/backend/apiV1/schema";
-import { ratingColor } from "@/lib/ratingColor";
-
-import AdminRoughDivider from "@/app/admin/AdminRoughDivider";
-import RatingValue from "@/app/_components/RatingValue";
-import RoughButton from "@/app/_components/RoughButton";
+import Pager from "@/app/admin/Pager";
 
 type PageAdminReviewDto = components["schemas"]["PageAdminReviewDto"];
 
 export default function ReviewAdmin() {
-  const { showToast, showErrorToast } = useToast();
+  const { showToast, showErrorToast, confirmAction } = useToast();
   const [pageData, setPageData] = useState<PageAdminReviewDto | null>(null);
   const [pageNumber, setPageNumber] = useState(0);
 
@@ -30,8 +27,8 @@ export default function ReviewAdmin() {
     loadReviews(pageNumber);
   }, [pageNumber]);
 
-  const handleDelete = (reviewId: number) => {
-    if (!confirm("이 리뷰를 삭제하시겠습니까?")) return;
+  const handleDelete = async (reviewId: number) => {
+    if (!(await confirmAction("이 리뷰를 삭제하시겠습니까?"))) return;
 
     apiFetch(`/api/v1/reviews/${reviewId}`, { method: "DELETE" })
       .then((data) => {
@@ -41,93 +38,68 @@ export default function ReviewAdmin() {
       .catch(showErrorToast);
   };
 
-  if (pageData == null) return <div>로딩중...</div>;
+  if (pageData == null)
+    return (
+      <div aria-busy="true" style={{ marginTop: 28 }}>
+        <span className="sk line" style={{ height: 44 }} />
+      </div>
+    );
 
   const reviews = pageData.content ?? [];
 
   return (
-    <div className="flex flex-col gap-4">
-      {reviews.length === 0 && (
-        <div className="text-sm theme-muted">리뷰가 없습니다.</div>
-      )}
-
-      {reviews.length > 0 && (
-        <ul className="flex flex-col">
-          <li aria-hidden="true">
-            <AdminRoughDivider />
-          </li>
-          {reviews.map((review, index) => (
-            <Fragment key={review.id ?? index}>
-              <li className="flex items-start gap-3 py-2">
-                <div className="min-w-0 flex-1">
-                  <div className="text-sm font-semibold">
-                    {review.bookTitle}
-                  </div>
-                  <div className="text-xs theme-muted">
+    <>
+      {reviews.length === 0 ? (
+        <div className="state">
+          <strong>리뷰가 없습니다.</strong>
+        </div>
+      ) : (
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>도서</th>
+                <th>작성자</th>
+                <th className="num">별점</th>
+                <th>내용</th>
+                <th className="num">좋아요</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {reviews.map((review, index) => (
+                <tr key={review.id ?? index}>
+                  <td>
+                    <span className="cell-book">{review.bookTitle}</span>
+                  </td>
+                  <td className="nowrap">
                     {review.reviewer?.githubId ?? "탈퇴한 사용자"}
-                  </div>
-                  <div className="text-sm">{review.content}</div>
-                  <div className="flex flex-wrap gap-1 text-xs theme-tag">
-                    {(review.tags ?? []).map((tag) => (
-                      <span key={tag}>#{tag}</span>
-                    ))}
-                  </div>
-                </div>
-                <span
-                  className={`shrink-0 font-bold ${
-                    typeof review.rating === "number"
-                      ? ratingColor(review.rating)
-                      : ""
-                  }`}
-                >
-                  <RatingValue rating={review.rating ?? 0} />
-                </span>
-                <RoughButton
-                  roughSize="sm"
-                  tone="cancel"
-                  type="button"
-                  onClick={() => {
-                    if (review.id == null) return;
-                    handleDelete(review.id);
-                  }}
-                >
-                  삭제
-                </RoughButton>
-              </li>
-              {index < reviews.length - 1 && (
-                <li aria-hidden="true">
-                  <AdminRoughDivider />
-                </li>
-              )}
-            </Fragment>
-          ))}
-          <li aria-hidden="true">
-            <AdminRoughDivider />
-          </li>
-        </ul>
+                  </td>
+                  <td className="num">{(review.rating ?? 0).toFixed(1)}</td>
+                  <td className="clip">{review.content}</td>
+                  <td className="num">{review.likeCount ?? 0}</td>
+                  <td className="fit">
+                    <button
+                      type="button"
+                      className="text-btn"
+                      onClick={() => {
+                        if (review.id != null) handleDelete(review.id);
+                      }}
+                    >
+                      삭제
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
-
-      <div className="flex items-center gap-2">
-        <RoughButton
-          roughSize="sm"
-          type="button"
-          disabled={pageData.first}
-          onClick={() => setPageNumber((p) => Math.max(0, p - 1))}
-        >
-          이전
-        </RoughButton>
-        <span className="text-sm">
-          {(pageData.number ?? 0) + 1} / {pageData.totalPages ?? 1}
-        </span>
-        <RoughButton
-          roughSize="sm"
-          type="button"
-          disabled={pageData.last}
-          onClick={() => setPageNumber((p) => p + 1)}
-        >
-          다음
-        </RoughButton>
-      </div>
-    </div>
+      <Pager
+        page={pageData.number ?? 0}
+        totalPages={pageData.totalPages ?? 1}
+        onChange={setPageNumber}
+      />
+    </>
   );
 }
