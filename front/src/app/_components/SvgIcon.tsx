@@ -5,7 +5,7 @@ type SvgIconProps = {
   className?: string;
 };
 
-export default function SvgIcon({ name, className = "h-4 w-4" }: SvgIconProps) {
+export default function SvgIcon({ name, className = "i" }: SvgIconProps) {
   return (
     <span
       aria-hidden="true"

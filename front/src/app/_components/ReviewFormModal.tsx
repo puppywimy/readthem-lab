@@ -1,11 +1,8 @@
 "use client";
 
-import type { FormEventHandler } from "react";
+import { type FormEventHandler, useState } from "react";
 
-import RoughButton from "@/app/_components/RoughButton";
-import RoughFrame from "@/app/_components/RoughFrame";
-import { RoughInput, RoughTextarea } from "@/app/_components/RoughInput";
-import RoughRatingInput from "@/app/_components/RoughRatingInput";
+import Dialog from "@/app/_components/Dialog";
 
 type ReviewFormModalProps = {
   defaultContent?: string;
@@ -18,62 +15,64 @@ type ReviewFormModalProps = {
 };
 
 export default function ReviewFormModal({
-  defaultContent,
-  defaultRating,
+  defaultContent = "",
+  defaultRating = 4.5,
   defaultTags,
   onCancel,
   onSubmit,
   submitLabel,
   title,
 }: ReviewFormModalProps) {
+  const [rating, setRating] = useState(defaultRating);
+  const [contentLength, setContentLength] = useState(defaultContent.length);
+
   return (
-    <div
-      className="rough-modal-backdrop"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="review-form-title"
-    >
-      <form
-        className="rough-modal-card flex w-full max-w-md flex-col gap-3"
-        onSubmit={onSubmit}
-      >
-        <RoughFrame className="rough-overlay" variant="card" />
-        <h2 id="review-form-title" className="text-xl font-bold">
-          {title}
-        </h2>
-        <RoughRatingInput
-          name="rating"
-          defaultValue={defaultRating}
-          label="평점"
-        />
-        <RoughTextarea
-          name="content"
-          defaultValue={defaultContent}
-          maxLength={30}
-          placeholder="리뷰 내용 (2~30자)"
-          rows={2}
-        />
-        <RoughInput
-          inputClassName="px-2"
-          type="text"
-          name="tags"
-          defaultValue={defaultTags}
-          placeholder="태그 (쉼표로 구분)"
-        />
-        <div className="flex justify-end gap-2">
-          <RoughButton
-            roughSize="sm"
-            tone="cancel"
-            type="button"
-            onClick={onCancel}
-          >
+    <Dialog onClose={onCancel}>
+      <form className="dlg" style={{ padding: 0 }} onSubmit={onSubmit}>
+        <h2>{title}</h2>
+        <label className="field">
+          <span className="field-head">
+            별점<output>{rating.toFixed(1)}</output>
+          </span>
+          <input
+            type="range"
+            name="rating"
+            min="0.5"
+            max="5"
+            step="0.5"
+            value={rating}
+            onChange={(e) => setRating(Number(e.target.value))}
+          />
+        </label>
+        <label className="field">
+          <span className="field-head">
+            리뷰<small>{contentLength}/500</small>
+          </span>
+          <textarea
+            name="content"
+            required
+            maxLength={500}
+            defaultValue={defaultContent}
+            onChange={(e) => setContentLength(e.target.value.length)}
+          />
+        </label>
+        <label className="field">
+          태그
+          <input
+            name="tags"
+            maxLength={100}
+            defaultValue={defaultTags}
+            aria-describedby="tag-help"
+          />
+          <small id="tag-help">쉼표로 구분해 입력합니다.</small>
+        </label>
+        <div className="dlg-actions">
+          <button type="button" className="btn line" onClick={onCancel}>
             취소
-          </RoughButton>
-          <RoughButton roughSize="sm" tone="submit" type="submit">
-            {submitLabel}
-          </RoughButton>
+          </button>
+          <button className="btn">{submitLabel}</button>
         </div>
       </form>
-    </div>
+    </Dialog>
   );
 }

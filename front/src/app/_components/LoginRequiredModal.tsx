@@ -1,63 +1,48 @@
 "use client";
 
+import type { ReactNode } from "react";
+
 import { buildGitHubLoginUrl } from "@/lib/auth/authReturnPath";
 
-import RoughButton from "@/app/_components/RoughButton";
-import RoughFrame from "@/app/_components/RoughFrame";
+import Dialog from "@/app/_components/Dialog";
+import SvgIcon from "@/app/_components/SvgIcon";
 
-type LoginRequiredModalProps = {
-  onCancel: () => void;
-};
+export function GitHubLoginButton({
+  className = "btn",
+  children = "GitHub 로그인",
+}: {
+  className?: string;
+  children?: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      className={className}
+      onClick={() => {
+        window.location.href = buildGitHubLoginUrl();
+      }}
+    >
+      <SvgIcon name="github" />
+      {children}
+    </button>
+  );
+}
 
 export default function LoginRequiredModal({
   onCancel,
-}: LoginRequiredModalProps) {
-  const handleGitHubLogin = () => {
-    window.location.href = buildGitHubLoginUrl();
-  };
-
+}: {
+  onCancel: () => void;
+}) {
   return (
-    <div
-      className="rough-modal-backdrop"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="login-required-title"
-    >
-      <div className="rough-modal-card">
-        <RoughFrame className="rough-overlay" variant="card" />
-        <h2 id="login-required-title" className="text-xl font-bold">
-          로그인이 필요한 기능입니다
-        </h2>
-        <p className="mt-2 text-sm text-gray-600">
-          이 기능을 사용하려면 로그인이 필요합니다. 로그인하시겠습니까?
-        </p>
-        <div className="mt-5 flex justify-end gap-2">
-          <RoughButton
-            roughSize="sm"
-            tone="cancel"
-            type="button"
-            onClick={onCancel}
-          >
-            취소
-          </RoughButton>
-          <RoughButton
-            roughSize="sm"
-            tone="history"
-            className="flex items-center gap-1.5 whitespace-nowrap"
-            type="button"
-            onClick={handleGitHubLogin}
-            aria-label="GitHub로 로그인"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              className="rough-github-button-icon shrink-0 !inline-block"
-              src="/github.svg"
-              alt=""
-            />
-            <span> GitHub로 로그인</span>
-          </RoughButton>
-        </div>
+    <Dialog onClose={onCancel}>
+      <h2>로그인이 필요합니다</h2>
+      <p>GitHub 계정으로 로그인하면 리뷰를 쓰고 책을 찜할 수 있습니다.</p>
+      <div className="dlg-actions">
+        <button type="button" className="btn line" onClick={onCancel}>
+          닫기
+        </button>
+        <GitHubLoginButton />
       </div>
-    </div>
+    </Dialog>
   );
 }

@@ -1,38 +1,46 @@
 "use client";
 
-import {
-  Fragment,
-  type ReactNode,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import Link from "next/link";
+
+import { useEffect, useRef, useState } from "react";
 
 import { apiFetch } from "@/lib/backend/client";
-import type { components } from "@/lib/backend/apiV1/schema";
 
-import BookGrid from "@/app/_components/BookGrid";
-import BookCoverCard from "@/app/_components/BookCoverCard";
+import { useAuth } from "@/lib/auth/AuthProvider";
+import type { components } from "@/lib/backend/apiV1/schema";
+import { timeAgo } from "@/lib/formatDate";
+import { useToast } from "@/lib/toast/ToastProvider";
+
+import BookCover from "@/app/_components/BookCover";
+import BookTrack from "@/app/_components/BookTrack";
+import CoverWall from "@/app/_components/CoverWall";
+import LikeButton from "@/app/_components/LikeButton";
+import LoginRequiredModal, {
+  GitHubLoginButton,
+} from "@/app/_components/LoginRequiredModal";
 import RatingValue from "@/app/_components/RatingValue";
-import RoughBar from "@/app/_components/RoughBar";
-import RoughButton from "@/app/_components/RoughButton";
-import LikedReviewCard from "@/app/_components/LikedReviewCard";
-import BookTape from "@/app/_components/BookTape";
+import SearchForm from "@/app/_components/SearchForm";
 import SvgIcon from "@/app/_components/SvgIcon";
 
 type BookDto = components["schemas"]["BookDto"];
-type ReviewDto = components["schemas"]["ReviewDto"];
-type LatestReviewDto = ReviewDto & {
-  bookImgUrl?: string | null;
-};
-type PopularReviewDto = ReviewDto & {
+type ReviewDto = components["schemas"]["ReviewDto"] & {
   bookImgUrl?: string | null;
 };
 
+const RANK_TABS = [
+  { label: "인기 도서", type: "views" },
+  { label: "평점 좋은 도서", type: "rating" },
+  { label: "리뷰 많은 도서", type: "reviewCount" },
+] as const;
+type RankType = (typeof RANK_TABS)[number]["type"];
+
+const WALL_SIZE = 15;
+const RANK_SIZE = 6;
+
+const bookHref = (id?: number) => `/books/detail?id=${id}`;
+
 function extractListData<T>(data: unknown): T[] {
-  if (Array.isArray(data)) {
-    return data;
-  }
+  if (Array.isArray(data)) return data;
 
   if (
     data != null &&
@@ -46,436 +54,308 @@ function extractListData<T>(data: unknown): T[] {
   return [];
 }
 
-function CarouselArrow({ direction }: { direction: "left" | "right" }) {
-  return <SvgIcon name={`chevron-${direction}`} />;
+function fetchList<T>(url: string) {
+  return apiFetch(url)
+    .then((data) => extractListData<T>(data))
+    .catch(() => [] as T[]);
 }
 
-function scrollCarouselBy(
-  scrollElement: HTMLElement,
-  distance: number,
-  direction: -1 | 1,
-) {
-  const maxScrollLeft = scrollElement.scrollWidth - scrollElement.clientWidth;
-
-  scrollElement.scrollTo({
-    left: Math.min(
-      maxScrollLeft,
-      Math.max(0, scrollElement.scrollLeft + distance * direction),
-    ),
-    behavior: "smooth",
-  });
-}
-
-function MainBookSection({
-  title,
-  icon,
-  books,
-  className,
-}: {
-  title: string;
-  icon: ReactNode;
-  books: BookDto[] | null;
-  className: string;
-}) {
-  const scrollRef = useRef<HTMLUListElement | null>(null);
-
-  if (books != null && books.length === 0) {
-    return null;
-  }
-
-  const moveCarousel = (direction: -1 | 1) => {
-    const scrollElement = scrollRef.current;
-    if (scrollElement == null) return;
-
-    const bookItems = scrollElement.querySelectorAll<HTMLElement>(
-      "[data-book-item='true']",
-    );
-    const scrollDistance =
-      bookItems[1] != null
-        ? bookItems[1].offsetLeft - bookItems[0].offsetLeft
-        : (bookItems[0]?.getBoundingClientRect().width ?? 0);
-
-    scrollCarouselBy(scrollElement, scrollDistance * 2, direction);
-  };
-
-  return (
-    <section className={className}>
-      <div className="mb-2 flex w-full items-center gap-3">
-        <h1 className="main-section-heading text-2xl font-bold">
-          <span className="shrink-0" aria-hidden="true">
-            {icon}
-          </span>
-          <span>{title}</span>
-        </h1>
-        <div className="ml-auto flex shrink-0 items-center gap-1">
-          <RoughButton
-            type="button"
-            className="flex h-8 w-8 items-center justify-center px-0 text-xl leading-none"
-            roughSize="sm"
-            onClick={() => moveCarousel(-1)}
-            aria-label={`${title} 이전 목록`}
-          >
-            <CarouselArrow direction="left" />
-          </RoughButton>
-          <RoughButton
-            type="button"
-            className="flex h-8 w-8 items-center justify-center px-0 text-xl leading-none"
-            roughSize="sm"
-            onClick={() => moveCarousel(1)}
-            aria-label={`${title} 다음 목록`}
-          >
-            <CarouselArrow direction="right" />
-          </RoughButton>
+function RankPanel({ books }: { books: BookDto[] | undefined }) {
+  if (books == null) {
+    return (
+      <div className="panel" aria-busy="true">
+        <span className="sk cover-sk" style={{ maxWidth: 220 }} />
+        <div>
+          {Array.from({ length: 5 }).map((_, index) => (
+            <span key={index} className="sk line" style={{ height: 64 }} />
+          ))}
         </div>
       </div>
-      <BookGrid
-        books={books ?? undefined}
-        isLoading={books == null}
-        layout="horizontal"
-        scrollRef={scrollRef}
-        horizontalItemClassName="basis-[calc((100%_-_2.5rem)/3)] md:basis-[calc((100%_-_3.75rem)/4)] xl:basis-[calc((100%_-_5rem)/5)]"
-      />
-    </section>
-  );
-}
-
-function PopularReviewSection({
-  title,
-  icon,
-  reviews,
-}: {
-  title: string;
-  icon: ReactNode;
-  reviews: LatestReviewDto[] | null;
-}) {
-  const scrollRef = useRef<HTMLUListElement | null>(null);
-
-  if (reviews != null && reviews.length === 0) {
-    return null;
+    );
   }
 
-  const moveCarousel = (direction: -1 | 1) => {
-    const scrollElement = scrollRef.current;
-    if (scrollElement == null) return;
-
-    const reviewItems = scrollElement.querySelectorAll<HTMLElement>(
-      "[data-review-item='true']",
+  if (books.length === 0) {
+    return (
+      <div className="state">
+        <strong>표시할 순위가 없습니다.</strong>
+      </div>
     );
-    const scrollDistance =
-      reviewItems[1] != null
-        ? reviewItems[1].offsetLeft - reviewItems[0].offsetLeft
-        : (reviewItems[0]?.getBoundingClientRect().width ?? 0);
-    const scrollStep = scrollDistance * 2 <= scrollElement.clientWidth ? 2 : 1;
-
-    scrollCarouselBy(scrollElement, scrollDistance * scrollStep, direction);
-  };
-
-  return (
-    <section className="mt-6">
-      <div className="mb-2 flex w-full items-center gap-3">
-        <h1 className="main-section-heading text-2xl font-bold">
-          <span className="shrink-0" aria-hidden="true">
-            {icon}
-          </span>
-          <span>{title}</span>
-        </h1>
-        <div className="ml-auto flex shrink-0 items-center gap-1">
-          <RoughButton
-            type="button"
-            className="flex h-8 w-8 items-center justify-center px-0 text-xl leading-none"
-            roughSize="sm"
-            onClick={() => moveCarousel(-1)}
-            aria-label={`${title} 이전 목록`}
-          >
-            <CarouselArrow direction="left" />
-          </RoughButton>
-          <RoughButton
-            type="button"
-            className="flex h-8 w-8 items-center justify-center px-0 text-xl leading-none"
-            roughSize="sm"
-            onClick={() => moveCarousel(1)}
-            aria-label={`${title} 다음 목록`}
-          >
-            <CarouselArrow direction="right" />
-          </RoughButton>
-        </div>
-      </div>
-      <div className="book-scroll-fade">
-        <ul
-          ref={scrollRef}
-          className="book-scroll-list flex snap-x snap-mandatory gap-4 overflow-x-auto py-2 pb-4"
-        >
-          {reviews == null
-            ? Array.from({ length: 4 }).map((_, index) => (
-                <li
-                  key={index}
-                  className={`min-w-0 basis-full shrink-0 xl:basis-[calc((100%_-_1rem)/2)] ${
-                    index === 3 ? "snap-end" : "snap-start"
-                  }`}
-                  aria-hidden="true"
-                >
-                  <div className="book-skeleton h-32 rounded-lg" />
-                </li>
-              ))
-            : reviews.map((review, index) => (
-                <li
-                  key={`${review.id ?? "popular-review"}-${review.bookId ?? "book"}-${index}`}
-                  className={`min-w-0 basis-full shrink-0 xl:basis-[calc((100%_-_1rem)/2)] ${
-                    index === reviews.length - 1 ? "snap-end" : "snap-start"
-                  }`}
-                  data-review-item="true"
-                >
-                  <LikedReviewCard
-                    review={review}
-                    className="w-full rounded-2xl bg-[var(--surface)] p-3 shadow-sm"
-                    reviewCardClassName="p-0"
-                  />
-                </li>
-              ))}
-        </ul>
-      </div>
-    </section>
-  );
-}
-
-function LatestReviewBookSection({
-  title,
-  icon,
-  reviews,
-}: {
-  title: string;
-  icon: ReactNode;
-  reviews: LatestReviewDto[] | null;
-}) {
-  const scrollRef = useRef<HTMLUListElement | null>(null);
-
-  if (reviews != null && reviews.length === 0) {
-    return null;
   }
 
-  const moveCarousel = (direction: -1 | 1) => {
-    const scrollElement = scrollRef.current;
-    if (scrollElement == null) return;
-
-    const reviewItems = scrollElement.querySelectorAll<HTMLElement>(
-      "[data-review-item='true']",
-    );
-    const scrollDistance =
-      reviewItems[1] != null
-        ? reviewItems[1].offsetLeft - reviewItems[0].offsetLeft
-        : (reviewItems[0]?.getBoundingClientRect().width ?? 0);
-    const scrollStep = window.matchMedia("(min-width: 640px)").matches ? 3 : 1;
-
-    scrollCarouselBy(scrollElement, scrollDistance * scrollStep, direction);
-  };
+  const [first, ...rest] = books;
 
   return (
-    <section className="mt-6">
-      <div className="mb-2 flex w-full items-center gap-3">
-        <h1 className="main-section-heading text-2xl font-bold">
-          <span className="shrink-0" aria-hidden="true">
-            {icon}
-          </span>
-          <span>{title}</span>
-        </h1>
-        <div className="ml-auto flex shrink-0 items-center gap-1">
-          <RoughButton
-            type="button"
-            className="flex h-8 w-8 items-center justify-center px-0 text-xl leading-none"
-            roughSize="sm"
-            onClick={() => moveCarousel(-1)}
-            aria-label={`${title} 이전 목록`}
-          >
-            <CarouselArrow direction="left" />
-          </RoughButton>
-          <RoughButton
-            type="button"
-            className="flex h-8 w-8 items-center justify-center px-0 text-xl leading-none"
-            roughSize="sm"
-            onClick={() => moveCarousel(1)}
-            aria-label={`${title} 다음 목록`}
-          >
-            <CarouselArrow direction="right" />
-          </RoughButton>
+    <div className="panel">
+      <Link className="top" href={bookHref(first.id)}>
+        <BookCover
+          bookId={first.id}
+          imgUrl={first.imgUrl}
+          title={first.title}
+        />
+        <div>
+          <div className="num">1</div>
+          <h3>{first.title}</h3>
+          <p style={{ marginTop: 8 }}>
+            <RatingValue rating={first.averageRating} />
+          </p>
         </div>
-      </div>
-      <div className="book-scroll-fade">
-        <ul
-          ref={scrollRef}
-          className="book-scroll-list flex snap-x snap-mandatory gap-3 overflow-x-auto py-2 pb-4"
-        >
-          {reviews == null
-            ? Array.from({ length: 6 }).map((_, index) => (
-                <li
-                  key={index}
-                  className={`basis-[calc((100%_-_3rem)/5)] shrink-0 sm:basis-[calc((100%_-_3.75rem)/6)] lg:basis-[calc((100%_-_4.5rem)/7)] xl:basis-[calc((100%_-_5.25rem)/8)] ${
-                    index === 5 ? "snap-end" : "snap-start"
-                  }`}
-                  aria-hidden="true"
-                >
-                  <div className="book-skeleton aspect-[2/3] w-full rounded-lg" />
-                </li>
-              ))
-            : reviews.map((review, index) => (
-                <li
-                  key={`${review.id ?? "latest-review"}-${review.bookId ?? "book"}-${index}`}
-                  className={`basis-[calc((100%_-_3rem)/5)] shrink-0 sm:basis-[calc((100%_-_3.75rem)/6)] lg:basis-[calc((100%_-_4.5rem)/7)] xl:basis-[calc((100%_-_5.25rem)/8)] ${
-                    index === reviews.length - 1 ? "snap-end" : "snap-start"
-                  }`}
-                  data-review-item="true"
-                >
-                  <article className="relative h-full w-full overflow-hidden rounded-xl bg-white">
-                    <BookCoverCard
-                      bookId={review.bookId}
-                      imgUrl={review.bookImgUrl}
-                      title={review.bookTitle}
-                      href={`/books/detail?id=${review.bookId}`}
-                      ariaLabel={`${review.bookTitle ?? `책 #${review.bookId}`} 상세 보기`}
-                      className="aspect-[2/3] w-full rounded-xl"
-                      placeholderClassName="bg-[var(--surface-card)] items-center justify-center text-center"
-                      placeholderText="표지 없음"
-                    >
-                      <BookTape>
-                        <div className="flex flex-col gap-1">
-                          <div className="line-clamp-1 text-xs font-bold">
-                            {review.bookTitle ?? `책 #${review.bookId}`}
-                          </div>
-                          <span className="text-xs font-bold">
-                            <RatingValue rating={review.rating ?? 0} />
-                          </span>
-                        </div>
-                      </BookTape>
-                    </BookCoverCard>
-                  </article>
-                </li>
-              ))}
-        </ul>
-      </div>
-    </section>
+      </Link>
+      <ol className="rows" start={2}>
+        {rest.map((book, index) => (
+          <li key={book.id}>
+            <Link href={bookHref(book.id)}>
+              <b>{index + 2}</b>
+              <BookCover
+                bookId={book.id}
+                imgUrl={book.imgUrl}
+                title={book.title}
+              />
+              <div>
+                <div className="title">{book.title}</div>
+              </div>
+              <RatingValue rating={book.averageRating} />
+            </Link>
+          </li>
+        ))}
+      </ol>
+    </div>
   );
 }
 
 export default function Page() {
-  const [popularBooks, setPopularBooks] = useState<BookDto[] | null>(null);
-  const [topRatedBooks, setTopRatedBooks] = useState<BookDto[] | null>(null);
-  const [mostReviewedBooks, setMostReviewedBooks] = useState<BookDto[] | null>(
+  const { isLogin } = useAuth();
+  const { showErrorToast } = useToast();
+  const [ranks, setRanks] = useState<Partial<Record<RankType, BookDto[]>>>({});
+  const [wallBooks, setWallBooks] = useState<BookDto[]>([]);
+  const [rankType, setRankType] = useState<RankType>("views");
+  const [popularReviews, setPopularReviews] = useState<ReviewDto[] | null>(
     null,
   );
-  const [latestReviews, setLatestReviews] = useState<LatestReviewDto[] | null>(
-    null,
-  );
-  const [popularReviews, setPopularReviews] = useState<PopularReviewDto[] | null>(
-    null,
-  );
+  const [latestReviews, setLatestReviews] = useState<ReviewDto[] | null>(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const pageRef = useRef<HTMLDivElement | null>(null);
+
   useEffect(() => {
-    Promise.allSettled([
-      apiFetch(`/api/v1/books/rank?type=views&page=0&size=10`),
-      apiFetch(`/api/v1/reviews/latest?page=0&size=10`),
-      apiFetch(`/api/v1/reviews/likeCount?page=0&size=10`),
-      apiFetch(`/api/v1/books/rank?type=rating&page=0&size=10`),
-      apiFetch(`/api/v1/books/rank?type=reviewCount&page=0&size=10`),
-    ]).then(([popularData, latestReviewData, popularReviewData, topRatedData, mostReviewedData]) => {
-      setPopularBooks(
-        popularData.status === "fulfilled"
-          ? extractListData<BookDto>(popularData.value)
-          : [],
-      );
-      setLatestReviews(
-        latestReviewData.status === "fulfilled"
-          ? extractListData<LatestReviewDto>(latestReviewData.value)
-          : [],
-      );
-      setPopularReviews(
-        popularReviewData.status === "fulfilled"
-          ? extractListData<PopularReviewDto>(popularReviewData.value)
-          : [],
-      );
-      setTopRatedBooks(
-        topRatedData.status === "fulfilled"
-          ? extractListData<BookDto>(topRatedData.value)
-          : [],
-      );
-      setMostReviewedBooks(
-        mostReviewedData.status === "fulfilled"
-          ? extractListData<BookDto>(mostReviewedData.value)
-          : [],
-      );
+    fetchList<BookDto>(
+      `/api/v1/books/rank?type=views&page=0&size=${WALL_SIZE}`,
+    ).then((books) => {
+      setWallBooks(books);
+      setRanks((current) => ({
+        ...current,
+        views: books.slice(0, RANK_SIZE),
+      }));
     });
+
+    (["rating", "reviewCount"] as const).forEach((type) => {
+      fetchList<BookDto>(
+        `/api/v1/books/rank?type=${type}&page=0&size=${RANK_SIZE}`,
+      ).then((books) => setRanks((current) => ({ ...current, [type]: books })));
+    });
+
+    fetchList<ReviewDto>(`/api/v1/reviews/likeCount?page=0&size=3`).then(
+      setPopularReviews,
+    );
+
+    fetchList<ReviewDto>(`/api/v1/reviews/latest?page=0&size=20`).then(
+      (reviews) => {
+        const seenBookIds = new Set<number | undefined>();
+
+        setLatestReviews(
+          reviews
+            .filter((review) => {
+              if (seenBookIds.has(review.bookId)) return false;
+              seenBookIds.add(review.bookId);
+              return true;
+            })
+            .slice(0, 8),
+        );
+      },
+    );
   }, []);
 
-  const rankedSections = [
-    {
-      title: "평점 좋은 도서",
-      icon: <SvgIcon name="star" className="h-5 w-5" />,
-      books: topRatedBooks,
-    },
-    {
-      title: "리뷰 많은 도서",
-      icon: <SvgIcon name="stacked-books" className="h-5 w-5" />,
-      books: mostReviewedBooks,
-    },
-  ].filter(({ books }) => books == null || books.length > 0);
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("in");
+          observer.unobserve(entry.target);
+        });
+      },
+      { threshold: 0.12 },
+    );
+
+    pageRef.current
+      ?.querySelectorAll(".reveal")
+      .forEach((element) => observer.observe(element));
+
+    return () => observer.disconnect();
+  }, []);
+
+  const handleToggleLike = (review: ReviewDto) => {
+    if (!isLogin) {
+      setShowLoginModal(true);
+      return;
+    }
+
+    const liked = review.likedByMe ?? false;
+
+    apiFetch(`/api/v1/reviews/${review.id}/like`, {
+      method: liked ? "DELETE" : "POST",
+    })
+      .then(() => {
+        setPopularReviews((current) =>
+          (current ?? []).map((item) =>
+            item.id === review.id
+              ? {
+                  ...item,
+                  likedByMe: !liked,
+                  likeCount: (item.likeCount ?? 0) + (liked ? -1 : 1),
+                }
+              : item,
+          ),
+        );
+      })
+      .catch(showErrorToast);
+  };
 
   return (
-    <>
-      {[
-        popularBooks == null || popularBooks.length > 0
-          ? (
-              <MainBookSection
-                key="popular-books"
-                title="인기 도서"
-                icon={<SvgIcon name="fire" className="h-5 w-5" />}
-                books={popularBooks}
-                className="mt-4"
-              />
-            )
-          : null,
-        popularReviews == null || popularReviews.length > 0
-          ? (
-              <PopularReviewSection
-                key="popular-reviews"
-                title="인기 많은 리뷰"
-                icon={<SvgIcon name="fire" className="h-5 w-5" />}
-                reviews={popularReviews}
-              />
-            )
-          : null,
-        latestReviews == null || latestReviews.length > 0
-          ? (
-              <LatestReviewBookSection
-                key="latest-reviews"
-                title="최근 리뷰가 추가된 도서"
-                icon={<SvgIcon name="clock" className="h-5 w-5" />}
-                reviews={latestReviews}
-              />
-            )
-          : null,
-        ...rankedSections.map((section) => (
-          <MainBookSection
-            key={section.title}
-            title={section.title}
-            icon={section.icon}
-            books={section.books}
-            className="mt-6"
-          />
-        )),
-      ]
-        .filter(Boolean)
-        .map((section, index) => (
-          <Fragment key={index}>
-            {index > 0 && (
-              <div className="theme-section-divider-bar mt-7 opacity-25">
-                <RoughBar
-                  className="h-full w-full"
-                  fill="transparent"
-                  lineInset={0}
-                  variant="line"
+    <div ref={pageRef}>
+      {showLoginModal && (
+        <LoginRequiredModal onCancel={() => setShowLoginModal(false)} />
+      )}
+
+      <div className="hero">
+        <div className="hero-text">
+          <h1>
+            개발자의
+            <br />
+            도서 리뷰 플랫폼
+          </h1>
+          <p className="lede">
+            개발자들의{" "}
+            <Link className="trend-link" href="/#home-rank">
+              독서 트렌드
+              <SvgIcon name="arrow-up-right" className="i h-3" />
+            </Link>
+            를 확인하고 찜하세요.
+            <br />
+            나만의 찜 목록을 위젯으로 만들어보세요.
+          </p>
+          <SearchForm id="home-q" />
+        </div>
+        <CoverWall books={wallBooks} />
+      </div>
+
+      <section id="home-rank" className="wrap">
+        <h2 className="sr">독서 트렌드</h2>
+        <div className="tabs" role="tablist">
+          {RANK_TABS.map(({ label, type }) => (
+            <button
+              key={type}
+              type="button"
+              className="tab"
+              role="tab"
+              aria-selected={type === rankType}
+              onClick={() => setRankType(type)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <div role="tabpanel">
+          <RankPanel key={rankType} books={ranks[rankType]} />
+        </div>
+      </section>
+
+      <section id="home-reviews" className="wrap reveal">
+        <h2>인기 많은 리뷰</h2>
+        {popularReviews?.length === 0 ? (
+          <div className="state">
+            <strong>표시할 리뷰가 없습니다.</strong>
+          </div>
+        ) : (
+          <div className="reviews" aria-busy={popularReviews == null}>
+            {(popularReviews ?? []).map((review) => (
+              <article className="rv" key={review.id}>
+                <q>{review.content}</q>
+                <div className="rv-foot">
+                  <Link
+                    href={bookHref(review.bookId)}
+                    aria-label={`${review.bookTitle} 상세 보기`}
+                    className="contents"
+                  >
+                    <BookCover
+                      bookId={review.bookId}
+                      imgUrl={review.bookImgUrl}
+                      title={review.bookTitle}
+                    />
+                  </Link>
+                  <div>
+                    <strong>{review.bookTitle}</strong>
+                    <small>
+                      {review.reviewer?.githubId ?? "탈퇴한 사용자"}
+                      <RatingValue rating={review.rating} inline />
+                    </small>
+                  </div>
+                  <LikeButton
+                    count={review.likeCount}
+                    liked={review.likedByMe ?? false}
+                    onClick={() => handleToggleLike(review)}
+                  />
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+      <section className="wrap reveal">
+        {latestReviews?.length === 0 ? (
+          <>
+            <h2>최근 리뷰가 추가된 도서</h2>
+            <div className="state">
+              <strong>표시할 리뷰가 없습니다.</strong>
+            </div>
+          </>
+        ) : (
+          <BookTrack title="최근 리뷰가 추가된 도서">
+            {(latestReviews ?? []).map((review) => (
+              <Link key={review.id} href={bookHref(review.bookId)}>
+                <BookCover
+                  bookId={review.bookId}
+                  imgUrl={review.bookImgUrl}
+                  title={review.bookTitle}
                 />
-              </div>
+                <h3>{review.bookTitle}</h3>
+                <p className="meta">{timeAgo(review.createdDate)} 리뷰</p>
+              </Link>
+            ))}
+          </BookTrack>
+        )}
+      </section>
+
+      <section className="reveal widget-section">
+        <div className="wrap widget">
+          <div>
+            <h2>GitHub 프로필에 붙이는 나만의 책장</h2>
+            <p className="lede">
+              코드 한 줄을 README에 붙이면 프로필에 내 책장이 표시됩니다.
+            </p>
+            {isLogin ? (
+              <Link className="btn" href="/mypage">
+                내 서재로 이동
+              </Link>
+            ) : (
+              <GitHubLoginButton>GitHub로 3초 만에 시작하기</GitHubLoginButton>
             )}
-            {section}
-          </Fragment>
-        ))}
-    </>
+          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/widget-sample.svg"
+            alt="리뷰를 쓰거나 보고 싶어요한 책의 표지가 흐르는 위젯 예시"
+          />
+        </div>
+      </section>
+    </div>
   );
 }

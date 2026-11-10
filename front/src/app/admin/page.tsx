@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { useState } from "react";
 
 import { apiFetch } from "@/lib/backend/client";
@@ -7,9 +9,6 @@ import { apiFetch } from "@/lib/backend/client";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useToast } from "@/lib/toast/ToastProvider";
 
-import RoughButton from "@/app/_components/RoughButton";
-import RoughFrame from "@/app/_components/RoughFrame";
-import { RoughInput } from "@/app/_components/RoughInput";
 import BookAdmin from "@/app/admin/BookAdmin";
 import MemberAdmin from "@/app/admin/MemberAdmin";
 import ReviewAdmin from "@/app/admin/ReviewAdmin";
@@ -46,49 +45,63 @@ export default function Page() {
   };
 
   if (isLoginMemberPending) {
-    return <div>로딩중...</div>;
+    return (
+      <div className="wrap admin" aria-busy="true">
+        <span className="sk line" style={{ height: 44 }} />
+      </div>
+    );
   }
 
   if (!isLogin) {
     return (
-      <div className="mx-auto flex min-h-[60vh] w-full max-w-xl items-center justify-center p-4">
-        <div className="relative flex w-full max-w-sm flex-col gap-4 p-6">
-          <RoughFrame className="rough-overlay" variant="card" />
-          <h1 className="mb-4 text-xl font-bold">관리자 로그인</h1>
-          <form className="flex flex-col gap-2" onSubmit={handleLoginSubmit}>
-            <RoughInput
-              type="text"
+      <div className="wrap gate">
+        <h1 className="page-title">관리자 로그인</h1>
+        <form onSubmit={handleLoginSubmit}>
+          <label className="field">
+            아이디
+            <input
               name="username"
-              placeholder="아이디"
-              autoFocus
+              required
               maxLength={30}
+              autoComplete="username"
             />
-            <RoughInput
-              type="password"
+          </label>
+          <label className="field">
+            비밀번호
+            <input
               name="password"
-              placeholder="비밀번호"
+              type="password"
+              required
               maxLength={30}
+              autoComplete="current-password"
             />
-            <div className="pt-1">
-              <RoughButton fullWidth tone="submit" type="submit">
-                <span className="py-1">로그인</span>
-              </RoughButton>
-            </div>
-          </form>
-        </div>
+          </label>
+          <button className="btn">로그인</button>
+        </form>
       </div>
     );
   }
 
   if (!isAdmin) {
-    return <div>관리자 권한이 없는 계정입니다.</div>;
+    return (
+      <div className="wrap">
+        <div className="state">
+          <strong>관리자 권한이 없는 계정입니다.</strong>
+          관리자 계정으로 다시 로그인해 주세요.
+          <div>
+            <Link className="btn line" href="/">
+              홈으로
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <h1 className="text-xl font-bold">관리자 페이지</h1>
-
-      <div className="theme-tab-row flex gap-2">
+    <div className="wrap admin">
+      <h1 className="page-title">관리자 페이지</h1>
+      <div className="tabs" role="tablist">
         {(
           [
             ["members", "회원 관리"],
@@ -99,9 +112,9 @@ export default function Page() {
           <button
             key={value}
             type="button"
-            className={`px-3 py-2 text-sm ${
-              tab === value ? "theme-tab-active" : "theme-tab-inactive"
-            }`}
+            className="tab"
+            role="tab"
+            aria-selected={tab === value}
             onClick={() => setTab(value)}
           >
             {label}
@@ -109,9 +122,11 @@ export default function Page() {
         ))}
       </div>
 
-      {tab === "members" && <MemberAdmin />}
-      {tab === "books" && <BookAdmin />}
-      {tab === "reviews" && <ReviewAdmin />}
+      <div className="swap" role="tabpanel" key={tab}>
+        {tab === "members" && <MemberAdmin />}
+        {tab === "books" && <BookAdmin />}
+        {tab === "reviews" && <ReviewAdmin />}
+      </div>
     </div>
   );
 }

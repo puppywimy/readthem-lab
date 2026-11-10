@@ -8,13 +8,10 @@ import { useAuth } from "@/lib/auth/AuthProvider";
 import { consumeAuthReturnPath } from "@/lib/auth/authReturnPath";
 import { useToast } from "@/lib/toast/ToastProvider";
 
-import RoughButton from "@/app/_components/RoughButton";
-import { RoughInput } from "@/app/_components/RoughInput";
-
 export default function Page() {
   const router = useRouter();
   const { refresh } = useAuth();
-  const { showErrorToast } = useToast();
+  const { showToast, showErrorToast } = useToast();
 
   const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -31,13 +28,13 @@ export default function Page() {
     usernameInput.value = usernameInput.value.trim();
 
     if (usernameInput.value.length === 0) {
-      alert("아이디를 입력해주세요.");
+      showToast("아이디를 입력해주세요.");
       usernameInput.focus();
       return;
     }
 
     if (usernameInput.value.length < 2) {
-      alert("아이디를 2자 이상 입력해주세요.");
+      showToast("아이디를 2자 이상 입력해주세요.");
       usernameInput.focus();
       return;
     }
@@ -45,13 +42,13 @@ export default function Page() {
     passwordInput.value = passwordInput.value.trim();
 
     if (passwordInput.value.length === 0) {
-      alert("비밀번호를 입력해주세요.");
+      showToast("비밀번호를 입력해주세요.");
       passwordInput.focus();
       return;
     }
 
     if (passwordInput.value.length < 2) {
-      alert("비밀번호를 2자 이상 입력해주세요.");
+      showToast("비밀번호를 2자 이상 입력해주세요.");
       passwordInput.focus();
       return;
     }
@@ -64,7 +61,7 @@ export default function Page() {
       }),
     })
       .then((data) => {
-        alert(data.message);
+        showToast(data.message);
         return refresh();
       })
       .then(() => {
@@ -74,30 +71,31 @@ export default function Page() {
   };
 
   return (
-    <>
-      <h1>로그인</h1>
-
-      <form
-        className="flex max-w-sm flex-col gap-2 p-2"
-        onSubmit={handleSubmit}
-      >
-        <RoughInput
-          type="text"
-          name="username"
-          placeholder="아이디"
-          autoFocus
-          maxLength={30}
-        />
-        <RoughInput
-          type="password"
-          name="password"
-          placeholder="비밀번호"
-          maxLength={30}
-        />
-        <RoughButton fullWidth roughSize="lg" tone="submit" type="submit">
-          로그인
-        </RoughButton>
+    <div className="wrap gate">
+      <h1 className="page-title">로그인</h1>
+      <form onSubmit={handleSubmit}>
+        <label className="field">
+          아이디
+          <input
+            name="username"
+            type="text"
+            required
+            maxLength={30}
+            autoComplete="username"
+          />
+        </label>
+        <label className="field">
+          비밀번호
+          <input
+            name="password"
+            type="password"
+            required
+            maxLength={30}
+            autoComplete="current-password"
+          />
+        </label>
+        <button className="btn">로그인</button>
       </form>
-    </>
+    </div>
   );
 }

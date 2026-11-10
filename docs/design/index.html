@@ -2,7 +2,7 @@
 <!--
   Readthem Lab 디자인 가이드 (홈, 도서 검색, 도서 상세, 마이페이지, 관리자, 회원가입 약관)
 
-  - 새 디자인을 보여 주는 정적 프로토타입입니다. API는 연결되어 있지 않고, front/에는 아직 반영되지 않았습니다.
+  - 새 디자인을 보여 주는 정적 프로토타입입니다. API는 연결되어 있지 않습니다. front/의 기준 디자인입니다.
   - 맨 위 검은 막대는 시안 이동용 패널이며 실제 서비스에는 넣지 않습니다.
 -->
 <html lang="ko">
@@ -91,7 +91,7 @@
   h1 { font-size: clamp(2.5rem, 5vw, 4.6rem); line-height: 1.12; letter-spacing: -.03em; font-weight: 800; }
   .lede { margin-top: 20px; font-size: 1.13rem; color: var(--muted); max-width: 30em; }
   .trend-link { display: inline-flex; align-items: flex-start; gap: 1px; padding: 0; font-style: italic; font-weight: 400; }
-  .trend-link span { margin-top: .3em; }
+  .trend-link svg { margin-top: .15em; }
   .trend-link:hover { text-decoration: underline; text-underline-offset: 3px; }
   .search { margin-top: 32px; max-width: 520px; }
   .search label { display: block; font-weight: 600; font-size: .93rem; margin-bottom: 8px; }
@@ -161,7 +161,9 @@
   .track h3 { font-size: .98rem; font-weight: 600; line-height: 1.35; margin-top: 12px; }
 
   .foot { border-top: 1px solid var(--line); padding-block: 28px; color: var(--muted); font-size: .93rem; }
-  .foot .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; justify-content: space-between; }
+  .foot .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; justify-content: space-between; align-items: center; }
+  .foot a { display: flex; }
+  .foot .i { width: 22px; height: 22px; }
 
   .reveal { opacity: 0; transform: translateY(18px); transition: opacity .7s var(--ease), transform .7s var(--ease); }
   .reveal.in { opacity: 1; transform: none; }
@@ -645,7 +647,7 @@ body { margin: 0; }
           </div>
         </div></header>`;
       }
-      const siteFoot = () => `<footer class="foot"><div class="wrap"><span>Readthem Lab</span><a href="https://github.com/prgrms-be-devcourse/NBE10-12-3-ADP" target="_blank" rel="noreferrer">GitHub Repository</a></div></footer>`;
+      const siteFoot = () => `<footer class="foot"><div class="wrap"><span>Readthem Lab</span><a href="https://github.com/prgrms-be-devcourse/NBE10-12-3-ADP" target="_blank" rel="noreferrer" aria-label="GitHub Repository">${icon("github")}</a></div></footer>`;
       const shell = (path, body) => `${siteNav(path)}<main class="page">${body}</main>${siteFoot()}`;
 
       /* ───────── 도서 검색 ───────── */

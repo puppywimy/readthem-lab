@@ -1,20 +1,20 @@
 "use client";
 
-import { Fragment, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { apiFetch } from "@/lib/backend/client";
-import { goToErrorPage } from "@/lib/error/goToErrorPage";
-import { useToast } from "@/lib/toast/ToastProvider";
 
 import type { components } from "@/lib/backend/apiV1/schema";
+import { goToErrorPage } from "@/lib/error/goToErrorPage";
+import { formatDate } from "@/lib/formatDate";
+import { useToast } from "@/lib/toast/ToastProvider";
 
-import AdminRoughDivider from "@/app/admin/AdminRoughDivider";
-import RoughButton from "@/app/_components/RoughButton";
+import Pager from "@/app/admin/Pager";
 
 type PageAdminMemberDto = components["schemas"]["PageAdminMemberDto"];
 
 export default function MemberAdmin() {
-  const { showToast, showErrorToast } = useToast();
+  const { showToast, showErrorToast, confirmAction } = useToast();
   const [pageData, setPageData] = useState<PageAdminMemberDto | null>(null);
   const [pageNumber, setPageNumber] = useState(0);
 
@@ -28,8 +28,8 @@ export default function MemberAdmin() {
     loadMembers(pageNumber);
   }, [pageNumber]);
 
-  const handleForceDelete = (id: number) => {
-    if (!confirm("이 회원을 강제 탈퇴시키겠습니까?")) return;
+  const handleForceDelete = async (id: number) => {
+    if (!(await confirmAction("이 회원을 강제 탈퇴시키겠습니까?"))) return;
 
     apiFetch(`/api/v1/members/admin/${id}`, { method: "DELETE" })
       .then((data) => {
@@ -39,96 +39,72 @@ export default function MemberAdmin() {
       .catch(showErrorToast);
   };
 
-  if (pageData == null) return <div>로딩중...</div>;
+  if (pageData == null)
+    return (
+      <div aria-busy="true" style={{ marginTop: 28 }}>
+        <span className="sk line" style={{ height: 44 }} />
+      </div>
+    );
 
   const members = pageData.content ?? [];
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="overflow-x-auto">
-        <AdminRoughDivider />
-        <table className="w-full text-left text-sm">
-          <thead>
-            <tr>
-              <th className="p-2">ID</th>
-              <th className="p-2">아이디</th>
-              <th className="p-2">닉네임</th>
-              <th className="p-2">GitHub</th>
-              <th className="p-2">권한</th>
-              <th className="p-2">상태</th>
-              <th className="p-2">가입일</th>
-              <th className="p-2"></th>
-            </tr>
-            <tr aria-hidden="true">
-              <td colSpan={8} className="p-0">
-                <AdminRoughDivider />
-              </td>
-            </tr>
-          </thead>
-          <tbody>
-            {members.map((member, index) => (
-              <Fragment key={member.id}>
-                <tr>
-                  <td className="p-2">{member.id}</td>
-                  <td className="p-2">{member.username}</td>
-                  <td className="p-2">{member.nickname}</td>
-                  <td className="p-2">{member.githubId}</td>
-                  <td className="p-2">{member.admin ? "관리자" : "일반"}</td>
-                  <td className="p-2 theme-muted">
-                    {member.deleted ? "탈퇴" : "정상"}
+    <>
+      {members.length === 0 ? (
+        <div className="state">
+          <strong>회원이 없습니다.</strong>
+        </div>
+      ) : (
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th className="num">ID</th>
+                <th>아이디</th>
+                <th>닉네임</th>
+                <th>GitHub</th>
+                <th>권한</th>
+                <th>상태</th>
+                <th>가입일</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {members.map((member) => (
+                <tr key={member.id}>
+                  <td className="num">{member.id}</td>
+                  <td className="nowrap">{member.username}</td>
+                  <td className="nowrap">{member.nickname}</td>
+                  <td className="nowrap">{member.githubId}</td>
+                  <td>
+                    <span className={`badge ${member.admin ? "on" : ""}`}>
+                      {member.admin ? "관리자" : "일반"}
+                    </span>
                   </td>
-                  <td className="p-2 theme-subtle">{member.createdDate}</td>
-                  <td className="p-2">
+                  <td className="nowrap">{member.deleted ? "탈퇴" : "정상"}</td>
+                  <td className="nowrap">{formatDate(member.createdDate)}</td>
+                  <td className="fit">
                     {!member.admin && !member.deleted && (
-                      <RoughButton
-                        roughSize="sm"
-                        tone="cancel"
+                      <button
                         type="button"
-                        onClick={() => {
-                          if (member.id == null) return;
-                          handleForceDelete(member.id);
-                        }}
+                        className="text-btn"
+                        onClick={() => handleForceDelete(member.id)}
                       >
                         강제 탈퇴
-                      </RoughButton>
+                      </button>
                     )}
                   </td>
                 </tr>
-                {index < members.length - 1 && (
-                  <tr aria-hidden="true">
-                    <td colSpan={8} className="p-0">
-                      <AdminRoughDivider />
-                    </td>
-                  </tr>
-                )}
-              </Fragment>
-            ))}
-          </tbody>
-        </table>
-        <AdminRoughDivider />
-      </div>
-
-      <div className="flex items-center gap-2">
-        <RoughButton
-          roughSize="sm"
-          type="button"
-          disabled={pageData.first}
-          onClick={() => setPageNumber((p) => Math.max(0, p - 1))}
-        >
-          이전
-        </RoughButton>
-        <span className="text-sm">
-          {(pageData.number ?? 0) + 1} / {pageData.totalPages ?? 1}
-        </span>
-        <RoughButton
-          roughSize="sm"
-          type="button"
-          disabled={pageData.last}
-          onClick={() => setPageNumber((p) => p + 1)}
-        >
-          다음
-        </RoughButton>
-      </div>
-    </div>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <Pager
+        page={pageData.number ?? 0}
+        totalPages={pageData.totalPages ?? 1}
+        onChange={setPageNumber}
+      />
+    </>
   );
 }
