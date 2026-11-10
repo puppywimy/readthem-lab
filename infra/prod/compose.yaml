@@ -51,7 +51,7 @@ services:
     environment:
       TZ: Asia/Seoul
       INITIAL_ADMIN_EMAIL: admin@npm.com
-      INITIAL_ADMIN_PASSWORD: ${PASSWORD}
+      INITIAL_ADMIN_PASSWORD: ${COMPOSE__NPM_PASSWORD}
     volumes:
       - ./readthem-npm/volumes/data:/data
     restart: unless-stopped
