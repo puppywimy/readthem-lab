@@ -23,6 +23,16 @@ export default function Header() {
   const current = (path: string) =>
     pathname.startsWith(path) ? ("page" as const) : undefined;
 
+  // 홈에서 홈으로 가는 링크는 Next가 스크롤을 옮기지 않으므로 직접 올린다.
+  // Next 내비게이션이 같이 돌면 부드러운 스크롤이 중간에 끊기므로 막는다.
+  const scrollToTopOnHome = (event: React.MouseEvent) => {
+    if (pathname !== "/") return;
+
+    event.preventDefault();
+    window.history.replaceState(null, "", "/");
+    window.scrollTo({ top: 0 });
+  };
+
   const handleLogout = () => {
     saveCurrentAuthReturnPath();
 
@@ -37,13 +47,14 @@ export default function Header() {
   return (
     <header className="nav">
       <div className="wrap">
-        <Link className="logo" href="/">
+        <Link className="logo" href="/" onClick={scrollToTopOnHome}>
           Readthem <em>Lab</em>
         </Link>
         <nav className="links" aria-label="주요 메뉴">
           <Link
             href={pathname === "/" ? "/" : "/books/search"}
             aria-current={current("/books/search")}
+            onClick={scrollToTopOnHome}
           >
             도서 검색
           </Link>
