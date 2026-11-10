@@ -357,7 +357,11 @@ export default function Page() {
       <section className="reveal widget-section">
         <div className="wrap widget">
           <div>
-            <h2>GitHub 프로필에 붙이는 나만의 책장</h2>
+            <h2>
+              GitHub 프로필에 붙이는
+              <br />
+              나만의 책장
+            </h2>
             <p className="lede">
               코드 한 줄을 README에 붙이면 프로필에 내 책장이 표시됩니다.
             </p>
