@@ -18,7 +18,7 @@ class BookScheduler(
         bookService.updateBooksViewCountInDb()
     }
 
-    @Scheduled(initialDelay = 3000)
+//    @Scheduled(initialDelay = 3000)
     fun upsertBooks() {
         bookFetchService.fetchBooksFromLastFetchedPage()
     }
