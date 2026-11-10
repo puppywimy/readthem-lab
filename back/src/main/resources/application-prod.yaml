@@ -3,10 +3,10 @@ spring:
     exclude:
   data:
     redis:
-      host: redis_1
+      host: readthem-redis
       password: ${PROD__SPRING__DATA__REDIS__PASSWORD}
   datasource:
-    url: jdbc:mysql://mysql_1:3306/${PROD__SPRING__DATASOURCE__URL___DB_NAME}?rewriteBatchedStatements=true
+    url: jdbc:mysql://readthem-db:3306/${PROD__SPRING__DATASOURCE__URL___DB_NAME}?rewriteBatchedStatements=true
     username: local
     password: 1234
     driver-class-name: com.mysql.cj.jdbc.Driver

@@ -1,0 +1,251 @@
+name: 🚀 `back` CD
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - ".github/workflows/back-cd.yml"
+      - "back/src/**"
+      - "back/build.gradle.kts"
+      - "back/settings.gradle.kts"
+      - "back/Dockerfile"
+
+env:
+  IMAGE_NAME: readthem-back
+  CONTAINER_1_NAME: readthem-back-1
+  CONTAINER_2_NAME: readthem-back-2
+  APPLICATION_PORT: 8080
+  DOCKERFILE_DIR: back
+  DOCKER_NETWORK: common
+  ENV_FILE: /opt/readthem/.env
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  calculateTag:
+    name: 1. 다음 태그 계산
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      tag: ${{ steps.calculate_tag.outputs.new_tag }}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      # 태그와 릴리즈는 배포가 성공한 뒤 4번 잡에서 만든다. 여기서는 계산만 한다.
+      - name: 다음 태그 계산 (ex. v1.2.3)
+        id: calculate_tag
+        uses: mathieudutour/github-tag-action@v7
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          release_branches: dev
+          dry_run: true
+
+  buildAndPushDockerImage:
+    name: 2. 도커 이미지 빌드 및 푸시
+    needs: [calculateTag]
+    runs-on: ubuntu-26.04-arm
+    permissions:
+      actions: read
+      contents: read
+      packages: write
+
+    steps:
+      # 예전 실행을 재시도하면 옛 코드가 최신 배포를 덮어쓰므로, 이 워크플로의 최신 실행일 때만 진행한다.
+      # 브랜치 최신 커밋과 비교하면 back과 무관한 커밋이 뒤에 올라왔을 때도 실패하므로 실행 ID로 비교한다.
+      - name: 최신 실행인지 확인
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          LATEST_RUN_ID=$(gh run list --workflow back-cd.yml --branch "${GITHUB_REF_NAME}" --limit 1 --json databaseId -q '.[0].databaseId')
+          [[ "${LATEST_RUN_ID}" == "${GITHUB_RUN_ID}" ]] || { echo "stale run: latest is ${LATEST_RUN_ID:-unknown}, this run is ${GITHUB_RUN_ID}"; exit 1; }
+
+      - uses: actions/checkout@v6
+
+      - name: Docker Buildx 설치
+        uses: docker/setup-buildx-action@v4
+
+      - name: 레지스트리 로그인
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 저장소 소유자명을 소문자로 (GHCR 경로 표준화)
+        env:
+          OWNER: "${{ github.repository_owner }}"
+        run: |
+          echo "OWNER_LC=${OWNER,,}" >> "${GITHUB_ENV}"
+
+      - name: "이미지 빌드 및 푸시"
+        uses: docker/build-push-action@v7
+        with:
+          context: ${{ env.DOCKERFILE_DIR }}
+          platforms: linux/arm64
+          push: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: |
+            ghcr.io/${{ env.OWNER_LC }}/${{ env.IMAGE_NAME }}:${{ needs.calculateTag.outputs.tag }}
+            ghcr.io/${{ env.OWNER_LC }}/${{ env.IMAGE_NAME }}:latest
+
+  deploy:
+    name: 3. Blue/Green 무중단 배포
+    runs-on: ubuntu-latest
+    needs: [calculateTag, buildAndPushDockerImage]
+    permissions:
+      actions: read
+
+    steps:
+      - name: 최신 실행인지 확인
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          LATEST_RUN_ID=$(gh run list --workflow back-cd.yml --branch "${GITHUB_REF_NAME}" --limit 1 --json databaseId -q '.[0].databaseId')
+          [[ "${LATEST_RUN_ID}" == "${GITHUB_RUN_ID}" ]] || { echo "stale run: latest is ${LATEST_RUN_ID:-unknown}, this run is ${GITHUB_RUN_ID}"; exit 1; }
+
+      - name: SSH로 배포
+        env:
+          HOST: ${{ secrets.INSTANCE_HOST }}
+          SSH_USER: ${{ secrets.INSTANCE_USER }}
+          SSH_KEY: ${{ secrets.INSTANCE_SSH_KEY }}
+          OWNER: ${{ github.repository_owner }}
+          IMAGE_TAG: ${{ needs.calculateTag.outputs.tag }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+          # GHCR 로그인 정보가 root에 있어(부트스트랩) sudo로 실행한다. 값은 원격 명령의 환경변수로 넘긴다.
+          ssh -i ~/.ssh/deploy_key \
+            -o StrictHostKeyChecking=accept-new \
+            -o ConnectTimeout=20 \
+            "$SSH_USER@$HOST" \
+            "sudo env IMAGE_REPO='ghcr.io/${OWNER,,}/${IMAGE_NAME}' IMAGE_TAG='${IMAGE_TAG}' \
+              CONTAINER_1_NAME='${CONTAINER_1_NAME}' CONTAINER_2_NAME='${CONTAINER_2_NAME}' \
+              APPLICATION_PORT='${APPLICATION_PORT}' NET='${DOCKER_NETWORK}' ENV_FILE='${ENV_FILE}' \
+              bash -s" <<'DEPLOY'
+          set -Eeuo pipefail
+
+          set -a; source /etc/environment; set +a
+
+          IMAGE="${IMAGE_REPO}:${IMAGE_TAG}"
+          NPM_API="https://127.0.0.1:81/api"
+
+          echo "Use image: ${IMAGE}"
+
+          COOKIE_JAR=$(mktemp /tmp/npm-cookie.XXXXXX)
+          trap 'rm -f "${COOKIE_JAR}"' EXIT
+
+          LOGIN_REQUEST_JSON=$(jq -n --arg secret "${BOOTSTRAP_ENV_PASSWORD:-}" '{identity:"admin@npm.com", secret:$secret}')
+          LOGIN_RESPONSE_JSON=$(curl -sk -c "${COOKIE_JAR}" -X POST "${NPM_API}/tokens" \
+            -H "Content-Type: application/json" \
+            -d "${LOGIN_REQUEST_JSON}")
+
+          EXPIRES=$(jq -r '.expires // empty' <<< "${LOGIN_RESPONSE_JSON}")
+          [[ -n "${EXPIRES}" ]] || { echo "NPM login failed: ${LOGIN_RESPONSE_JSON}"; exit 1; }
+          [[ -n "${BOOTSTRAP_ENV_APPLICATION_DOMAIN:-}" ]] || { echo "BOOTSTRAP_ENV_APPLICATION_DOMAIN is empty"; exit 1; }
+
+          PROXY_ID=$(curl -sk -b "${COOKIE_JAR}" "${NPM_API}/nginx/proxy-hosts" \
+            | jq ".[] | select(.domain_names[]==\"${BOOTSTRAP_ENV_APPLICATION_DOMAIN}\") | .id")
+          [[ -n "${PROXY_ID}" && "${PROXY_ID}" != "null" ]] || { echo "Proxy host not found for ${BOOTSTRAP_ENV_APPLICATION_DOMAIN}"; exit 1; }
+
+          CURRENT_HOST=$(curl -sk -b "${COOKIE_JAR}" "${NPM_API}/nginx/proxy-hosts/${PROXY_ID}" \
+            | jq -r '.forward_host')
+          echo "CURRENT_HOST: ${CURRENT_HOST:-none}"
+
+          if [[ "${CURRENT_HOST:-}" == "${CONTAINER_1_NAME}" ]]; then
+            BLUE="${CONTAINER_1_NAME}"
+            GREEN="${CONTAINER_2_NAME}"
+          elif [[ "${CURRENT_HOST:-}" == "${CONTAINER_2_NAME}" ]]; then
+            BLUE="${CONTAINER_2_NAME}"
+            GREEN="${CONTAINER_1_NAME}"
+          else
+            BLUE="none" # 초기 배포
+            GREEN="${CONTAINER_1_NAME}"
+          fi
+          echo "role -> blue(now): ${BLUE}, green(next): ${GREEN}"
+
+          docker pull "${IMAGE}"
+          docker rm -f "${GREEN}" >/dev/null 2>&1 || true
+          echo "run new container → ${GREEN}"
+          docker run -d --name "${GREEN}" \
+            --restart unless-stopped \
+            --network "${NET}" \
+            --env-file "${ENV_FILE}" \
+            -e TZ=Asia/Seoul \
+            --log-opt max-size=100m \
+            --log-opt max-file=3 \
+            "${IMAGE}"
+
+          # 런타임 이미지에 curl이 없을 수 있어 호스트에서 컨테이너 IP로 확인한다
+          GREEN_IP=$(docker inspect -f "{{(index .NetworkSettings.Networks \"${NET}\").IPAddress}}" "${GREEN}")
+          echo "⏱ health-check: ${GREEN} (${GREEN_IP})"
+          TIMEOUT=180
+          INTERVAL=3
+          ELAPSED=0
+          CODE=000
+          while (( ELAPSED < TIMEOUT )); do
+            CODE=$(curl -s -o /dev/null -m 3 -w "%{http_code}" "http://${GREEN_IP}:${APPLICATION_PORT}/actuator/health" || true)
+            [[ "${CODE}" == "200" ]] && { echo "✅ ${GREEN} healthy"; break; }
+            sleep "${INTERVAL}"
+            ELAPSED=$((ELAPSED + INTERVAL))
+          done
+          [[ "${CODE}" == "200" ]] || { echo "❌ ${GREEN} health failed"; docker logs --tail=200 "${GREEN}" || true; docker rm -f "${GREEN}" || true; exit 1; }
+
+          NEW_CONFIG_JSON=$(jq -n --arg host "${GREEN}" --argjson port "${APPLICATION_PORT}" '{forward_host:$host, forward_port:$port}')
+          SWITCH_RESPONSE_JSON=$(curl -sk -m 30 -b "${COOKIE_JAR}" -X PUT "${NPM_API}/nginx/proxy-hosts/${PROXY_ID}" \
+            -H "Content-Type: application/json" \
+            -d "${NEW_CONFIG_JSON}" || true)
+          SWITCHED_HOST=$(jq -r '.forward_host // empty' <<< "${SWITCH_RESPONSE_JSON}" 2>/dev/null || true)
+          if [[ "${SWITCHED_HOST}" != "${GREEN}" ]]; then
+            # PUT 응답이 유실돼도 전환은 적용됐을 수 있어, 실패로 보이면 현재 설정을 다시 조회해 판단한다
+            SWITCHED_HOST=$(curl -sk -m 10 -b "${COOKIE_JAR}" "${NPM_API}/nginx/proxy-hosts/${PROXY_ID}" \
+              | jq -r '.forward_host // empty' || true)
+          fi
+          if [[ "${SWITCHED_HOST}" != "${GREEN}" ]]; then
+            echo "❌ upstream switch failed (now: ${SWITCHED_HOST:-unknown}): ${SWITCH_RESPONSE_JSON}"
+            # 조회까지 실패해 현재 업스트림을 모르면 green이 서비스 중일 수 있으므로 지우지 않는다
+            [[ -n "${SWITCHED_HOST}" ]] && { docker rm -f "${GREEN}" || true; }
+            exit 1
+          fi
+          echo "switch upstream → ${GREEN}:${APPLICATION_PORT}"
+
+          if [[ "${BLUE}" != "none" ]]; then
+            # SIGTERM 후 30초를 기다려 처리 중인 요청을 마치게 한다 (rm -f는 즉시 SIGKILL)
+            docker stop -t 30 "${BLUE}" >/dev/null 2>&1 || true
+            docker rm -f "${BLUE}" >/dev/null 2>&1 || true
+            echo "removed old blue: ${BLUE}"
+          fi
+
+          {
+            docker images --format "{{.Repository}}:{{.Tag}}" \
+              | grep -F "${IMAGE_REPO}:" \
+              | grep -vxF "${IMAGE}" \
+              | grep -vxF "${IMAGE_REPO}:latest" \
+              | xargs -r docker rmi
+          } || true
+
+          echo "Blue/Green switch complete. now blue = ${GREEN}"
+          DEPLOY
+
+  createTagAndRelease:
+    name: 4. 태그 및 릴리즈 생성
+    runs-on: ubuntu-latest
+    needs: [calculateTag, deploy]
+    permissions:
+      contents: write
+
+    steps:
+      - name: 릴리즈 생성 (태그도 함께 생성)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ needs.calculateTag.outputs.tag }}
+        run: gh release create "$TAG" --target "$GITHUB_SHA" --title "Release $TAG" --generate-notes
