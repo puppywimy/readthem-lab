@@ -12,7 +12,7 @@
 
 | 항목 | 규칙 |
 | --- | --- |
-| 타입 | `feat`, `fix`, `docs`, `refactor`, `test`, `ci`, `chore` 등 영어 소문자 |
+| 타입 | `feat`, `fix`, `docs`, `refactor`, `test`, `cicd`, `chore` 등 영어 소문자 |
 | 범위 | 선택 사항. 변경한 영역을 씁니다 (예: `front`, `back`, `widget`, `design`) |
 | 설명 | 한국어로 무엇을 바꿨는지 짧게 씁니다 |
 
@@ -38,9 +38,11 @@
 [레이블] 내용
 ```
 
-레이블은 GitHub 레이블(`fix`, `ci`, `docs`, `feat`, `refactor`) 중 하나를 첫 글자만 대문자로 씁니다.
+레이블은 GitHub 레이블(`fix`, `cicd`, `docs`, `feat`, `refactor`) 중 하나를 첫 글자만 대문자로 씁니다.
 
 예: `[Docs] 문서 구조 개편`, `[Fix] 도서 데이터 적재 오류 수정`
+
+도메인은 제목에 쓰지 않고 도메인 레이블(`front`, `back`, `infra`)을 이슈에 붙입니다. 도메인 밖의 공통 작업이나 문서 작업이면 도메인 레이블을 붙이지 않습니다.
 
 ## 줄바꿈
 

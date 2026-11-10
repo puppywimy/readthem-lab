@@ -103,7 +103,6 @@
   .col { display: grid; gap: 14px; align-content: start; animation: home-drift 70s linear infinite; }
   .col:nth-child(2) { animation-direction: reverse; animation-duration: 85s; }
   .col:nth-child(3) { animation-duration: 60s; }
-  .wall:hover .col { animation-play-state: paused; }
   .col .cover { transition: transform .35s var(--ease); }
   .col .cover:hover { transform: scale(1.03); }
 
@@ -540,7 +539,7 @@ body { margin: 0; }
           <section class="reveal widget-section">
             <div class="wrap widget">
               <div>
-                <h2>GitHub 프로필에 붙이는 나만의 책장</h2>
+                <h2>GitHub 프로필에 붙이는<br>나만의 책장</h2>
                 <p class="lede">코드 한 줄을 README에 붙이면 프로필에 내 책장이 표시됩니다.</p>
                 ${isLogin() ? `<a class="btn" href="#/mypage">내 서재로 이동</a>` : `<a class="btn" href="#" data-act="login">${icon("github")}GitHub로 3초 만에 시작하기</a>`}
               </div>

@@ -291,9 +291,6 @@
   .col:nth-child(3) {
     animation-duration: 60s;
   }
-  .wall:hover .col {
-    animation-play-state: paused;
-  }
   .col .cover {
     transition: transform 0.35s var(--ease);
   }
@@ -489,6 +486,7 @@
   }
   .widget img {
     width: 100%;
+    aspect-ratio: 2/1;
     border-radius: 16px;
   }
   .like {
