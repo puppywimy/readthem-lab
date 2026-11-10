@@ -93,7 +93,7 @@ class ApiV1BookControllerTest {
             )
             .andDo(print())
 
-        val expectedBooks = bookRepository.findByTitleContaining(
+        val expectedBooks = bookRepository.searchByKeyword(
             searchTerm, PageRequest.of(0, 10)
         ).toList()
 

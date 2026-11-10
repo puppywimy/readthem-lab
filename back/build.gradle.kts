@@ -56,6 +56,10 @@ dependencies {
     // WebFlux
     implementation("org.springframework.boot:spring-boot-starter-webflux")
 
+    // Flyway
+    implementation("org.springframework.boot:spring-boot-starter-flyway")
+    implementation("org.flywaydb:flyway-mysql")
+
     // Database
     runtimeOnly("com.mysql:mysql-connector-j")
 
@@ -73,7 +77,6 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-cache-test")
     testImplementation("org.springframework.boot:spring-boot-starter-data-redis-test")
     testImplementation("org.springframework.boot:spring-boot-starter-session-data-redis-test")
-
     testImplementation("io.projectreactor:reactor-test")
     testImplementation("org.testcontainers:testcontainers-mysql")
 
