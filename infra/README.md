@@ -32,6 +32,8 @@ terraform apply
 
 `dev`에 `back` 변경이 push되면 `.github/workflows/back-cd.yml`이 다음 태그 계산 → `linux/arm64` 이미지 빌드(GHCR) → SSH 접속 후 Blue/Green 배포 → 태그·릴리즈 생성 순으로 실행합니다. 새 컨테이너(`readthem-back-1` ↔ `readthem-back-2`)가 `/actuator/health`를 통과하면 NPMplus API로 `application_domain` 프록시 호스트의 업스트림을 바꾸고, 이전 컨테이너를 30초 유예로 멈춘 뒤 지웁니다. 실패하면 새 컨테이너만 지우고 기존 것은 그대로 두며, 태그와 릴리즈도 만들지 않습니다.
 
+빌드와 배포 잡은 시작할 때 자기 커밋이 `dev`의 최신 커밋인지 확인하고, 아니면 실패합니다. 예전 실행을 재시도해 옛 코드가 최신 배포를 덮어쓰는 것을 막기 위해서입니다. 그래서 예전 버전으로 되돌리려면 `dev`에 revert 커밋을 올립니다.
+
 저장소 Actions 시크릿이 필요합니다.
 
 | 시크릿 | 값 |

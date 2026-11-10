@@ -53,6 +53,12 @@ jobs:
       packages: write
 
     steps:
+      # 예전 실행을 재시도하면 옛 코드가 최신 배포를 덮어쓰므로, 브랜치의 최신 커밋일 때만 진행한다
+      - name: 최신 커밋인지 확인
+        run: |
+          HEAD_SHA=$(git ls-remote "https://github.com/${GITHUB_REPOSITORY}" "${GITHUB_REF}" | cut -f1)
+          [[ "${HEAD_SHA}" == "${GITHUB_SHA}" ]] || { echo "stale run: ${GITHUB_REF} is at ${HEAD_SHA:-unknown}, this run is ${GITHUB_SHA}"; exit 1; }
+
       - uses: actions/checkout@v6
 
       - name: Docker Buildx 설치
@@ -89,6 +95,11 @@ jobs:
     needs: [calculateTag, buildAndPushDockerImage]
 
     steps:
+      - name: 최신 커밋인지 확인
+        run: |
+          HEAD_SHA=$(git ls-remote "https://github.com/${GITHUB_REPOSITORY}" "${GITHUB_REF}" | cut -f1)
+          [[ "${HEAD_SHA}" == "${GITHUB_SHA}" ]] || { echo "stale run: ${GITHUB_REF} is at ${HEAD_SHA:-unknown}, this run is ${GITHUB_SHA}"; exit 1; }
+
       - name: SSH로 배포
         env:
           HOST: ${{ secrets.INSTANCE_HOST }}
