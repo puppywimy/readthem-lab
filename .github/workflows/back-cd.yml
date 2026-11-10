@@ -200,11 +200,21 @@ jobs:
           [[ "${CODE}" == "200" ]] || { echo "❌ ${GREEN} health failed"; docker logs --tail=200 "${GREEN}" || true; docker rm -f "${GREEN}" || true; exit 1; }
 
           NEW_CONFIG_JSON=$(jq -n --arg host "${GREEN}" --argjson port "${APPLICATION_PORT}" '{forward_host:$host, forward_port:$port}')
-          SWITCH_RESPONSE_JSON=$(curl -sk -b "${COOKIE_JAR}" -X PUT "${NPM_API}/nginx/proxy-hosts/${PROXY_ID}" \
+          SWITCH_RESPONSE_JSON=$(curl -sk -m 30 -b "${COOKIE_JAR}" -X PUT "${NPM_API}/nginx/proxy-hosts/${PROXY_ID}" \
             -H "Content-Type: application/json" \
-            -d "${NEW_CONFIG_JSON}")
-          SWITCHED_HOST=$(jq -r '.forward_host // empty' <<< "${SWITCH_RESPONSE_JSON}")
-          [[ "${SWITCHED_HOST}" == "${GREEN}" ]] || { echo "❌ upstream switch failed: ${SWITCH_RESPONSE_JSON}"; docker rm -f "${GREEN}" || true; exit 1; }
+            -d "${NEW_CONFIG_JSON}" || true)
+          SWITCHED_HOST=$(jq -r '.forward_host // empty' <<< "${SWITCH_RESPONSE_JSON}" 2>/dev/null || true)
+          if [[ "${SWITCHED_HOST}" != "${GREEN}" ]]; then
+            # PUT 응답이 유실돼도 전환은 적용됐을 수 있어, 실패로 보이면 현재 설정을 다시 조회해 판단한다
+            SWITCHED_HOST=$(curl -sk -m 10 -b "${COOKIE_JAR}" "${NPM_API}/nginx/proxy-hosts/${PROXY_ID}" \
+              | jq -r '.forward_host // empty' || true)
+          fi
+          if [[ "${SWITCHED_HOST}" != "${GREEN}" ]]; then
+            echo "❌ upstream switch failed (now: ${SWITCHED_HOST:-unknown}): ${SWITCH_RESPONSE_JSON}"
+            # 조회까지 실패해 현재 업스트림을 모르면 green이 서비스 중일 수 있으므로 지우지 않는다
+            [[ -n "${SWITCHED_HOST}" ]] && { docker rm -f "${GREEN}" || true; }
+            exit 1
+          fi
           echo "switch upstream → ${GREEN}:${APPLICATION_PORT}"
 
           if [[ "${BLUE}" != "none" ]]; then
