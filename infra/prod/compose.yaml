@@ -1,0 +1,64 @@
+services:
+  redis:
+    image: redis
+    container_name: readthem-redis
+    ports:
+      - "6379:6379"
+    environment:
+      TZ: Asia/Seoul
+    volumes:
+      - ./readthem-redis/volumes/data:/data
+    command: ["--requirepass", "${PROD__SPRING__DATA__REDIS__PASSWORD}"]
+    restart: unless-stopped
+    networks:
+      - common
+
+  mysql:
+    image: mysql:8.4.10
+    container_name: readthem-db
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: ${PROD__SPRING__DATASOURCE__URL___DB_NAME}
+      MYSQL_USER: local
+      MYSQL_PASSWORD: "1234"
+      MYSQL_ROOT_PASSWORD: ${COMPOSE__DB_ROOT_PASSWORD}
+      TZ: Asia/Seoul
+    volumes:
+      - ./readthem-db/volumes/var/lib/mysql:/var/lib/mysql
+      - ./readthem-db/volumes/etc/mysql/conf.d:/etc/mysql/conf.d
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    networks:
+      - common
+
+  npm:
+    image: zoeyvid/npmplus:latest
+    container_name: readthem-npm
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+      - "81:81"
+    environment:
+      TZ: Asia/Seoul
+      INITIAL_ADMIN_EMAIL: admin@npm.com
+      INITIAL_ADMIN_PASSWORD: ${PASSWORD}
+    volumes:
+      - ./readthem-npm/volumes/data:/data
+    restart: unless-stopped
+    networks:
+      - common
+
+networks:
+  common:
+    name: common
+    driver: bridge
