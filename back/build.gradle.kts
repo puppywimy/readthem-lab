@@ -30,9 +30,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 
-    // H2 Console
-    implementation("org.springframework.boot:spring-boot-h2console")
-
     // Spring Security
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-security-oauth2-client")
@@ -60,7 +57,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webflux")
 
     // Database
-    runtimeOnly("com.h2database:h2")
     runtimeOnly("com.mysql:mysql-connector-j")
 
     // Dev
@@ -79,6 +75,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-session-data-redis-test")
 
     testImplementation("io.projectreactor:reactor-test")
+    testImplementation("org.testcontainers:testcontainers-mysql")
 
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }

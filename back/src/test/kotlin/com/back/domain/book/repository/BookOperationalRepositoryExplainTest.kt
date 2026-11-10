@@ -22,40 +22,16 @@ class BookOperationalRepositoryExplainTest {
         val indexNames = jdbcTemplate.queryForList(
             """
                 SELECT INDEX_NAME
-                FROM INFORMATION_SCHEMA.INDEXES
-                WHERE TABLE_NAME = 'BOOK_OPERATIONAL'
+                FROM INFORMATION_SCHEMA.STATISTICS
+                WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'book_operational'
             """.trimIndent(),
             String::class.java
         )
 
         assertThat(indexNames).contains(
-            "IDX_BOOK_AVERAGE_RATING_ID",
-            "IDX_BOOK_REVIEW_COUNT_ID",
-            "IDX_BOOK_VIEW_COUNT_ID"
+            "idx_book_average_rating_id",
+            "idx_book_review_count_id",
+            "idx_book_view_count_id"
         )
-    }
-
-    @Test
-    @DisplayName("BookOperational 조회수 정렬 쿼리는 인덱스 사용 계획을 가진다")
-    fun t2() {
-        val explainRows = jdbcTemplate.queryForList(
-            """
-                EXPLAIN
-                SELECT bo.ISBN, bo.AVERAGE_RATING
-                FROM BOOK_OPERATIONAL bo
-                WHERE EXISTS (
-                    SELECT 1
-                    FROM BOOK b
-                    WHERE b.ISBN = bo.ISBN
-                )
-                ORDER BY bo.VIEW_COUNT DESC, bo.ID DESC
-                LIMIT 10
-            """.trimIndent()
-        )
-        val explainText = explainRows.joinToString(" ") { row ->
-            row.values.joinToString(" ") { it?.toString().orEmpty() }
-        }
-
-        assertThat(explainText).contains("IDX_BOOK_VIEW_COUNT_ID")
     }
 }

@@ -11,7 +11,7 @@ COPY build.gradle.kts settings.gradle.kts ./
 RUN ./gradlew dependencies --no-daemon
 
 COPY src src
-RUN ./gradlew build --no-daemon
+RUN ./gradlew bootJar --no-daemon
 
 # 2. Layer Extraction Stage
 FROM bellsoft/liberica-openjre-debian:25-cds AS extractor

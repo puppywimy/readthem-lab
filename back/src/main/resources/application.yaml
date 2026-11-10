@@ -25,10 +25,9 @@ spring:
       host: dummy
       password: dummy
   datasource:
-    url: jdbc:h2:./db_dev;MODE=MySQL;AUTO_SERVER=TRUE
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
+    url: jdbc:mysql://localhost:3306/readthem?rewriteBatchedStatements=true
+    username: local
+    password: 1234
     hikari:
       auto-commit: false
   jpa:
