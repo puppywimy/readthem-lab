@@ -68,6 +68,7 @@ export default function BookCover({
   fallbackSrc,
 }: BookCoverProps) {
   const [failedUrl, setFailedUrl] = useState<string | null>(null);
+  const [loadedUrl, setLoadedUrl] = useState<string | null>(null);
   const normalizedImgUrl = imgUrl?.trim() || null;
   const [fetchedThumbnail, setFetchedThumbnail] = useState<{
     bookId: number;
@@ -126,6 +127,15 @@ export default function BookCover({
           src={thumbnailUrl}
           // 정적 표지 위에 겹칠 때는 불러오는 동안 대체 글자가 비치지 않게 비운다
           alt={fallbackSrc != null ? "" : `${title ?? "도서"} 표지`}
+          // 정적 표지 위에서는 다 불러온 뒤에 서서히 나타나게 한다
+          className={
+            fallbackSrc == null
+              ? undefined
+              : thumbnailUrl === loadedUrl
+                ? "swap in"
+                : "swap"
+          }
+          onLoad={() => setLoadedUrl(thumbnailUrl)}
           onError={() => setFailedUrl(thumbnailUrl)}
         />
       )}
