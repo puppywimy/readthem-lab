@@ -65,10 +65,6 @@ class SecurityConfig(
                 authorize(anyRequest, permitAll)
             }
 
-            headers {
-                frameOptions { sameOrigin = true }
-            }
-
             csrf { disable() }
             formLogin { disable() }
             logout { disable() }

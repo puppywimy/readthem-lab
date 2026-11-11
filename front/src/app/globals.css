@@ -195,6 +195,13 @@
     height: 100%;
     object-fit: cover;
   }
+  .cover img.swap {
+    opacity: 0;
+    transition: opacity 0.8s ease;
+  }
+  .cover img.swap.in {
+    opacity: 1;
+  }
 
   /* 히어로 */
   .hero {
@@ -275,6 +282,9 @@
     grid-template-columns: repeat(3, 1fr);
     gap: 14px;
     padding-right: var(--gutter);
+    /* 첫 열 표지의 그림자와 호버 확대가 왼쪽에서 잘리지 않게, 자리는 그대로 두고 여유만 준다. */
+    margin-left: -16px;
+    padding-left: 16px;
     overflow: hidden;
     mask-image: linear-gradient(transparent, #000 7%, #000 93%, transparent);
   }
@@ -622,6 +632,7 @@
     }
     .wall {
       height: 280px;
+      margin-left: 0;
       padding-inline: var(--gutter);
       gap: 10px;
     }

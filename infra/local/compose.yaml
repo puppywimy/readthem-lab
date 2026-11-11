@@ -1,0 +1,18 @@
+# 로컬 개발용 MySQL. 계정과 DB 이름은 back/src/main/resources/application.yaml의 datasource와 맞춘다.
+services:
+  mysql:
+    image: mysql:8.4.10
+    container_name: readthem-local-db
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: readthem
+      MYSQL_USER: local
+      MYSQL_PASSWORD: "1234"
+      MYSQL_ROOT_PASSWORD: "1234"
+      TZ: Asia/Seoul
+    volumes:
+      - readthem-local-db:/var/lib/mysql
+
+volumes:
+  readthem-local-db:
