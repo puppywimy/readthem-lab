@@ -1,6 +1,6 @@
 # Infra
 
-OCI(도쿄, `ap-tokyo-1`)에 운영 환경을 만드는 Terraform 코드입니다. 환경별로 폴더를 나누며 지금은 `prod`만 있습니다.
+OCI(도쿄, `ap-tokyo-1`)에 운영 환경을 만드는 Terraform 코드입니다. 환경별로 폴더를 나누며 지금은 `prod`만 있습니다. `prod/terraform`에 Terraform 코드가 있고, `prod/compose.yaml`은 버킷에 올려 부트스트랩이 내려받는 파일입니다.
 
 ## 미리 준비할 것
 
@@ -15,9 +15,9 @@ Terraform이 만들지 않고 조회만 하는 자원입니다. `apply` 전에 �
 
 ## 적용
 
-1. `prod/secrets.tf.example`을 `prod/secrets.tf`로 복사해 값을 채웁니다. `secrets.tf`와 state 파일은 커밋하지 않습니다.
+1. `prod/terraform/secrets.tf.example`을 `prod/terraform/secrets.tf`로 복사해 값을 채웁니다. `secrets.tf`와 state 파일은 커밋하지 않습니다.
 2. `prod/compose.yaml`과 운영용 `.env`를 버킷 최상위에 올립니다.
-3. `prod`에서 실행합니다.
+3. `prod/terraform`에서 실행합니다.
 
 ```bash
 terraform init
