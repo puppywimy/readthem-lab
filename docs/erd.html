@@ -87,6 +87,7 @@
   <body>
     <main>
       <h1>READTHEM.md ERD</h1>
+      <p>스키마의 기준은 <code>back/src/main/resources/db/migration/</code>의 마이그레이션 파일입니다. 이 문서는 그 내용을 그림으로 옮긴 것입니다.</p>
 
       <div class="scroll"><div class="stage" id="stage"><svg id="lines" aria-hidden="true"></svg></div></div>
 
@@ -123,6 +124,7 @@
             <li><code>book_operational (average_rating DESC, id DESC)</code></li>
             <li><code>book_operational (review_count DESC, id DESC)</code></li>
             <li><code>book_operational (view_count DESC, id DESC)</code></li>
+            <li><code>book (title, authors, publisher)</code> FULLTEXT, ngram 파서</li>
           </ul>
         </section>
       </section>

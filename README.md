@@ -42,7 +42,7 @@ READTHEM.md는 도서를 검색하고, 리뷰를 작성하고, 찜 목록을 관
 ### Backend
 
 - Java 25, Spring Boot 4.0.6
-- MySQL, H2 Database, Redis, Spring Data JPA
+- MySQL, Redis, Spring Data JPA, Flyway
 - Springdoc OpenAPI, Spring Validation, Spring AOP
 
 ### Frontend
@@ -55,6 +55,7 @@ READTHEM.md는 도서를 검색하고, 리뷰를 작성하고, 찜 목록을 관
 - pnpm 또는 npm
 - Java 25
 - Spring Boot, MySQL, Redis
+- Docker (로컬 MySQL, 백엔드 테스트의 Testcontainers)
 
 ## 환경 변수
 
@@ -90,7 +91,10 @@ CUSTOM__SECURITY__COOKIE_DOMAIN=localhost
 
 ### 1. 백엔드 실행
 
+로컬 MySQL을 먼저 띄웁니다. 백엔드가 기동할 때 Flyway가 `back/src/main/resources/db/migration/`의 마이그레이션으로 스키마를 만듭니다.
+
 ```bash
+docker compose -f infra/local/compose.yaml up -d
 cd back
 ./gradlew bootRun
 ```
@@ -141,7 +145,7 @@ npm start
 ### `back`
 
 - `./gradlew bootRun`: 서버 실행
-- `./gradlew test`: 테스트 실행
+- `./gradlew test`: 테스트 실행 (Testcontainers가 MySQL을 띄우므로 Docker 필요)
 - `./gradlew bootJar`: 실행 JAR 생성
 
 ## 브랜치 전략
