@@ -13,3 +13,10 @@
 ## 로컬·테스트 DB도 MySQL을 쓴다 (H2 제거)
 
 마이그레이션에 H2에서 실행되지 않는 MySQL 문법(FULLTEXT 인덱스 등)이 들어가므로 H2를 걷어냈습니다. 로컬은 `infra/local/compose.yaml`의 MySQL, 테스트는 Testcontainers의 MySQL을 씁니다. 그래서 테스트 실행에는 Docker가 필요합니다.
+
+## 인증 쿠키 SameSite
+
+- `cookieSecure=true`(운영)면 `SameSite=None`, 아니면 `Strict`를 쓴다. (`Rq.setCookie`)
+- 이유: 프론트(`pages.dev`)와 백엔드가 서로 다른 사이트라 운영에서는 `None`이 필요하고, `None`은 `Secure` 없이는 브라우저가 거부해 로컬에서는 `Strict`를 쓴다.
+- `CUSTOM__PROD__COOKIE_DOMAIN`은 프론트가 아니라 백엔드 도메인이어야 한다.
+- 한계: 서드파티 쿠키를 차단하는 브라우저(Safari, Chrome 시크릿)에서는 로그인이 유지되지 않는다. 프론트와 백엔드를 같은 사이트로 묶으면 운영도 `Strict`로 되돌릴 수 있다.

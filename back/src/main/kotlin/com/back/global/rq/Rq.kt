@@ -78,7 +78,8 @@ class Rq(
         cookie.isHttpOnly = true
         cookie.domain = AppConfig.cookieDomain
         cookie.secure = AppConfig.cookieSecure
-        cookie.setAttribute("SameSite", "Strict")
+        // SameSite=None은 Secure가 필수라, secure가 꺼진 로컬(같은 사이트)에서는 Strict를 쓴다.
+        cookie.setAttribute("SameSite", if (AppConfig.cookieSecure) "None" else "Strict")
 
         if (value.isBlank()) cookie.maxAge = 0
         else cookie.maxAge = maxAge
