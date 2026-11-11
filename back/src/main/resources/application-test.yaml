@@ -2,10 +2,7 @@ server:
   ssl.enabled: false
 spring:
   datasource:
-    url: jdbc:h2:mem:db_test;MODE=MySQL
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
+    url: jdbc:tc:mysql:8.4.10:///db_test
   security:
     oauth2:
       client:

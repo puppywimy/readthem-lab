@@ -2,6 +2,7 @@ package com.back.domain.book.controller
 
 import com.back.domain.book.repository.BookOperationalRepository
 import com.back.domain.book.repository.BookRepository
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -93,9 +94,10 @@ class ApiV1BookControllerTest {
             )
             .andDo(print())
 
-        val expectedBooks = bookRepository.findByTitleContaining(
+        val expectedBooks = bookRepository.searchByKeyword(
             searchTerm, PageRequest.of(0, 10)
         ).toList()
+        assertThat(expectedBooks).isNotEmpty()
 
         resultActions
             .andExpect(status().isOk())
