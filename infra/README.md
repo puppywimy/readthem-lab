@@ -45,7 +45,7 @@ Caddyfile을 저장소에서 고치면 부트스트랩이 바뀌어 `apply` 때 
 sudo docker exec readthem-caddy caddy reload --config /etc/caddy/Caddyfile
 ```
 
-인증서는 `readthem-caddy/volumes/data`(부트 볼륨)에 있어 인스턴스를 교체하면 다시 발급됩니다.
+인증서는 볼륨 없이 컨테이너 안에 있어, 인스턴스를 교체하거나 Caddy 컨테이너를 다시 만들면 다시 발급됩니다.
 
 ## 백엔드 배포
 
@@ -67,4 +67,4 @@ DB 마이그레이션은 새 컨테이너가 기동할 때 Flyway가 실행합�
 
 GitHub 러너 IP가 고정이 아니라 22번 포트는 러너에서 닿을 수 있어야 합니다.
 
-부트스트랩 스크립트를 고치고 `apply`하면 인스턴스가 교체됩니다. 스크립트에 들어가는 변수(`application_domain` 등)나 `ssh_public_key`를 바꿔도 마찬가지입니다. MySQL, Redis 데이터와 Caddy 인증서는 부트 볼륨에 있어 교체와 함께 사라지므로, `plan`에서 교체 여부를 먼저 확인합니다.
+부트스트랩 스크립트를 고치고 `apply`하면 인스턴스가 교체됩니다. 스크립트에 들어가는 변수(`application_domain` 등)나 `ssh_public_key`를 바꿔도 마찬가지입니다. MySQL, Redis 데이터는 부트 볼륨에 있어 교체와 함께 사라지므로, `plan`에서 교체 여부를 먼저 확인합니다.

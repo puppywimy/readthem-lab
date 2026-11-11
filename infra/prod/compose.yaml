@@ -50,9 +50,7 @@ services:
     environment:
       TZ: Asia/Seoul
     volumes:
-      # 파일이 아니라 폴더를 마운트한다. CD가 upstream 파일을 덮어써도 컨테이너에서 바로 보인다.
       - ./readthem-caddy/volumes/etc/caddy:/etc/caddy
-      - ./readthem-caddy/volumes/data:/data
     restart: unless-stopped
     networks:
       - common
