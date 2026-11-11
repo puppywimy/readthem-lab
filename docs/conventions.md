@@ -62,6 +62,8 @@ V{번호}__{설명}.sql
 
 `validate`는 테이블·컬럼·타입만 대조하고 인덱스와 유니크 제약은 검사하지 않습니다. 엔티티의 `@Table(indexes = ...)`, `unique = true`는 스키마에 반영되지 않으며 어떤 인덱스가 있는지 알려 주는 표시일 뿐입니다. 인덱스·제약을 추가하거나 바꿀 때는 마이그레이션 파일에 직접 쓰고, 엔티티의 표시도 함께 맞춥니다.
 
+FULLTEXT 인덱스를 만들거나 다시 만드는 마이그레이션은 `CREATE` 앞에 `SET SESSION innodb_ft_enable_stopword = OFF;`를 둡니다(`V1__init.sql` 참고). 빠뜨리면 불용어(`a`, `i`, `in` 등)가 든 ngram 토큰이 인덱스에서 빠져 영문 검색 결과가 줄어듭니다.
+
 ## 줄바꿈
 
 저장소의 줄바꿈은 LF로 통일합니다. 루트 `.gitattributes`가 적용하며, `.bat` 파일만 `back/.gitattributes`에 따라 CRLF를 씁니다.
