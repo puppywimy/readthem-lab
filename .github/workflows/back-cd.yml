@@ -18,6 +18,8 @@ env:
   DOCKERFILE_DIR: back
   DOCKER_NETWORK: common
   ENV_FILE: /opt/readthem/.env
+  CADDY_CONTAINER: readthem-caddy
+  UPSTREAM_FILE: /opt/readthem/readthem-caddy/volumes/etc/caddy/upstream
 
 concurrency:
   group: deploy
@@ -130,34 +132,17 @@ jobs:
             "sudo env IMAGE_REPO='ghcr.io/${OWNER,,}/${IMAGE_NAME}' IMAGE_TAG='${IMAGE_TAG}' \
               CONTAINER_1_NAME='${CONTAINER_1_NAME}' CONTAINER_2_NAME='${CONTAINER_2_NAME}' \
               APPLICATION_PORT='${APPLICATION_PORT}' NET='${DOCKER_NETWORK}' ENV_FILE='${ENV_FILE}' \
+              CADDY_CONTAINER='${CADDY_CONTAINER}' UPSTREAM_FILE='${UPSTREAM_FILE}' \
               bash -s" <<'DEPLOY'
           set -Eeuo pipefail
 
-          set -a; source /etc/environment; set +a
-
           IMAGE="${IMAGE_REPO}:${IMAGE_TAG}"
-          NPM_API="https://127.0.0.1:81/api"
 
           echo "Use image: ${IMAGE}"
 
-          COOKIE_JAR=$(mktemp /tmp/npm-cookie.XXXXXX)
-          trap 'rm -f "${COOKIE_JAR}"' EXIT
-
-          LOGIN_REQUEST_JSON=$(jq -n --arg secret "${BOOTSTRAP_ENV_PASSWORD:-}" '{identity:"admin@npm.com", secret:$secret}')
-          LOGIN_RESPONSE_JSON=$(curl -sk -c "${COOKIE_JAR}" -X POST "${NPM_API}/tokens" \
-            -H "Content-Type: application/json" \
-            -d "${LOGIN_REQUEST_JSON}")
-
-          EXPIRES=$(jq -r '.expires // empty' <<< "${LOGIN_RESPONSE_JSON}")
-          [[ -n "${EXPIRES}" ]] || { echo "NPM login failed: ${LOGIN_RESPONSE_JSON}"; exit 1; }
-          [[ -n "${BOOTSTRAP_ENV_APPLICATION_DOMAIN:-}" ]] || { echo "BOOTSTRAP_ENV_APPLICATION_DOMAIN is empty"; exit 1; }
-
-          PROXY_ID=$(curl -sk -b "${COOKIE_JAR}" "${NPM_API}/nginx/proxy-hosts" \
-            | jq ".[] | select(.domain_names[]==\"${BOOTSTRAP_ENV_APPLICATION_DOMAIN}\") | .id")
-          [[ -n "${PROXY_ID}" && "${PROXY_ID}" != "null" ]] || { echo "Proxy host not found for ${BOOTSTRAP_ENV_APPLICATION_DOMAIN}"; exit 1; }
-
-          CURRENT_HOST=$(curl -sk -b "${COOKIE_JAR}" "${NPM_API}/nginx/proxy-hosts/${PROXY_ID}" \
-            | jq -r '.forward_host')
+          # 현재 업스트림은 Caddy가 import하는 upstream 파일에 있다. 부트스트랩 직후에는 "respond 503"이라 초기 배포로 처리된다.
+          UPSTREAM=$(cat "${UPSTREAM_FILE}")
+          CURRENT_HOST=$(sed -nE 's/^reverse_proxy ([^:]+):.*/\1/p' <<< "${UPSTREAM}")
           echo "CURRENT_HOST: ${CURRENT_HOST:-none}"
 
           if [[ "${CURRENT_HOST:-}" == "${CONTAINER_1_NAME}" ]]; then
@@ -199,20 +184,12 @@ jobs:
           done
           [[ "${CODE}" == "200" ]] || { echo "❌ ${GREEN} health failed"; docker logs --tail=200 "${GREEN}" || true; docker rm -f "${GREEN}" || true; exit 1; }
 
-          NEW_CONFIG_JSON=$(jq -n --arg host "${GREEN}" --argjson port "${APPLICATION_PORT}" '{forward_host:$host, forward_port:$port}')
-          SWITCH_RESPONSE_JSON=$(curl -sk -m 30 -b "${COOKIE_JAR}" -X PUT "${NPM_API}/nginx/proxy-hosts/${PROXY_ID}" \
-            -H "Content-Type: application/json" \
-            -d "${NEW_CONFIG_JSON}" || true)
-          SWITCHED_HOST=$(jq -r '.forward_host // empty' <<< "${SWITCH_RESPONSE_JSON}" 2>/dev/null || true)
-          if [[ "${SWITCHED_HOST}" != "${GREEN}" ]]; then
-            # PUT 응답이 유실돼도 전환은 적용됐을 수 있어, 실패로 보이면 현재 설정을 다시 조회해 판단한다
-            SWITCHED_HOST=$(curl -sk -m 10 -b "${COOKIE_JAR}" "${NPM_API}/nginx/proxy-hosts/${PROXY_ID}" \
-              | jq -r '.forward_host // empty' || true)
-          fi
-          if [[ "${SWITCHED_HOST}" != "${GREEN}" ]]; then
-            echo "❌ upstream switch failed (now: ${SWITCHED_HOST:-unknown}): ${SWITCH_RESPONSE_JSON}"
-            # 조회까지 실패해 현재 업스트림을 모르면 green이 서비스 중일 수 있으므로 지우지 않는다
-            [[ -n "${SWITCHED_HOST}" ]] && { docker rm -f "${GREEN}" || true; }
+          echo "reverse_proxy ${GREEN}:${APPLICATION_PORT}" > "${UPSTREAM_FILE}"
+          if ! docker exec "${CADDY_CONTAINER}" caddy reload --config /etc/caddy/Caddyfile; then
+            # reload가 실패하면 Caddy는 이전 설정으로 계속 응답한다. 파일도 되돌려 실제 업스트림과 맞춘다.
+            echo "❌ upstream switch failed"
+            echo "${UPSTREAM}" > "${UPSTREAM_FILE}"
+            docker rm -f "${GREEN}" || true
             exit 1
           fi
           echo "switch upstream → ${GREEN}:${APPLICATION_PORT}"

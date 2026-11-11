@@ -172,7 +172,6 @@ locals {
   ingress_rules = [
     { protocol = "tcp", port = 22 },
     { protocol = "tcp", port = 80 },
-    { protocol = "tcp", port = 81 },
     { protocol = "tcp", port = 443 },
     { protocol = "udp", port = 443 },
   ]
@@ -212,10 +211,6 @@ locals {
   sudo swapon /swapfile
   sudo sh -c 'echo "/swapfile swap swap defaults 0 0" >> /etc/fstab'
 
-  echo "BOOTSTRAP_ENV_PASSWORD=${var.password}" >> /etc/environment
-  echo "BOOTSTRAP_ENV_APPLICATION_DOMAIN=${var.application_domain}" >> /etc/environment
-  source /etc/environment
-
   echo "================ 1. Set up Docker ================"
   # Reserved Public IP는 인스턴스 생성 후 연결되므로, 연결 전엔 외부 통신 불가 → apt 저장소에 닿을 때까지 재시도 (최대 10분)
   SECONDS=0
@@ -223,7 +218,7 @@ locals {
     [ "$SECONDS" -ge 600 ] && { echo "network not ready after 10min"; exit 1; }
     sleep 5
   done
-  sudo apt-get install -y ca-certificates curl jq
+  sudo apt-get install -y ca-certificates curl
   sudo install -m 0755 -d /etc/apt/keyrings
   sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
   sudo chmod a+r /etc/apt/keyrings/docker.asc
@@ -278,7 +273,14 @@ locals {
   done
   echo "=================================================="
 
-  echo "======== 6. Docker Compose & Restore Data ========"
+  echo "============== 6. Write Caddy Config ============="
+  # 첫 배포 전에는 503을 응답한다. CD가 upstream 파일을 "reverse_proxy {컨테이너}:{포트}"로 덮어쓰고 caddy reload 한다.
+  mkdir -p /opt/${var.prefix}/readthem-caddy/volumes/etc/caddy
+  printf '%s {\n\timport upstream\n}\n' "${var.application_domain}" > /opt/${var.prefix}/readthem-caddy/volumes/etc/caddy/Caddyfile
+  echo "respond 503" > /opt/${var.prefix}/readthem-caddy/volumes/etc/caddy/upstream
+  echo "=================================================="
+
+  echo "======== 7. Docker Compose & Restore Data ========"
   cd /opt/${var.prefix}
 
   docker compose up -d --wait mysql
