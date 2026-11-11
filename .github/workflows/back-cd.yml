@@ -140,6 +140,9 @@ jobs:
 
           echo "Use image: ${IMAGE}"
 
+          # 이전 배포가 upstream 파일만 쓰고 끊겼을 수 있으므로, Caddy를 파일과 먼저 맞춘다. 설정이 같으면 아무 일도 하지 않는다.
+          docker exec "${CADDY_CONTAINER}" caddy reload --config /etc/caddy/Caddyfile
+
           # 현재 업스트림은 Caddy가 import하는 upstream 파일에 있다. 부트스트랩 직후에는 "respond 503"이라 초기 배포로 처리된다.
           UPSTREAM=$(cat "${UPSTREAM_FILE}")
           CURRENT_HOST=$(sed -nE 's/^reverse_proxy ([^:]+):.*/\1/p' <<< "${UPSTREAM}")

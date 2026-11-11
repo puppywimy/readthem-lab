@@ -49,7 +49,7 @@ sudo docker exec readthem-caddy caddy reload --config /etc/caddy/Caddyfile
 
 ## 백엔드 배포
 
-`dev`에 `back` 변경이 push되면 `.github/workflows/back-cd.yml`이 다음 태그 계산 → `linux/arm64` 이미지 빌드(GHCR) → SSH 접속 후 Blue/Green 배포 → 태그·릴리즈 생성 순으로 실행합니다. 새 컨테이너(`readthem-back-1` ↔ `readthem-back-2`)가 `/actuator/health`를 통과하면 `upstream` 파일을 새 컨테이너로 덮어쓰고 `caddy reload`한 뒤, 이전 컨테이너를 30초 유예로 멈춘 뒤 지웁니다. 실패하면 새 컨테이너만 지우고 기존 것은 그대로 두며, 태그와 릴리즈도 만들지 않습니다. 현재 업스트림도 `upstream` 파일에서 읽으며, 파일이 두 컨테이너 중 어느 것도 가리키지 않으면 초기 배포로 처리합니다.
+`dev`에 `back` 변경이 push되면 `.github/workflows/back-cd.yml`이 다음 태그 계산 → `linux/arm64` 이미지 빌드(GHCR) → SSH 접속 후 Blue/Green 배포 → 태그·릴리즈 생성 순으로 실행합니다. 새 컨테이너(`readthem-back-1` ↔ `readthem-back-2`)가 `/actuator/health`를 통과하면 `upstream` 파일을 새 컨테이너로 덮어쓰고 `caddy reload`한 뒤, 이전 컨테이너를 30초 유예로 멈춘 뒤 지웁니다. 실패하면 새 컨테이너만 지우고 기존 것은 그대로 두며, 태그와 릴리즈도 만들지 않습니다. 현재 업스트림도 `upstream` 파일에서 읽으며, 파일이 두 컨테이너 중 어느 것도 가리키지 않으면 초기 배포로 처리합니다. 파일을 읽기 전에 `caddy reload`를 한 번 먼저 실행해, 이전 배포가 파일만 쓰고 끊겼더라도 Caddy가 파일과 같은 업스트림을 쓰게 맞춥니다.
 
 DB 마이그레이션은 새 컨테이너가 기동할 때 Flyway가 실행합니다. 아직 적용되지 않은 `db/migration/` 파일을 순서대로 적용한 뒤 `validate`로 엔티티와 스키마를 대조하고, 어긋나면 기동이 실패해 헬스 체크를 통과하지 못합니다. 이때 이전 컨테이너는 이전 코드로 트래픽을 계속 받고 있고, 새 컨테이너가 지워져도 이미 적용된 마이그레이션은 되돌려지지 않습니다. 그래서 마이그레이션은 이전 버전 코드와 호환되게 씁니다(`docs/guardrails.md`).
 
