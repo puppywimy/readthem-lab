@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional
 @ActiveProfiles("test")
 @SpringBootTest
 @Transactional
-class BookOperationalRepositoryExplainTest {
+class BookOperationalIndexTest {
     @Autowired
     private lateinit var jdbcTemplate: JdbcTemplate
 
