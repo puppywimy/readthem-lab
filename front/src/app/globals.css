@@ -34,6 +34,7 @@
   --on-accent: light-dark(#f7f8ff, #0f1115);
   --feature: light-dark(#1f3fd6, #2a3a8f);
   --on-feature: #f7f8ff;
+  --shadow: light-dark(#14161a, #000);
   --gutter: clamp(16px, 4vw, 56px);
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
   background: var(--bg);
@@ -179,7 +180,7 @@
     background: var(--line);
     color: var(--muted);
     box-shadow: 0 10px 24px -14px
-      color-mix(in srgb, var(--ink) 55%, transparent);
+      color-mix(in srgb, var(--shadow) 55%, transparent);
   }
   /* 썸네일이 없거나 불러오지 못했을 때의 안내 문구 */
   .cover > span {
@@ -201,6 +202,13 @@
   .cover.loading img {
     opacity: 0;
   }
+  /* 썸네일 없음: 패널과 같은 바탕에 책등 띠와 얇은 테두리만 둔다 */
+  .cover.empty {
+    background: linear-gradient(90deg, var(--line) 0 6%, var(--surface) 6%);
+    box-shadow:
+      inset 0 0 0 1px var(--line),
+      0 10px 24px -14px color-mix(in srgb, var(--shadow) 55%, transparent);
+  }
   /* 작은 표지는 글자를 넣기 어려워 안내 문구가 든 표지 이미지를 깐다 */
   .rows .cover.empty,
   .rv-foot .cover.empty,
@@ -218,6 +226,8 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+    /* 다 불러오면 스켈레톤 위로 서서히 나타난다 */
+    transition: opacity 0.4s ease;
   }
   .cover img.swap {
     opacity: 0;
