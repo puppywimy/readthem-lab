@@ -59,22 +59,33 @@ interface BookRepository : JpaRepository<Book, Long>, BookRepositoryCustom {
     )
     fun findBooksWithoutOperationalOrderByIdDesc(pageable: Pageable): List<Book>
 
+    /**
+     * 제목·저자 전처리 컬럼(`search_text`)에서 [keyword]를 구문 검색한다.
+     *
+     * [keyword]는 BookSearchTextNormalizer로 전처리한 비어 있지 않은 값이어야 한다.
+     * 전처리 결과에는 글자·숫자·대체 문자만 남으므로 BOOLEAN MODE 연산자나 LIKE 와일드카드가 들어가지 않는다.
+     *
+     * 정렬: 제목 완전 일치 → 제목 앞부분 일치 → 관련도 내림차순 → id 내림차순.
+     * 컬럼 값이 '전처리한 제목 + 공백 + 전처리한 저자'라서 'keyword %'는 제목 완전 일치, 'keyword%'는 제목 앞부분 일치다.
+     */
     @Query(
         value = """
             SELECT b.*
             FROM book b
-            WHERE MATCH(b.title, b.authors, b.publisher)
-                  AGAINST(:keyword IN BOOLEAN MODE)
+            WHERE MATCH(b.search_text)
+                  AGAINST(CONCAT('"', :keyword, '"') IN BOOLEAN MODE)
             ORDER BY
-                MATCH(b.title, b.authors, b.publisher)
-                AGAINST(:keyword IN BOOLEAN MODE) DESC,
+                b.search_text LIKE CONCAT(:keyword, ' %') DESC,
+                b.search_text LIKE CONCAT(:keyword, '%') DESC,
+                MATCH(b.search_text)
+                AGAINST(CONCAT('"', :keyword, '"') IN BOOLEAN MODE) DESC,
                 b.id DESC
         """,
         countQuery = """
             SELECT COUNT(*)
             FROM book b
-            WHERE MATCH(b.title, b.authors, b.publisher)
-                  AGAINST(:keyword IN BOOLEAN MODE)
+            WHERE MATCH(b.search_text)
+                  AGAINST(CONCAT('"', :keyword, '"') IN BOOLEAN MODE)
         """,
         nativeQuery = true
     )

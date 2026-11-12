@@ -2,14 +2,11 @@ package com.back.domain.book.controller
 
 import com.back.domain.book.repository.BookOperationalRepository
 import com.back.domain.book.repository.BookRepository
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.test.context.support.WithUserDetails
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
@@ -85,19 +82,16 @@ class ApiV1BookControllerTest {
     @DisplayName("도서 검색 다건 조회")
     @Throws(Exception::class)
     fun t4() {
-        val searchTerm = "책제목"
+        // BaseInitData의 도서: 제목 완전 일치가 먼저, 나머지 앞부분 일치는 관련도가 같아 id 내림차순
+        val expectedTitles = listOf("책제목", "책제목4", "책제목3", "책제목2")
+        val expectedBooks = expectedTitles.map { title -> bookRepository.findAll().first { it.title == title } }
 
         val resultActions = mvc
             .perform(
                 get("/api/v1/books/search")
-                    .param("searchTerm", searchTerm)
+                    .param("searchTerm", "책 제목")
             )
             .andDo(print())
-
-        val expectedBooks = bookRepository.searchByKeyword(
-            searchTerm, PageRequest.of(0, 10)
-        ).toList()
-        assertThat(expectedBooks).isNotEmpty()
 
         resultActions
             .andExpect(status().isOk())
@@ -106,15 +100,32 @@ class ApiV1BookControllerTest {
         for (i in expectedBooks.indices) {
             val expected = expectedBooks[i]
             val expectedAvgRating =
-                bookRepository.findByIdOrNull(expected.id)?.let {
-                    bookOperationalRepository
-                        .findByIsbn(it.isbn)?.averageRating ?: 0
-                }
+                bookOperationalRepository.findByIsbn(expected.isbn)?.averageRating ?: 0
             resultActions
                 .andExpect(jsonPath("$[$i].id").value(expected.id))
                 .andExpect(jsonPath("$[$i].title").value(expected.title))
                 .andExpect(jsonPath("$[$i].imgUrl").value(expected.imgUrl))
                 .andExpect(jsonPath("$[$i].averageRating").value(expectedAvgRating))
         }
+    }
+
+    @Test
+    @DisplayName("도서 검색 다건 조회 - page, size 지정")
+    @Throws(Exception::class)
+    fun t5() {
+        val expected = bookRepository.findAll().first { it.title == "책제목3" }
+
+        mvc
+            .perform(
+                get("/api/v1/books/search")
+                    .param("searchTerm", "책제목")
+                    .param("page", "1")
+                    .param("size", "2")
+            )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(2))
+            .andExpect(jsonPath("$[0].id").value(expected.id))
+            .andExpect(jsonPath("$[1].title").value("책제목2"))
     }
 }

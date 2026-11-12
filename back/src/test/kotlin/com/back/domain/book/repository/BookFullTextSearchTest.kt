@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.test.context.ActiveProfiles
 import java.time.LocalDateTime
 
+// 새 검색 인덱스(ft_book_search_text)도 불용어가 꺼진 채 만들어졌는지 확인한다.
 // InnoDB는 FULLTEXT 인덱스를 커밋 시점에 갱신해서, 같은 트랜잭션에서 넣은 행은 MATCH로 검색되지 않는다.
 // 그래서 @Transactional 없이 저장을 바로 커밋하고, 롤백이 없으니 넣은 데이터는 finally에서 직접 지운다.
 @ActiveProfiles("test")
