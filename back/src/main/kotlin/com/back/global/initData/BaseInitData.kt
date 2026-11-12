@@ -22,7 +22,8 @@ import java.time.LocalDateTime
 
 private class SampleBook(
     val isbn: String, val title: String, val authors: String, val publisher: String, val year: Int,
-    val description: String, val rating: Double, val reviewCount: Int, val viewCount: Int
+    val description: String, val rating: Double, val reviewCount: Int, val viewCount: Int,
+    val hasCover: Boolean = true
 )
 
 private class SampleReview(
@@ -46,6 +47,11 @@ private val SAMPLE_BOOKS = listOf(
     SampleBook("9780262510875", "컴퓨터 프로그램의 구조와 해석", "해럴드 에이블슨 외", "인사이트", 2016, "프로그램을 추상화하고 조합하는 사고방식을 Scheme으로 배웁니다.", 4.7, 64, 3312),
     SampleBook("9780134494166", "클린 아키텍처", "로버트 C. 마틴", "인사이트", 2019, "의존성 규칙을 중심으로 시스템 경계를 나누는 아키텍처 원칙을 설명합니다.", 4.2, 176, 9640),
     SampleBook("9781680502398", "Release It! 2판", "마이클 나이가드", "위키북스", 2018, "운영 환경에서 시스템이 무너지는 패턴과 이를 막는 안정성 패턴을 정리합니다.", 4.6, 47, 2765),
+    // 시안에 없는 도서. 썸네일 없음 안내를 확인하려고 표지 없이 넣는다.
+    SampleBook("9791158391409", "오브젝트", "조영호", "위키북스", 2019, "역할, 책임, 협력을 중심으로 객체지향 설계를 코드로 풀어 설명합니다.", 4.7, 152, 11350, hasCover = false),
+    SampleBook("9788966262335", "함께 자라기", "김창준", "인사이트", 2018, "개인과 팀이 함께 학습하고 성장하는 방법을 애자일 관점에서 다룹니다.", 4.5, 118, 7480, hasCover = false),
+    SampleBook("9788966263158", "가상 면접 사례로 배우는 대규모 시스템 설계 기초", "알렉스 쉬", "인사이트", 2021, "면접 문제 형식으로 대규모 시스템의 설계 과정을 단계별로 보여 줍니다.", 4.4, 95, 5120, hasCover = false),
+    SampleBook("9791169212304", "켄트 벡의 Tidy First?", "켄트 벡", "한빛미디어", 2024, "동작 변경에 앞서 코드를 작게 정리하는 방법과 그 시점을 판단하는 기준을 다룹니다.", 5.0, 12, 1840, hasCover = false),
 )
 
 private const val DDIA = "9781449373320"
@@ -233,8 +239,9 @@ class BaseInitData(
                 Book(
                     it.title, it.description, it.isbn, it.authors,
                     LocalDateTime.of(it.year, 1, 1, 0, 0), it.publisher,
-                    "https://covers.openlibrary.org/b/isbn/${it.isbn}-L.jpg"
-                )
+                    if (it.hasCover) "https://covers.openlibrary.org/b/isbn/${it.isbn}-L.jpg" else null
+                    // 표지가 없는 도서는 조회 시도 이력을 남겨 카카오 API가 표지를 채우지 않게 한다.
+                ).apply { if (!it.hasCover) markImgUrlFetchAttempted() }
             )
         }
 
