@@ -43,6 +43,7 @@ class BookSearchTest {
             "M&A 실무" to "김실무",
             "Clean Code" to "Robert C. Martin",
             "Node.js 교과서" to "조현영",
+            "하얼빈" to "빈센트",
         ).forEachIndexed { i, (title, authors) ->
             books += bookRepository.save(
                 Book(title, "설명", "isbn-search-$i", authors, LocalDateTime.now(), "오렌지미디어", "")
@@ -119,6 +120,8 @@ class BookSearchTest {
     fun t8() {
         assertThat(search("교과서 박용준")).isEmpty()
         assertThat(search("교과서박용")).isEmpty()
+        // 제목 끝 글자와 저자 첫 글자가 같은 경우: 토큰 "얼빈"(제목 끝), "빈센"(저자 앞)이 둘 다 있다.
+        assertThat(search("얼빈센")).isEmpty()
     }
 
     @Test
