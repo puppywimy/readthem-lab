@@ -115,6 +115,7 @@
             <li>모든 테이블에 <code>created_date</code>와 <code>modified_date</code>가 있습니다. 그림에서는 생략했습니다.</li>
             <li><code>review_like</code>는 <code>(review_id, member_id)</code> 조합이 유일합니다.</li>
             <li><code>member</code>는 <code>deleted_date</code>로 탈퇴 여부를 표시합니다.</li>
+            <li><code>book.search_text</code>는 도서 검색용 STORED 생성 컬럼입니다. 값은 <code>전처리한 제목 + 공백 + 전처리한 저자</code>이며 DB가 계산합니다. 전처리 규칙은 <code>V2__add_book_search_text.sql</code>과 <code>BookSearchTextNormalizer</code>에 있습니다.</li>
           </ul>
         </section>
         <section>
@@ -124,7 +125,7 @@
             <li><code>book_operational (average_rating DESC, id DESC)</code></li>
             <li><code>book_operational (review_count DESC, id DESC)</code></li>
             <li><code>book_operational (view_count DESC, id DESC)</code></li>
-            <li><code>book (title, authors, publisher)</code> FULLTEXT, ngram 파서</li>
+            <li><code>book (search_text)</code> FULLTEXT, ngram 파서</li>
           </ul>
         </section>
       </section>
@@ -147,7 +148,7 @@
         book: { x: 670, y: 0, w: 280, tone: "book", ko: "책", cols: [
           ["id", "bigint", "PK"], ["title", "longtext"], ["description", "longtext"], ["isbn", "varchar", "UK"],
           ["authors", "longtext"], ["published_date", "datetime"], ["publisher", "varchar"], ["img_url", "varchar"],
-          ["img_url_fetched_at", "datetime"], ["fetched_page", "int"],
+          ["img_url_fetched_at", "datetime"], ["fetched_page", "int"], ["search_text", "longtext"],
         ] },
         book_operational: { x: 1060, y: 60, w: 260, tone: "book", ko: "책 운영 지표", cols: [
           ["id", "bigint", "PK"], ["isbn", "varchar", "UK"], ["view_count", "int"], ["average_rating", "double"],
@@ -198,7 +199,7 @@
         { pts: [[270, y.wishMember], [370, y.wishMember]], label: "담음" },
         { pts: [[670, y.wishBook], [580, y.wishBook]], label: "담김" },
         { pts: [[250, 374], [250, y.reviewer], [340, y.reviewer]], label: "작성" },
-        { pts: [[690, 344], [690, y.reviewBook], [620, y.reviewBook]], label: "리뷰 대상" },
+        { pts: [[690, 374], [690, y.reviewBook], [620, y.reviewBook]], label: "리뷰 대상" },
         { pts: [[115, 374], [115, 560]], label: "좋아요 누름" },
         { pts: [[340, y.likeReview], [230, y.likeReview]], label: "좋아요 받음" },
         { pts: [[620, y.tagReview], [710, y.tagReview]], label: "태그 달림" },

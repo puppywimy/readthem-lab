@@ -137,11 +137,14 @@ class BookQueryService(
         page: Int,
         size: Int
     ): List<BookDto> {
+        val keyword = BookSearchTextNormalizer.normalize(searchTerm)
+        if (keyword.isEmpty()) return emptyList()
+
         val pageable = PageRequest.of(page, size)
 
         return getBookDtos(
             bookRepository
-                .searchByKeyword(searchTerm, pageable)
+                .searchByKeyword(keyword, pageable)
                 .toList()
         )
     }
