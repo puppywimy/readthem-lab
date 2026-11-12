@@ -166,7 +166,7 @@
   .head { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
   .arrows { display: flex; gap: 4px; }
   .arrows .icon-btn { border: 1px solid var(--line); }
-  .track { display: grid; grid-auto-flow: column; grid-auto-columns: clamp(132px, 14vw, 176px); gap: 20px; overflow-x: auto; scroll-snap-type: x proximity; margin-top: 32px; padding-bottom: 12px; scrollbar-width: none; }
+  .track { display: grid; grid-auto-flow: column; grid-auto-columns: clamp(132px, 14vw, 176px); gap: 20px; overflow-x: auto; scroll-snap-type: x proximity; margin-top: 24px; /* 가로 스크롤 영역은 세로로도 잘리므로, 호버로 올라가는 표지 자리를 둔다 */ padding-top: 8px; padding-bottom: 12px; scrollbar-width: none; }
   .track > a { scroll-snap-align: start; display: block; }
   .track .cover { transition: transform .3s var(--ease); }
   .track > a:hover .cover { transform: translateY(-6px); }

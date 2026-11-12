@@ -575,7 +575,9 @@
     gap: 20px;
     overflow-x: auto;
     scroll-snap-type: x proximity;
-    margin-top: 32px;
+    margin-top: 24px;
+    /* 가로 스크롤 영역은 세로로도 잘리므로, 호버로 올라가는 표지 자리를 둔다 */
+    padding-top: 8px;
     padding-bottom: 12px;
     scrollbar-width: none;
   }
