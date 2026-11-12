@@ -44,6 +44,7 @@
   --on-accent: light-dark(#f7f8ff, #0f1115);
   --feature: light-dark(#1f3fd6, #2a3a8f);
   --on-feature: #f7f8ff;
+  --shadow: light-dark(#14161a, #000);
   --gutter: clamp(16px, 4vw, 56px);
   --ease: cubic-bezier(.16, 1, .3, 1);
   background: var(--bg);
@@ -81,9 +82,20 @@
   .btn.line:hover { background: var(--surface); filter: none; }
 
   /* 표지 */
-  .cover { position: relative; display: block; aspect-ratio: 2/3; border-radius: 4px; overflow: hidden; background: hsl(var(--h) 38% 28%); color: #f4f5f2; box-shadow: 0 10px 24px -14px color-mix(in srgb, var(--ink) 55%, transparent); }
-  .cover > span { position: absolute; inset: 12px; font-weight: 700; line-height: 1.3; font-size: .92rem; }
-  .cover img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .cover { position: relative; display: block; aspect-ratio: 2/3; border-radius: 4px; overflow: hidden; background: var(--line); color: var(--muted); box-shadow: 0 10px 24px -14px color-mix(in srgb, var(--shadow) 55%, transparent); }
+  /* 썸네일이 없거나 불러오지 못했을 때의 안내 문구 */
+  .cover > span { position: absolute; inset: 8px; display: grid; place-items: center; text-align: center; font-weight: 500; line-height: 1.35; font-size: .75rem; }
+  /* 불러오는 중: 스켈레톤. 이미지는 다 불러올 때까지 숨긴다 */
+  .cover.loading { background: var(--surface); box-shadow: none; animation: sk-pulse 1.4s ease-in-out infinite; }
+  .cover.loading > span { display: none; }
+  .cover.loading img { opacity: 0; }
+  /* 썸네일 없음: 패널과 같은 바탕에 책등 띠와 얇은 테두리만 둔다 */
+  .cover.empty { background: linear-gradient(90deg, var(--line) 0 6%, var(--surface) 6%); box-shadow: inset 0 0 0 1px var(--line), 0 10px 24px -14px color-mix(in srgb, var(--shadow) 55%, transparent); }
+  /* 작은 표지는 글자를 넣기 어려워 안내 문구가 든 표지 이미지를 깐다 */
+  .rows .cover.empty, .rv-foot .cover.empty, .cell-book .cover.empty { background-image: url("../../front/public/covers/empty-light.png"); background-size: cover; }
+  [data-theme=dark] & :is(.rows, .rv-foot, .cell-book) .cover.empty { background-image: url("../../front/public/covers/empty-dark.png"); }
+  /* 다 불러오면 스켈레톤 위로 서서히 나타난다 */
+  .cover img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: opacity .4s ease; }
 
   /* 히어로 */
   .hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); height: min(calc(100dvh - 104px), 760px); min-height: 560px; max-width: 1400px; margin-inline: auto; overflow: hidden; }
@@ -137,6 +149,7 @@
   .rv-foot { margin-top: auto; padding-top: 24px; display: flex; align-items: center; gap: 14px; }
   .rv-foot .cover { width: 44px; flex: none; box-shadow: none; }
   .rv-foot .cover > span { display: none; }
+  .rv-foot .cover.loading { background: var(--line); }
   .rv-foot div { min-width: 0; flex: 1; line-height: 1.35; }
   .rv-foot strong { display: block; }
   .rv-foot small { font-size: .87rem; color: var(--muted); }
@@ -153,7 +166,7 @@
   .head { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
   .arrows { display: flex; gap: 4px; }
   .arrows .icon-btn { border: 1px solid var(--line); }
-  .track { display: grid; grid-auto-flow: column; grid-auto-columns: clamp(132px, 14vw, 176px); gap: 20px; overflow-x: auto; scroll-snap-type: x proximity; margin-top: 32px; padding-bottom: 12px; scrollbar-width: none; }
+  .track { display: grid; grid-auto-flow: column; grid-auto-columns: clamp(132px, 14vw, 176px); gap: 20px; overflow-x: auto; scroll-snap-type: x proximity; margin-top: 24px; /* 가로 스크롤 영역은 세로로도 잘리므로, 호버로 올라가는 표지 자리를 둔다 */ padding-top: 8px; padding-bottom: 12px; scrollbar-width: none; }
   .track > a { scroll-snap-align: start; display: block; }
   .track .cover { transition: transform .3s var(--ease); }
   .track > a:hover .cover { transform: translateY(-6px); }
@@ -469,7 +482,7 @@ body { margin: 0; }
 
       const homeHref = (b) => `#/book?id=${b.key}`;
       const homeCover = (b, { size = "L", loading = "lazy" } = {}) =>
-        `<span class="cover" style="--h:${b.h}"><span>${esc(b.t)}</span><img loading="${loading}" src="https://covers.openlibrary.org/b/isbn/${b.i}-${size}.jpg?default=false" alt="${esc(b.t)} 표지" onerror="this.remove()"></span>`;
+        `<span class="cover loading"><span>썸네일이 없습니다</span><img loading="${loading}" src="https://covers.openlibrary.org/b/isbn/${b.i}-${size}.jpg?default=false" alt="${esc(b.t)} 표지" onload="this.parentNode.classList.remove('loading')" onerror="this.parentNode.className='cover empty';this.remove()"></span>`;
       
       function homeRankPanel(name) {
         const { ids, icon: iconName, label, value } = HOME_RANK[name];
