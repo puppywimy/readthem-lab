@@ -1379,7 +1379,6 @@ export interface operations {
         parameters: {
             query?: {
                 type?: string;
-                page?: number;
                 size?: number;
             };
             header?: never;
