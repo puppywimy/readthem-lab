@@ -302,7 +302,7 @@ resource "oci_core_instance" "instance_1" {
 
   shape_config {
     ocpus         = 1
-    memory_in_gbs = 1
+    memory_in_gbs = 2
   }
 
   source_details {
