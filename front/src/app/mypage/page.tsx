@@ -19,7 +19,9 @@ import { LibraryHeader, LibraryReviewRow } from "@/app/_components/Library";
 import LikeButton from "@/app/_components/LikeButton";
 import { GitHubLoginButton } from "@/app/_components/LoginRequiredModal";
 import RatingValue from "@/app/_components/RatingValue";
-import ReviewFormModal from "@/app/_components/ReviewFormModal";
+import ReviewFormModal, {
+  type ReviewFormValues,
+} from "@/app/_components/ReviewFormModal";
 
 type ReviewsByMemberDto = components["schemas"]["ReviewsByMemberDto"];
 type BookWithWishIdAndTagsDto =
@@ -195,36 +197,8 @@ export default function Page() {
       .catch(showErrorToast);
   };
 
-  const handleEditReviewSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleEditReviewSubmit = (body: ReviewFormValues) => {
     if (editingReview == null || editingReview.id == null) return;
-
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-    const ratingValue = String(formData.get("rating") ?? "").trim();
-    const contentValue = String(formData.get("content") ?? "").trim();
-    const tagsValue = String(formData.get("tags") ?? "");
-    const parsedRating =
-      ratingValue === "" ? null : Number.parseFloat(ratingValue);
-
-    if (parsedRating == null || Number.isNaN(parsedRating)) {
-      showToast("평점을 선택해주세요.");
-      return;
-    }
-
-    if (parsedRating * 2 !== Math.round(parsedRating * 2)) {
-      showToast("평점은 0.5 단위로만 입력할 수 있습니다.");
-      return;
-    }
-
-    const body = {
-      rating: parsedRating,
-      content: contentValue,
-      tags: tagsValue
-        .split(",")
-        .map((tag) => tag.trim())
-        .filter((tag) => tag.length > 0),
-    };
 
     apiFetch(`/api/v1/reviews/${editingReview.id}`, {
       method: "PUT",
@@ -313,7 +287,7 @@ export default function Page() {
         <ReviewFormModal
           defaultContent={editingReview.content ?? ""}
           defaultRating={editingReview.rating ?? undefined}
-          defaultTags={(editingReview.tags ?? []).join(", ")}
+          defaultTags={editingReview.tags ?? []}
           onCancel={() => setEditingReview(null)}
           onSubmit={handleEditReviewSubmit}
           submitLabel="수정 완료"

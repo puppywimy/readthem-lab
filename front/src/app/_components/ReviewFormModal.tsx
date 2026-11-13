@@ -1,71 +1,233 @@
 "use client";
 
-import { type FormEventHandler, useState } from "react";
+import {
+  type KeyboardEvent,
+  type PointerEvent,
+  type SyntheticEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import Dialog from "@/app/_components/Dialog";
+
+export type ReviewFormValues = {
+  rating: number;
+  content: string;
+  tags: string[];
+};
 
 type ReviewFormModalProps = {
   defaultContent?: string;
   defaultRating?: number;
-  defaultTags?: string;
-  onSubmit: FormEventHandler<HTMLFormElement>;
+  defaultTags?: string[];
+  onSubmit: (values: ReviewFormValues) => void;
   onCancel: () => void;
   submitLabel: string;
   title: string;
 };
 
+// 백엔드 검증(ValidTags)과 같은 한도
+const MAX_TAGS = 5;
+const MAX_TAG_LENGTH = 30;
+
+const TAG_HELP = "Enter로 태그를 추가합니다.";
+const TAG_DUP = "이미 입력한 태그입니다.";
+const TAG_FULL = `태그는 ${MAX_TAGS}개까지 입력할 수 있습니다.`;
+
+// 채운 별과 빈 별을 같은 모양으로 겹쳐야 해서 마스크 아이콘(SvgIcon) 대신 인라인 SVG를 쓴다
+const STARS = [0, 1, 2, 3, 4].map((index) => (
+  <svg
+    key={index}
+    className="i"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <path d="m12 3 2.7 5.5 6 .9-4.3 4.2 1 6-5.4-2.9-5.4 2.9 1-6-4.3-4.2 6-.9L12 3Z" />
+  </svg>
+));
+
 export default function ReviewFormModal({
   defaultContent = "",
-  defaultRating = 4.5,
-  defaultTags,
+  defaultRating = 0,
+  defaultTags = [],
   onCancel,
   onSubmit,
   submitLabel,
   title,
 }: ReviewFormModalProps) {
   const [rating, setRating] = useState(defaultRating);
-  const [contentLength, setContentLength] = useState(defaultContent.length);
+  const [content, setContent] = useState(defaultContent);
+  const [tags, setTags] = useState(defaultTags);
+  const [tagText, setTagText] = useState("");
+  const [tagError, setTagError] = useState<string | null>(null);
+  const ratingRef = useRef<HTMLInputElement | null>(null);
+  const tagInputRef = useRef<HTMLInputElement | null>(null);
+
+  // 0은 미선택: 제출을 막는다
+  useEffect(() => {
+    ratingRef.current?.setCustomValidity(rating ? "" : "별점을 선택해 주세요.");
+  }, [rating]);
+
+  // 별의 왼쪽 절반은 .5, 오른쪽 절반은 정수로 올림한다. 누른 채 끌어도 바뀐다.
+  const pickStar = (e: PointerEvent<HTMLDivElement>) => {
+    if (e.type === "pointermove" && !e.buttons) return;
+    const { left, width } = e.currentTarget.getBoundingClientRect();
+    const ratio = (e.clientX - left) / width;
+    setRating(Math.min(5, Math.max(0.5, Math.ceil(ratio * 10) / 2)));
+    ratingRef.current?.focus();
+  };
+
+  const rejectTag = (message: string) => {
+    setTagError(message);
+    // 연달아 거절돼도 진동이 다시 돈다
+    tagInputRef.current?.animate(
+      [
+        { translate: "0" },
+        { translate: "-4px 0" },
+        { translate: "4px 0" },
+        { translate: "-4px 0" },
+        { translate: "0" },
+      ],
+      { duration: 300 },
+    );
+  };
+
+  // 입력한 글자를 태그로 넣는다. 넣을 수 없으면 입력창에 남긴 채 알리고 null을 돌려준다.
+  const commitTag = () => {
+    const tag = tagText.trim();
+    if (!tag) {
+      setTagText("");
+      return tags;
+    }
+    if (tags.includes(tag)) {
+      setTagText(tag);
+      rejectTag(TAG_DUP);
+      return null;
+    }
+    if (tags.length >= MAX_TAGS) {
+      rejectTag(TAG_FULL);
+      return null;
+    }
+    const nextTags = [...tags, tag];
+    setTags(nextTags);
+    setTagText("");
+    setTagError(null);
+    return nextTags;
+  };
+
+  const handleTagKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault(); // 태그 확정이지 폼 제출이 아니다
+      if (!e.nativeEvent.isComposing) commitTag();
+    } else if (e.key === "Backspace" && !tagText && tags.length > 0) {
+      setTags(tags.slice(0, -1));
+      setTagError(null);
+    }
+  };
+
+  const handleSubmit = (e: SyntheticEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // Enter를 누르지 않고 남겨 둔 글자도 태그로 넣는다
+    const nextTags = commitTag();
+    if (nextTags == null) {
+      tagInputRef.current?.focus();
+      return;
+    }
+    onSubmit({ rating, content: content.trim(), tags: nextTags });
+  };
 
   return (
     <Dialog onClose={onCancel}>
-      <form className="dlg" style={{ padding: 0 }} onSubmit={onSubmit}>
+      <form className="dlg" style={{ padding: 0 }} onSubmit={handleSubmit}>
         <h2>{title}</h2>
+        <div className="field">
+          <label htmlFor="review-rating">
+            별점<em className="mark req">필수</em>
+          </label>
+          <div className="rating-row">
+            <div
+              className="stars"
+              style={{ "--v": rating } as React.CSSProperties}
+              onPointerDown={pickStar}
+              onPointerMove={pickStar}
+              // 기본 mousedown이 포커스를 range 밖으로 옮기지 않게 막는다 (누른 뒤 방향키로 이어서 조절)
+              onMouseDown={(e) => e.preventDefault()}
+            >
+              <span>{STARS}</span>
+              <span className="on">{STARS}</span>
+              <input
+                ref={ratingRef}
+                id="review-rating"
+                type="range"
+                min="0"
+                max="5"
+                step="0.5"
+                value={rating}
+                onChange={(e) => setRating(Number(e.target.value))}
+              />
+            </div>
+            <output htmlFor="review-rating">{rating.toFixed(1)}</output>
+          </div>
+        </div>
         <label className="field">
           <span className="field-head">
-            별점<output>{rating.toFixed(1)}</output>
-          </span>
-          <input
-            type="range"
-            name="rating"
-            min="0.5"
-            max="5"
-            step="0.5"
-            value={rating}
-            onChange={(e) => setRating(Number(e.target.value))}
-          />
-        </label>
-        <label className="field">
-          <span className="field-head">
-            리뷰<small>{contentLength}/500</small>
+            <span>
+              리뷰<em className="mark">선택</em>
+            </span>
+            <small>{content.length}/500</small>
           </span>
           <textarea
-            name="content"
-            required
             maxLength={500}
-            defaultValue={defaultContent}
-            onChange={(e) => setContentLength(e.target.value.length)}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
           />
         </label>
-        <label className="field">
-          태그
-          <input
-            name="tags"
-            maxLength={100}
-            defaultValue={defaultTags}
-            aria-describedby="tag-help"
-          />
-          <small id="tag-help">쉼표로 구분해 입력합니다.</small>
-        </label>
+        <div className="field">
+          <label htmlFor="review-tag-input">
+            태그<em className="mark">선택</em>
+          </label>
+          <div
+            className={tagError ? "tag-box dup" : "tag-box"}
+            onClick={() => tagInputRef.current?.focus()}
+          >
+            {tags.map((tag) => (
+              <span className="tag-chip" key={tag}>
+                {tag}
+                <button
+                  type="button"
+                  aria-label={`${tag} 태그 삭제`}
+                  onClick={() => {
+                    setTags(tags.filter((t) => t !== tag));
+                    setTagError(null);
+                  }}
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+            <input
+              ref={tagInputRef}
+              id="review-tag-input"
+              maxLength={MAX_TAG_LENGTH}
+              autoComplete="off"
+              aria-describedby="review-tag-help"
+              value={tagText}
+              onChange={(e) => {
+                setTagText(e.target.value);
+                setTagError(null);
+              }}
+              onKeyDown={handleTagKeyDown}
+            />
+          </div>
+          <small id="review-tag-help" role="status">
+            {tagError ?? TAG_HELP}
+          </small>
+        </div>
         <div className="dlg-actions">
           <button type="button" className="btn line" onClick={onCancel}>
             취소

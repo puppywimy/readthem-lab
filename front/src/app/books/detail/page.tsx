@@ -18,7 +18,9 @@ import LoginRequiredModal from "@/app/_components/LoginRequiredModal";
 import RatingHistogram from "@/app/_components/RatingHistogram";
 import RatingValue from "@/app/_components/RatingValue";
 import ReviewDetailCard, { TagList } from "@/app/_components/ReviewDetailCard";
-import ReviewFormModal from "@/app/_components/ReviewFormModal";
+import ReviewFormModal, {
+  type ReviewFormValues,
+} from "@/app/_components/ReviewFormModal";
 import SvgIcon from "@/app/_components/SvgIcon";
 
 type BookDetailDto = components["schemas"]["BookDetailDto"];
@@ -113,45 +115,8 @@ function BookDetail() {
       .catch(goToErrorPage);
   }, [isLogin]);
 
-  const extractReviewFields = (form: HTMLFormElement) => {
-    const formData = new FormData(form);
-    const ratingValue = String(formData.get("rating") ?? "").trim();
-    const contentValue = String(formData.get("content") ?? "").trim();
-    const tagsValue = String(formData.get("tags") ?? "");
-
-    /*
-    if (contentValue.length < 2) {
-      alert("리뷰 내용을 2자 이상 입력해주세요.");
-      return null;
-    }
-    */
-
-    if (contentValue.length > 500) {
-      showToast("리뷰 내용은 500자 이하로 입력해주세요.");
-      return null;
-    }
-
-    const tags = tagsValue
-      .split(",")
-      .map((tag) => tag.trim())
-      .filter((tag) => tag.length > 0);
-
-    const rating = ratingValue === "" ? undefined : Number(ratingValue);
-
-    return {
-      content: contentValue,
-      tags,
-      ...(rating != null ? { rating } : {}),
-    };
-  };
-
-  const handleWriteSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleWriteSubmit = (body: ReviewFormValues) => {
     if (id == null) return;
-
-    const form = e.currentTarget;
-    const body = extractReviewFields(form);
-    if (body == null) return;
 
     apiFetch(`/api/v1/reviews/book/${id}`, {
       method: "POST",
@@ -159,7 +124,6 @@ function BookDetail() {
     })
       .then((data) => {
         showToast(data?.message ?? "리뷰를 작성했습니다.");
-        form.reset();
         setShowWriteForm(false);
         loadReviews();
         loadBook();
@@ -167,16 +131,7 @@ function BookDetail() {
       .catch(showErrorToast);
   };
 
-  const handleEditSubmit = (
-    e: React.SyntheticEvent<HTMLFormElement>,
-    reviewId: number,
-  ) => {
-    e.preventDefault();
-
-    const form = e.currentTarget;
-    const body = extractReviewFields(form);
-    if (body == null) return;
-
+  const handleEditSubmit = (body: ReviewFormValues, reviewId: number) => {
     apiFetch(`/api/v1/reviews/${reviewId}`, {
       method: "PUT",
       body: JSON.stringify(body),
@@ -370,9 +325,11 @@ function BookDetail() {
         <ReviewFormModal
           defaultContent={editingReview.content ?? ""}
           defaultRating={editingReview.rating}
-          defaultTags={(editingReview.tags ?? []).join(", ")}
+          defaultTags={editingReview.tags ?? []}
           onCancel={() => setEditingReviewId(null)}
-          onSubmit={(e) => handleEditSubmit(e, editingReview.id as number)}
+          onSubmit={(body) =>
+            handleEditSubmit(body, editingReview.id as number)
+          }
           submitLabel="수정 완료"
           title="리뷰 수정"
         />

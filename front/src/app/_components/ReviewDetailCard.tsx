@@ -74,7 +74,7 @@ export default function ReviewDetailCard({
           onClick={onToggleLike}
         />
       </div>
-      <q>{review.content}</q>
+      {review.content && <q>{review.content}</q>}
       <TagList tags={review.tags} />
       {(onEdit || onDelete) && (
         <div className="mt-2 -ml-2.5 flex gap-0.5">
