@@ -855,6 +855,10 @@ body {
     background: var(--surface);
     animation: sk-pulse 1.4s ease-in-out infinite;
   }
+  /* 강조색이 섞인 띠 위라 회색(--surface) 대신 같은 색조로 짙어지게 한다 */
+  .band .sk {
+    background: color-mix(in srgb, var(--accent) 16%, var(--bg));
+  }
   .sk.cover-sk {
     aspect-ratio: 2/3;
     border-radius: 4px;
