@@ -141,19 +141,19 @@ export default function Page() {
   const pageRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    fetchList<BookDto>(
-      `/api/v1/books/rank?type=views&page=0&size=${WALL_SIZE}`,
-    ).then((books) => {
-      setWallBooks(books);
-      setRanks((current) => ({
-        ...current,
-        views: books.slice(0, RANK_SIZE),
-      }));
-    });
+    fetchList<BookDto>(`/api/v1/books/rank?type=views&size=${WALL_SIZE}`).then(
+      (books) => {
+        setWallBooks(books);
+        setRanks((current) => ({
+          ...current,
+          views: books.slice(0, RANK_SIZE),
+        }));
+      },
+    );
 
     (["rating", "reviewCount"] as const).forEach((type) => {
       fetchList<BookDto>(
-        `/api/v1/books/rank?type=${type}&page=0&size=${RANK_SIZE}`,
+        `/api/v1/books/rank?type=${type}&size=${RANK_SIZE}`,
       ).then((books) => setRanks((current) => ({ ...current, [type]: books })));
     });
 

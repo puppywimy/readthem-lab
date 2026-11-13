@@ -81,9 +81,8 @@ class ApiBookControllerV1(
     @Operation(summary = "도서 순위 다건 조회")
     fun getBooksOrderByRank(
         @RequestParam(defaultValue = "") type: String,
-        @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "10") size: Int
-    ) = bookService.getBooksOrderByRank(type, page, size)
+    ) = bookService.getBooksOrderByRank(type, size)
 
     @PutMapping("/{id}")
     @Operation(summary = "도서 수정 (관리자)")

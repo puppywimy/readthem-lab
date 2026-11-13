@@ -21,7 +21,7 @@ export default function Page() {
   >([]);
 
   useEffect(() => {
-    apiFetch(`/api/v1/books/rank?type=views&page=0&size=15`)
+    apiFetch(`/api/v1/books/rank?type=views&size=15`)
       .then((data) => setWallBooks(data?.content ?? data ?? []))
       .catch(() => setWallBooks([]));
   }, []);

@@ -54,17 +54,4 @@ interface BookOperationalRepository : JpaRepository<BookOperational, Long> {
         """
     )
     fun findRankedBooksByViewCount(pageable: Pageable): List<BookRankRow>
-
-    @Query(
-        """
-            SELECT COUNT(bo)
-            FROM BookOperational bo
-            WHERE EXISTS (
-                SELECT 1
-                FROM Book b
-                WHERE b.isbn = bo.isbn
-            )
-        """
-    )
-    fun countRankedBooks(): Long
 }

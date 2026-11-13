@@ -65,60 +65,53 @@ class BookQueryService(
         return books.map { BookDto(it, ratingsByIsbn[it.isbn] ?: 0.0) }
     }
 
-    fun getBooksOrderByTopViewedInLastHour(page: Int, size: Int): List<BookDto> {
-        val books = bookViewCountRedisRepository.findBookIdOrderByTopViewedInLastHout(page, size)
-
-        if (books.isNullOrEmpty()) {
-            return getBooksOrderByOperationalRank("views", page, size)
-        }
-
-        return getBookDtosByBookIds(books)
-    }
-
-    fun getBooksOrderByRank(type: String, page: Int, size: Int): List<BookDto> {
+    fun getBooksOrderByRank(type: String, size: Int): List<BookDto> {
         if (type == "views")
-            return getBooksOrderByTopViewedInLastHour(page, size)
+            return getBooksOrderByViews(size)
 
-        return getBooksOrderByOperationalRank(type, page, size)
+        return getBooksOrderByOperationalRank(type, size)
     }
 
-    private fun getBooksOrderByOperationalRank(type: String, page: Int, size: Int): List<BookDto> {
-        val offset = page * size
+    // 최근 1시간 조회수 순 → 누적 조회수 순 → 운영 정보 없는 도서 순으로 size권을 채운다.
+    private fun getBooksOrderByViews(size: Int): List<BookDto> {
+        val recentBookIds = bookViewCountRedisRepository.findBookIdOrderByTopViewedInLastHour(size)
+            .orEmpty()
+        val recentBooks = getBookDtosByBookIds(recentBookIds)
+        if (recentBooks.size >= size) return recentBooks.take(size)
+
+        return recentBooks + getBooksOrderByOperationalRank(
+            "views",
+            size - recentBooks.size,
+            recentBooks.map { it.id }.toSet()
+        )
+    }
+
+    // 순위 도서 size권을 채우고, 모자라면 운영 정보가 없는 도서를 id 내림차순으로 채운다.
+    // excludeIds에 든 도서는 결과에서 뺀다.
+    private fun getBooksOrderByOperationalRank(
+        type: String,
+        size: Int,
+        excludeIds: Set<Long> = emptySet()
+    ): List<BookDto> {
+        if (size <= 0) return emptyList()
+
+        val rankedPageable = PageRequest.of(0, size + excludeIds.size)
         val rankedRows = when (type) {
-            "rating" -> bookOperationalRepository.findRankedBooksByAverageRating(PageRequest.of(page, size))
-            "views" -> bookOperationalRepository.findRankedBooksByViewCount(PageRequest.of(page, size))
-            else -> bookOperationalRepository.findRankedBooksByReviewCount(PageRequest.of(page, size))
+            "rating" -> bookOperationalRepository.findRankedBooksByAverageRating(rankedPageable)
+            "views" -> bookOperationalRepository.findRankedBooksByViewCount(rankedPageable)
+            else -> bookOperationalRepository.findRankedBooksByReviewCount(rankedPageable)
         }
 
         val rankedBooks = getBookDtosByRankRows(rankedRows)
+            .filterNot { it.id in excludeIds }
+            .take(size)
         if (rankedBooks.size == size) return rankedBooks
 
-        val rankedBookCount = if (rankedRows.isEmpty() && offset > 0) {
-            bookOperationalRepository.countRankedBooks().toInt()
-        } else {
-            offset + rankedRows.size
-        }
-        val fallbackOffset = (offset - rankedBookCount).coerceAtLeast(0)
-        val fallbackPage = fallbackOffset / size
-        val fallbackPageOffset = fallbackOffset % size
         val neededFallbackSize = size - rankedBooks.size
-
-        val currentFallbackPage = bookRepository.findBooksWithoutOperationalOrderByIdDesc(
-            PageRequest.of(fallbackPage, size)
-        )
-        val fallbackBooks = currentFallbackPage
-            .drop(fallbackPageOffset)
-            .let { currentPageBooks ->
-                if (currentPageBooks.size >= neededFallbackSize || fallbackPageOffset == 0) {
-                    currentPageBooks.take(neededFallbackSize)
-                } else {
-                    val nextFallbackPage = bookRepository.findBooksWithoutOperationalOrderByIdDesc(
-                        PageRequest.of(fallbackPage + 1, size)
-                    )
-
-                    (currentPageBooks + nextFallbackPage).take(neededFallbackSize)
-                }
-            }
+        val fallbackBooks = bookRepository
+            .findBooksWithoutOperationalOrderByIdDesc(PageRequest.of(0, neededFallbackSize + excludeIds.size))
+            .filterNot { it.id in excludeIds }
+            .take(neededFallbackSize)
 
         return rankedBooks + getBookDtos(fallbackBooks)
     }

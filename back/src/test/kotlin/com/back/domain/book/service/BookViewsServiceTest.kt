@@ -39,7 +39,7 @@ class BookViewsServiceTest {
                 (expectedViewCounts[bookId] ?: 0) + viewsCount[i]
         }
 
-        val bookRank = bookService.getBooksOrderByRank("views", 0, 10)
+        val bookRank = bookService.getBooksOrderByRank("views", 10)
 
         var upperCnt = Int.MAX_VALUE
 

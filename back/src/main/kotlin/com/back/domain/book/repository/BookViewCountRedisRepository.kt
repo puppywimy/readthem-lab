@@ -36,12 +36,9 @@ class BookViewCountRedisRepository(
 
     }
 
-    fun findBookIdOrderByTopViewedInLastHout(page: Int, size: Int): List<Long>? {
+    fun findBookIdOrderByTopViewedInLastHour(size: Int): List<Long>? {
 
         try {
-            val start = page * size
-            val end = start + size - 1
-
             val now = LocalDateTime.now()
 
             val keys: MutableList<String> = mutableListOf()
@@ -68,7 +65,7 @@ class BookViewCountRedisRepository(
             redisTemplate.expire(tempKey, Duration.ofSeconds(10))
 
             val bookIds = redisTemplate.opsForZSet()
-                .reverseRange(tempKey, start.toLong(), end.toLong())
+                .reverseRange(tempKey, 0, (size - 1).toLong())
 
             if (bookIds == null || bookIds.isEmpty()) {
                 return listOf()
