@@ -32,8 +32,8 @@ class BookService(
         return bookViewCountService.getBookViewCount(book)
     }
 
-    fun getBooksOrderByRank(type: String, page: Int, size: Int): List<BookDto> {
-        return bookQueryService.getBooksOrderByRank(type, page, size)
+    fun getBooksOrderByRank(type: String, size: Int): List<BookDto> {
+        return bookQueryService.getBooksOrderByRank(type, size)
     }
 
     fun incrementViewCount(book: Book, alreadyViewed: Boolean = false): Boolean {
