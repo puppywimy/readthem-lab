@@ -284,6 +284,7 @@ body { margin: 0; }
   .book-hero .tags { margin-top: 18px; }
   .book-hero .tags li { background: color-mix(in srgb, var(--accent) 12%, var(--bg)); }
   .book-hero .btn { margin-top: 26px; }
+  .book-hero .btn.line:hover { background: color-mix(in srgb, var(--accent) 16%, var(--bg)); } /* 강조색이 섞인 띠 위라 회색(--surface) 대신 같은 색조로 짙어지게 한다 */
   .book-body { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: clamp(32px, 6vw, 88px); align-items: start; }
   .score { font-size: clamp(4.5rem, 9vw, 7.5rem); font-weight: 800; line-height: .9; letter-spacing: -.06em; color: var(--accent); font-variant-numeric: tabular-nums; }
   .hist { margin-block: 24px; display: grid; gap: 6px; font-size: .9rem; font-variant-numeric: tabular-nums; }
@@ -297,6 +298,11 @@ body { margin: 0; }
   .sort .text-btn, .sort .text-btn:hover { padding: 4px 0; border-radius: 0; background: none; }
   .sort [aria-pressed=true] { color: var(--ink); font-weight: 700; text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 6px; }
   .rv-list li + li { border-top: 1px solid var(--line); }
+  .feature-review + .feature-review { margin-top: 16px; }
+  /* 리뷰 카드의 별점 줄: 왼쪽에 별과 점수, 오른쪽에 수정·삭제 */
+  .rv-rating { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
+  .rv-rating strong { font-size: 1.05rem; font-weight: 800; letter-spacing: -.02em; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .rv-actions { display: flex; gap: 2px; margin-left: auto; margin-right: -10px; }
   .rv-row { padding: 22px calc(clamp(20px, 2.5vw, 32px) + 1px); } /* 베스트 리뷰의 테두리 1px만큼 더해 내용 세로선을 맞춘다 */
   .rv-who strong .badge { margin-left: 6px; font-size: .78rem; font-weight: 600; vertical-align: 1px; }
   .rv-row q, .feature-review q { quotes: none; display: block; line-height: 1.6; max-width: 62ch; }
@@ -383,6 +389,9 @@ body { margin: 0; }
   .stars .on { position: absolute; inset: 0; color: var(--accent); pointer-events: none; clip-path: inset(0 calc(100% - var(--v, 0) * 20%) 0 0); }
   .stars .on .i { fill: currentColor; }
   .field .stars input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0; border: 0; opacity: 0; pointer-events: none; }
+  /* 읽기 전용 작은 별 (리뷰 카드) */
+  .stars.sm { cursor: auto; touch-action: auto; }
+  .stars.sm .i { width: 20px; height: 20px; }
   .stars:has(:focus-visible) { outline: 2px solid var(--accent); outline-offset: 4px; }
   dialog { margin: auto; width: min(520px, calc(100vw - 32px)); padding: 0; border: 0; border-radius: 16px; background: var(--bg); color: var(--ink); }
   dialog::backdrop { background: rgb(15 17 21 / .55); }
@@ -737,10 +746,14 @@ body { margin: 0; }
         const empty = state.view === "empty";
         const own = HOME_REVIEWS.filter((v) => v.b === key).map((v) => ({ ...v, d: "2026.10.28", t: ["실무 추천"] }));
         const reviews = empty ? [] : [...own, ...BOOK_REVIEWS].sort((x, y) => y.l - x.l);
-        const [best, ...others] = reviews;
-        const rest = [...others].sort(REVIEW_SORT[state.reviewSort]);
+        // 내 리뷰와 베스트 리뷰는 맨 위에 고정한다. 내 리뷰가 좋아요도 가장 많으면 베스트 리뷰를 따로 두지 않고 배지를 함께 붙인다.
+        const mine = isLogin() ? reviews.find((v) => v.u === ME.id) : undefined;
+        const best = reviews[0] === mine ? undefined : reviews[0];
+        const rest = reviews.filter((v) => v !== mine && v !== best).sort(REVIEW_SORT[state.reviewSort]);
+        const mineActions = `<div class="rv-actions"><button class="text-btn" data-act="write-review" data-edit="1">수정</button><button class="text-btn" data-act="confirm" data-msg="리뷰를 삭제하시겠습니까?" data-done="리뷰를 삭제했습니다.">삭제</button></div>`;
         const sortButton = (id, label) => `<button class="text-btn" data-act="review-sort" data-id="${id}" aria-pressed="${id === state.reviewSort}">${label}</button>`;
-        const who = (v, isBest = false) => `<div class="rv-who">${avatar(v.u, 36)}<div><strong>${esc(v.u)}${isBest && v.l > 0 ? `<span class="badge on">베스트 리뷰</span>` : ""}</strong><small>${v.d}<span class="rating">${icon("star", "h-3")}<span class="sr">별점 </span>${v.r.toFixed(1)}</span></small></div>${like(v.l)}</div>`;
+        const who = (v, isBest = false) => `<div class="rv-who">${avatar(v.u, 36)}<div><strong>${esc(v.u)}${v === mine ? `<span class="badge">내 리뷰</span>` : ""}${isBest && v.l > 0 ? `<span class="badge on">베스트 리뷰</span>` : ""}</strong><small>${v.d}</small></div>${like(v.l)}</div>
+          <div class="rv-rating"><span class="stars sm" style="--v:${v.r}" aria-hidden="true"><span>${icon("star").repeat(5)}</span><span class="on">${icon("star").repeat(5)}</span></span><strong><span class="sr">별점 </span>${v.r.toFixed(1)}</strong>${v === mine ? mineActions : ""}</div>`;
         const shares = [0.58, 0.27, 0.1, 0.03, 0.02];
         const hist = shares.map((s, i) => `<div><span>${5 - i}</span><i style="width:${s * 100}%" title="${Math.round(b.n * s)}개"></i></div>`).join("");
         const recommended = allBooks().filter((x) => x.key !== key).slice(0, 8);
@@ -760,14 +773,15 @@ body { margin: 0; }
               <div class="score">${empty ? "0.0" : b.r.toFixed(1)}</div>
               <p class="meta" style="margin-top:10px">리뷰 ${empty ? 0 : b.n}개, 조회 ${b.v.toLocaleString()}</p>
               ${empty ? "" : `<div class="hist" aria-hidden="true">${hist}</div>`}
-              <button class="btn" data-act="write-review" ${empty ? 'style="margin-top:24px"' : ""}>${icon("review")}리뷰 쓰기</button>
+              <button class="btn" data-act="write-review" ${mine ? 'data-written="1"' : ""} ${empty ? 'style="margin-top:24px"' : ""}>${icon("review")}리뷰 쓰기</button>
             </div>
             <div>
               <h2 class="${empty ? "sr" : ""}" style="margin-bottom:20px">리뷰</h2>
               ${
                 empty
                   ? stateMsg("아직 리뷰가 없습니다.", "이 책을 읽었다면 첫 리뷰를 남겨 보세요.")
-                  : `<article class="feature-review">${who(best, true)}<q>${esc(best.q)}</q>${tagList(best.t)}</article>
+                  : `${mine ? `<article class="feature-review">${who(mine, mine === reviews[0])}<q>${esc(mine.q)}</q>${tagList(mine.t)}</article>` : ""}
+                     ${best ? `<article class="feature-review">${who(best, true)}<q>${esc(best.q)}</q>${tagList(best.t)}</article>` : ""}
                      ${rest.length > 1 ? `<div class="sort" role="group" aria-label="리뷰 정렬">${sortButton("latest", "최신순")}${sortButton("popular", "인기순")}</div>` : ""}
                      <ul class="rv-list" id="review-list">${rest.map((v) => `<li class="rv-row" data-date="${v.d}">${who(v)}<q>${esc(v.q)}</q>${tagList(v.t)}</li>`).join("")}</ul>`
               }
@@ -1028,6 +1042,8 @@ body { margin: 0; }
         },
         "write-review"(el) {
           if (!isLogin()) return askLogin();
+          // 한 책에 리뷰는 하나라, 이미 썼다면 모달을 열기 전에 막는다
+          if (el.dataset.written) return showToast("이미 이 책에 리뷰를 작성했습니다.");
           const edit = !!el.dataset.edit;
           openDialog(`<form data-form="done" data-done="${edit ? "리뷰를 수정했습니다." : "리뷰를 등록했습니다."}" class="dlg" style="padding:0">
             <h2>${edit ? "리뷰 수정" : "리뷰 쓰기"}</h2>
