@@ -328,6 +328,8 @@
     margin-left: -16px;
     padding-left: 16px;
     overflow: hidden;
+    /* 표지가 계속 움직여서, 스크롤 앵커로 잡히면 새로고침 때 복원 위치가 어긋난다. */
+    overflow-anchor: none;
     mask-image: linear-gradient(transparent, #000 7%, #000 93%, transparent);
   }
   .col {
