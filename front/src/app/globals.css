@@ -1037,6 +1037,29 @@ body {
     padding: clamp(20px, 2.5vw, 32px);
     border: 1px solid var(--line);
   }
+  .feature-review + .feature-review {
+    margin-top: 16px;
+  }
+  /* 리뷰 카드의 별점 줄: 왼쪽에 별과 점수, 오른쪽에 수정·삭제 */
+  .rv-rating {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .rv-rating strong {
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+  .rv-actions {
+    display: flex;
+    gap: 2px;
+    margin-left: auto;
+    margin-right: -10px;
+  }
   .rv-list {
     list-style: none;
     padding: 0;
@@ -1486,6 +1509,15 @@ body {
     border: 0;
     opacity: 0;
     pointer-events: none;
+  }
+  /* 읽기 전용 작은 별 (리뷰 카드) */
+  .stars.sm {
+    cursor: auto;
+    touch-action: auto;
+  }
+  .stars.sm .i {
+    width: 20px;
+    height: 20px;
   }
   .stars:has(:focus-visible) {
     outline: 2px solid var(--accent);

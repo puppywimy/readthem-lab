@@ -10,6 +10,7 @@ import {
 } from "react";
 
 import Dialog from "@/app/_components/Dialog";
+import { StarLayers } from "@/app/_components/RatingStars";
 
 export type ReviewFormValues = {
   rating: number;
@@ -34,22 +35,6 @@ const MAX_TAG_LENGTH = 30;
 const TAG_HELP = "Enter로 태그를 추가합니다.";
 const TAG_DUP = "이미 입력한 태그입니다.";
 const TAG_FULL = `태그는 ${MAX_TAGS}개까지 입력할 수 있습니다.`;
-
-// 채운 별과 빈 별을 같은 모양으로 겹쳐야 해서 마스크 아이콘(SvgIcon) 대신 인라인 SVG를 쓴다
-const STARS = [0, 1, 2, 3, 4].map((index) => (
-  <svg
-    key={index}
-    className="i"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden="true"
-  >
-    <path d="m12 3 2.7 5.5 6 .9-4.3 4.2 1 6-5.4-2.9-5.4 2.9 1-6-4.3-4.2 6-.9L12 3Z" />
-  </svg>
-));
 
 export default function ReviewFormModal({
   defaultContent = "",
@@ -158,8 +143,7 @@ export default function ReviewFormModal({
               // 기본 mousedown이 포커스를 range 밖으로 옮기지 않게 막는다 (누른 뒤 방향키로 이어서 조절)
               onMouseDown={(e) => e.preventDefault()}
             >
-              <span>{STARS}</span>
-              <span className="on">{STARS}</span>
+              <StarLayers />
               <input
                 ref={ratingRef}
                 id="review-rating"
