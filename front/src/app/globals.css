@@ -999,6 +999,10 @@ body {
   .book-hero .btn {
     margin-top: 26px;
   }
+  /* 강조색이 섞인 띠 위라 회색(--surface) 대신 같은 색조로 짙어지게 한다 */
+  .book-hero .btn.line:hover {
+    background: color-mix(in srgb, var(--accent) 16%, var(--bg));
+  }
   .book-body {
     display: grid;
     grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
