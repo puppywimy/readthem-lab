@@ -121,6 +121,8 @@ export default function Page() {
   const [tab, setTab] = useState<"reviews" | "liked" | "wishes">("reviews");
   const [editingReview, setEditingReview] =
     useState<ReviewWithBookImgUrl | null>(null);
+  // 탭 전환 등장 애니메이션은 탭을 바꾼 뒤에만 재생한다. 첫 렌더에서 재생하면 스켈레톤이 사라진 뒤 내용이 늦게 나타난다.
+  const [tabSwitched, setTabSwitched] = useState(false);
   const [copiedWidgetLink, setCopiedWidgetLink] = useState(false);
   const pageCacheRef = useRef<{
     reviews?: ReviewsByMemberDto;
@@ -141,6 +143,7 @@ export default function Page() {
       setLikedReviews(null);
       setEditingReview(null);
       setTab("reviews");
+      setTabSwitched(false);
       setCopiedWidgetLink(false);
     }
   }, [isLoginMemberPending, loginMember?.id]);
@@ -361,14 +364,21 @@ export default function Page() {
               className="tab"
               role="tab"
               aria-selected={tab === value}
-              onClick={() => setTab(value)}
+              onClick={() => {
+                if (value !== tab) setTabSwitched(true);
+                setTab(value);
+              }}
             >
               {label}
             </button>
           ))}
         </div>
 
-        <div className="tab-body swap" role="tabpanel" key={tab}>
+        <div
+          className={tabSwitched ? "tab-body swap" : "tab-body"}
+          role="tabpanel"
+          key={tab}
+        >
           {tab === "reviews" &&
             (reviewResults.length === 0 ? (
               <div className="state">
