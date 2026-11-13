@@ -8,7 +8,7 @@ import { formatDate } from "@/lib/formatDate";
 
 import Avatar from "@/app/_components/Avatar";
 import LikeButton from "@/app/_components/LikeButton";
-import RatingValue from "@/app/_components/RatingValue";
+import RatingStars from "@/app/_components/RatingStars";
 
 type ReviewDto = components["schemas"]["ReviewDto"];
 
@@ -27,6 +27,7 @@ export function TagList({ tags }: { tags?: string[] }) {
 type ReviewDetailCardProps = {
   review: ReviewDto;
   best?: boolean;
+  mine?: boolean;
   liked: boolean;
   onToggleLike: () => void;
   onEdit?: () => void;
@@ -36,6 +37,7 @@ type ReviewDetailCardProps = {
 export default function ReviewDetailCard({
   review,
   best = false,
+  mine = false,
   liked,
   onToggleLike,
   onEdit,
@@ -59,14 +61,12 @@ export default function ReviewDetailCard({
         <div>
           <strong>
             {href ? <Link href={href}>{name}</Link> : name}
+            {mine && <span className="badge">내 리뷰</span>}
             {best && (review.likeCount ?? 0) > 0 && (
               <span className="badge on">베스트 리뷰</span>
             )}
           </strong>
-          <small>
-            {formatDate(review.createdDate)}
-            <RatingValue rating={review.rating} inline />
-          </small>
+          <small>{formatDate(review.createdDate)}</small>
         </div>
         <LikeButton
           count={review.likeCount}
@@ -74,22 +74,25 @@ export default function ReviewDetailCard({
           onClick={onToggleLike}
         />
       </div>
-      <q>{review.content}</q>
+      <div className="rv-rating">
+        <RatingStars rating={review.rating} />
+        {(onEdit || onDelete) && (
+          <div className="rv-actions">
+            {onEdit && (
+              <button type="button" className="text-btn" onClick={onEdit}>
+                수정
+              </button>
+            )}
+            {onDelete && (
+              <button type="button" className="text-btn" onClick={onDelete}>
+                삭제
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+      {review.content && <q>{review.content}</q>}
       <TagList tags={review.tags} />
-      {(onEdit || onDelete) && (
-        <div className="mt-2 -ml-2.5 flex gap-0.5">
-          {onEdit && (
-            <button type="button" className="text-btn" onClick={onEdit}>
-              수정
-            </button>
-          )}
-          {onDelete && (
-            <button type="button" className="text-btn" onClick={onDelete}>
-              삭제
-            </button>
-          )}
-        </div>
-      )}
     </>
   );
 }

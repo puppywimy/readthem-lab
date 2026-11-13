@@ -18,7 +18,9 @@ import LoginRequiredModal from "@/app/_components/LoginRequiredModal";
 import RatingHistogram from "@/app/_components/RatingHistogram";
 import RatingValue from "@/app/_components/RatingValue";
 import ReviewDetailCard, { TagList } from "@/app/_components/ReviewDetailCard";
-import ReviewFormModal from "@/app/_components/ReviewFormModal";
+import ReviewFormModal, {
+  type ReviewFormValues,
+} from "@/app/_components/ReviewFormModal";
 import SvgIcon from "@/app/_components/SvgIcon";
 
 type BookDetailDto = components["schemas"]["BookDetailDto"];
@@ -113,45 +115,8 @@ function BookDetail() {
       .catch(goToErrorPage);
   }, [isLogin]);
 
-  const extractReviewFields = (form: HTMLFormElement) => {
-    const formData = new FormData(form);
-    const ratingValue = String(formData.get("rating") ?? "").trim();
-    const contentValue = String(formData.get("content") ?? "").trim();
-    const tagsValue = String(formData.get("tags") ?? "");
-
-    /*
-    if (contentValue.length < 2) {
-      alert("리뷰 내용을 2자 이상 입력해주세요.");
-      return null;
-    }
-    */
-
-    if (contentValue.length > 500) {
-      showToast("리뷰 내용은 500자 이하로 입력해주세요.");
-      return null;
-    }
-
-    const tags = tagsValue
-      .split(",")
-      .map((tag) => tag.trim())
-      .filter((tag) => tag.length > 0);
-
-    const rating = ratingValue === "" ? undefined : Number(ratingValue);
-
-    return {
-      content: contentValue,
-      tags,
-      ...(rating != null ? { rating } : {}),
-    };
-  };
-
-  const handleWriteSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleWriteSubmit = (body: ReviewFormValues) => {
     if (id == null) return;
-
-    const form = e.currentTarget;
-    const body = extractReviewFields(form);
-    if (body == null) return;
 
     apiFetch(`/api/v1/reviews/book/${id}`, {
       method: "POST",
@@ -159,7 +124,6 @@ function BookDetail() {
     })
       .then((data) => {
         showToast(data?.message ?? "리뷰를 작성했습니다.");
-        form.reset();
         setShowWriteForm(false);
         loadReviews();
         loadBook();
@@ -167,16 +131,7 @@ function BookDetail() {
       .catch(showErrorToast);
   };
 
-  const handleEditSubmit = (
-    e: React.SyntheticEvent<HTMLFormElement>,
-    reviewId: number,
-  ) => {
-    e.preventDefault();
-
-    const form = e.currentTarget;
-    const body = extractReviewFields(form);
-    if (body == null) return;
-
+  const handleEditSubmit = (body: ReviewFormValues, reviewId: number) => {
     apiFetch(`/api/v1/reviews/${reviewId}`, {
       method: "PUT",
       body: JSON.stringify(body),
@@ -232,12 +187,20 @@ function BookDetail() {
     setShowLoginModal(true);
   };
 
+  const isMyReview = (review: ReviewDto) =>
+    loginMember?.id != null && loginMember.id === review.reviewer?.id;
+
   const handleOpenReviewAction = () => {
-    if (isLogin) {
-      setShowWriteForm(true);
+    if (!isLogin) {
+      openLoginModal();
       return;
     }
-    openLoginModal();
+    // 한 책에 리뷰는 하나라, 이미 썼다면 모달을 열기 전에 막는다
+    if (reviews?.some(isMyReview)) {
+      showToast("이미 이 책에 리뷰를 작성했습니다.");
+      return;
+    }
+    setShowWriteForm(true);
   };
 
   const closeLoginModal = () => {
@@ -321,24 +284,30 @@ function BookDetail() {
       ? null
       : (reviews.find((review) => review.id === editingReviewId) ?? null);
 
-  // 베스트 리뷰는 고정하고, 정렬은 그 아래 목록에만 적용한다
-  const [bestReview, ...otherReviews] = [...reviews].sort(
+  // 내 리뷰와 베스트 리뷰는 맨 위에 고정하고, 정렬은 그 아래 목록에만 적용한다.
+  // 내 리뷰가 좋아요도 가장 많으면 베스트 리뷰를 따로 두지 않고 내 리뷰에 배지를 함께 붙인다.
+  const byLikes = [...reviews].sort(
     (a, b) => (b.likeCount ?? 0) - (a.likeCount ?? 0),
   );
-  const sortedReviews = otherReviews.sort((a, b) =>
-    reviewSort === "popular"
-      ? (b.likeCount ?? 0) - (a.likeCount ?? 0)
-      : (b.createdDate ?? "").localeCompare(a.createdDate ?? ""),
-  );
+  const topReview = byLikes[0];
+  const myReview = reviews.find(isMyReview);
+  const bestReview = topReview === myReview ? undefined : topReview;
+  const sortedReviews = byLikes
+    .filter((review) => review !== myReview && review !== bestReview)
+    .sort((a, b) =>
+      reviewSort === "popular"
+        ? (b.likeCount ?? 0) - (a.likeCount ?? 0)
+        : (b.createdDate ?? "").localeCompare(a.createdDate ?? ""),
+    );
 
   const renderReview = (review: ReviewDto, best = false) => {
-    const isMine =
-      loginMember?.id != null && loginMember.id === review.reviewer?.id;
+    const isMine = isMyReview(review);
 
     return (
       <ReviewDetailCard
         review={review}
         best={best}
+        mine={isMine}
         liked={review.id != null && likedReviewIds.has(review.id)}
         onToggleLike={() => handleToggleLike(review)}
         onEdit={
@@ -370,9 +339,11 @@ function BookDetail() {
         <ReviewFormModal
           defaultContent={editingReview.content ?? ""}
           defaultRating={editingReview.rating}
-          defaultTags={(editingReview.tags ?? []).join(", ")}
+          defaultTags={editingReview.tags ?? []}
           onCancel={() => setEditingReviewId(null)}
-          onSubmit={(e) => handleEditSubmit(e, editingReview.id as number)}
+          onSubmit={(body) =>
+            handleEditSubmit(body, editingReview.id as number)
+          }
           submitLabel="수정 완료"
           title="리뷰 수정"
         />
@@ -431,16 +402,23 @@ function BookDetail() {
           >
             리뷰
           </h2>
-          {bestReview == null ? (
+          {reviews.length === 0 ? (
             <div className="state">
               <strong>아직 리뷰가 없습니다.</strong>이 책을 읽었다면 첫 리뷰를
               남겨 보세요.
             </div>
           ) : (
             <>
-              <article className="feature-review">
-                {renderReview(bestReview, true)}
-              </article>
+              {myReview && (
+                <article className="feature-review">
+                  {renderReview(myReview, myReview === topReview)}
+                </article>
+              )}
+              {bestReview && (
+                <article className="feature-review">
+                  {renderReview(bestReview, true)}
+                </article>
+              )}
               {sortedReviews.length > 1 && (
                 <div className="sort" role="group" aria-label="리뷰 정렬">
                   {(

@@ -80,7 +80,7 @@ export function LibraryReviewRow({
           <Link href={href}>{title}</Link>
         </h2>
         <p className="meta">{meta}</p>
-        <q>{review.content}</q>
+        {review.content && <q>{review.content}</q>}
       </div>
       {actions && <div className="row-actions">{actions}</div>}
     </li>
