@@ -627,19 +627,21 @@ export interface components {
             /** Format: int32 */
             totalPages?: number;
             /** Format: int32 */
-            numberOfElements?: number;
-            pageable?: components["schemas"]["PageableObject"];
-            sort?: components["schemas"]["SortObject"];
-            /** Format: int32 */
             size?: number;
             content?: components["schemas"]["AdminReviewDto"][];
             /** Format: int32 */
             number?: number;
+            pageable?: components["schemas"]["PageableObject"];
+            sort?: components["schemas"]["SortObject"];
+            /** Format: int32 */
+            numberOfElements?: number;
             first?: boolean;
             last?: boolean;
             empty?: boolean;
         };
         PageableObject: {
+            /** Format: int64 */
+            offset?: number;
             paged?: boolean;
             /** Format: int32 */
             pageNumber?: number;
@@ -647,13 +649,11 @@ export interface components {
             pageSize?: number;
             sort?: components["schemas"]["SortObject"];
             unpaged?: boolean;
-            /** Format: int64 */
-            offset?: number;
         };
         SortObject: {
+            empty?: boolean;
             sorted?: boolean;
             unsorted?: boolean;
-            empty?: boolean;
         };
         MemberWithUsernameAndWidgetLinkDto: {
             /** Format: int64 */
@@ -683,14 +683,14 @@ export interface components {
             /** Format: int32 */
             totalPages?: number;
             /** Format: int32 */
-            numberOfElements?: number;
-            pageable?: components["schemas"]["PageableObject"];
-            sort?: components["schemas"]["SortObject"];
-            /** Format: int32 */
             size?: number;
             content?: components["schemas"]["AdminMemberDto"][];
             /** Format: int32 */
             number?: number;
+            pageable?: components["schemas"]["PageableObject"];
+            sort?: components["schemas"]["SortObject"];
+            /** Format: int32 */
+            numberOfElements?: number;
             first?: boolean;
             last?: boolean;
             empty?: boolean;
@@ -724,14 +724,14 @@ export interface components {
             /** Format: int32 */
             totalPages?: number;
             /** Format: int32 */
-            numberOfElements?: number;
-            pageable?: components["schemas"]["PageableObject"];
-            sort?: components["schemas"]["SortObject"];
-            /** Format: int32 */
             size?: number;
             content?: components["schemas"]["BookDto"][];
             /** Format: int32 */
             number?: number;
+            pageable?: components["schemas"]["PageableObject"];
+            sort?: components["schemas"]["SortObject"];
+            /** Format: int32 */
+            numberOfElements?: number;
             first?: boolean;
             last?: boolean;
             empty?: boolean;
@@ -1379,7 +1379,6 @@ export interface operations {
         parameters: {
             query?: {
                 type?: string;
-                page?: number;
                 size?: number;
             };
             header?: never;
