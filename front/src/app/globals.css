@@ -319,6 +319,9 @@
   .search input::placeholder {
     color: var(--muted);
   }
+  .search input::-webkit-search-cancel-button {
+    cursor: pointer;
+  }
   .wall {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
