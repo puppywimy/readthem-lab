@@ -47,7 +47,7 @@ READTHEM.md는 도서를 검색하고, 리뷰를 작성하고, 찜 목록을 관
 
 ### Frontend
 
-- Next.js 16.3.8, React 19.2.4
+- Next.js 16.2.9, React 19.2.4
 
 ## 실행 환경
 
