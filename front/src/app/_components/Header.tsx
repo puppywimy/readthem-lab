@@ -11,6 +11,7 @@ import {
 import { useTheme } from "@/lib/theme/ThemeProvider";
 import { useToast } from "@/lib/toast/ToastProvider";
 
+import BookSearchLink from "@/app/_components/BookSearchLink";
 import { GitHubLoginButton } from "@/app/_components/LoginRequiredModal";
 import SvgIcon from "@/app/_components/SvgIcon";
 
@@ -51,9 +52,9 @@ export default function Header() {
           Readthem <em>Lab</em>
         </Link>
         <nav className="links" aria-label="주요 메뉴">
-          <Link href="/books/search" aria-current={current("/books/search")}>
+          <BookSearchLink aria-current={current("/books/search")}>
             도서 검색
-          </Link>
+          </BookSearchLink>
           <Link href="/#home-rank">독서 트렌드</Link>
           <Link href="/#home-reviews">리뷰</Link>
           {isLogin && (
