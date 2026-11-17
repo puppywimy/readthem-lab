@@ -200,4 +200,13 @@ class BookSearchTest {
             assertThat(result.isLast).isTrue()
         }
     }
+
+    @Test
+    @DisplayName("제목 끝과 저자 앞에 걸친 검색어는 전체 결과 수에도 세지 않는다")
+    fun t16() {
+        // 결과가 비면 Spring Data가 countQuery 없이 0을 계산하므로, 페이지를 넘겨 countQuery를 타게 한다.
+        val result = bookQueryService.getBooksByFullTextSearch("얼빈센", 1, 10)
+
+        assertThat(result.totalElements).isEqualTo(0)
+    }
 }
