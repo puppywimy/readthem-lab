@@ -328,6 +328,8 @@
     margin-left: -16px;
     padding-left: 16px;
     overflow: hidden;
+    /* 표지가 계속 움직여서, 스크롤 앵커로 잡히면 새로고침 때 복원 위치가 어긋난다. */
+    overflow-anchor: none;
     mask-image: linear-gradient(transparent, #000 7%, #000 93%, transparent);
   }
   .col {
@@ -852,6 +854,10 @@ body {
     border-radius: 8px;
     background: var(--surface);
     animation: sk-pulse 1.4s ease-in-out infinite;
+  }
+  /* 강조색이 섞인 띠 위라 회색(--surface) 대신 같은 색조로 짙어지게 한다 */
+  .band .sk {
+    background: color-mix(in srgb, var(--accent) 16%, var(--bg));
   }
   .sk.cover-sk {
     aspect-ratio: 2/3;
