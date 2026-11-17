@@ -58,11 +58,7 @@ class BookQueryService(
                 )
             )
 
-        val ratingsByIsbn = bookOperationalRepository.findByIsbnIn(
-            books.content.map { it.isbn }
-        ).associate { it.isbn to it.averageRating }
-
-        return books.map { BookDto(it, ratingsByIsbn[it.isbn] ?: 0.0) }
+        return getBookDtoPage(books)
     }
 
     fun getBooksOrderByRank(type: String, size: Int): List<BookDto> {
@@ -129,35 +125,34 @@ class BookQueryService(
         searchTerm: String,
         page: Int,
         size: Int
-    ): List<BookDto> {
-        val keyword = BookSearchTextNormalizer.normalize(searchTerm)
-        if (keyword.isEmpty()) return emptyList()
-
+    ): Page<BookDto> {
         val pageable = PageRequest.of(page, size)
 
-        return getBookDtos(
-            bookRepository
-                .searchByKeyword(keyword, pageable)
-                .toList()
-        )
+        val keyword = BookSearchTextNormalizer.normalize(searchTerm)
+        if (keyword.isEmpty()) return Page.empty(pageable)
+
+        return getBookDtoPage(bookRepository.searchByKeyword(keyword, pageable))
     }
 
     fun getBooksByLikeSearch(
         searchTerm: String,
         page: Int,
         size: Int
-    ): List<BookDto> {
+    ): Page<BookDto> {
         val pageable = PageRequest.of(page, size)
 
-        return getBookDtos(
-            bookRepository
-                .findByTitleContaining(searchTerm, pageable)
-                .toList()
-        )
+        return getBookDtoPage(bookRepository.findByTitleContaining(searchTerm, pageable))
     }
 
     private fun getBookOperational(book: Book) =
         bookOperationalRepository.findByIsbn(book.isbn)
+
+    private fun getBookDtoPage(books: Page<Book>): Page<BookDto> {
+        val ratingsByIsbn = bookOperationalRepository.findByIsbnIn(books.content.map { it.isbn })
+            .associate { it.isbn to it.averageRating }
+
+        return books.map { BookDto(it, ratingsByIsbn[it.isbn] ?: 0.0) }
+    }
 
     private fun getBookDtos(books: List<Book>): List<BookDto> {
         val ratingsByIsbn = bookOperationalRepository.findByIsbnIn(books.map { it.isbn })

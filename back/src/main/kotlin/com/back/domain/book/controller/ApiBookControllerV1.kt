@@ -1,6 +1,7 @@
 package com.back.domain.book.controller
 
 import com.back.domain.book.controller.request.BookUpdateRequest
+import com.back.domain.book.controller.response.BookSearchResponse
 import com.back.domain.book.dto.BookDetailDto
 import com.back.domain.book.dto.BookDto
 import com.back.domain.book.dto.ThumbnailDto
@@ -68,7 +69,7 @@ class ApiBookControllerV1(
         @RequestParam @NotBlank searchTerm: @NotBlank String,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "10") size: Int
-    ) = bookService.getBooksBySearch(searchTerm, page, size)
+    ) = BookSearchResponse(bookService.getBooksBySearch(searchTerm, page, size))
 
     @GetMapping("/recommend")
     @Operation(summary = "도서 추천 다건 조회")

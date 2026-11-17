@@ -57,7 +57,7 @@ class BookSearchTest {
     }
 
     private fun search(searchTerm: String, page: Int = 0, size: Int = 100): List<String> =
-        bookQueryService.getBooksByFullTextSearch(searchTerm, page, size).map { it.title }
+        bookQueryService.getBooksByFullTextSearch(searchTerm, page, size).content.map { it.title }
 
     @Test
     @DisplayName("띄어쓰기를 무시한다")
@@ -163,5 +163,41 @@ class BookSearchTest {
         assertThat(search("열혈C", page = 1, size = 2)).isEqualTo(all.subList(2, 4))
         assertThat(search("열혈C", page = 2, size = 2)).isEqualTo(all.subList(4, 5))
         assertThat(search("열혈C", page = 3, size = 2)).isEmpty()
+    }
+
+    @Test
+    @DisplayName("totalElements는 전체 결과 수이고, 페이지를 넘겨도 같다. last는 마지막 페이지에서만 true다")
+    fun t13() {
+        val pages = (0..2).map { bookQueryService.getBooksByFullTextSearch("열혈C", it, 2) }
+
+        assertThat(pages.map { it.totalElements }).containsOnly(5L)
+        assertThat(pages.map { it.isLast }).containsExactly(false, false, true)
+    }
+
+    @Test
+    @DisplayName("결과 수가 페이지 크기의 배수여도 마지막 페이지에서 last가 true다")
+    fun t14() {
+        val first = bookQueryService.getBooksByFullTextSearch("윤성우", 0, 3)
+
+        assertThat(first.content).hasSize(3)
+        assertThat(first.totalElements).isEqualTo(3)
+        assertThat(first.isLast).isTrue()
+
+        val fromFiveResults = bookQueryService.getBooksByFullTextSearch("열혈C", 0, 5)
+
+        assertThat(fromFiveResults.totalElements).isEqualTo(5)
+        assertThat(fromFiveResults.isLast).isTrue()
+    }
+
+    @Test
+    @DisplayName("결과가 없거나 전처리하면 비는 검색어는 totalElements 0, last true다")
+    fun t15() {
+        listOf("오렌지미디어", "!?~", "   ").forEach { searchTerm ->
+            val result = bookQueryService.getBooksByFullTextSearch(searchTerm, 0, 10)
+
+            assertThat(result.content).isEmpty()
+            assertThat(result.totalElements).isEqualTo(0)
+            assertThat(result.isLast).isTrue()
+        }
     }
 }
