@@ -15,7 +15,6 @@ import { formatDate } from "@/lib/formatDate";
 import { useToast } from "@/lib/toast/ToastProvider";
 
 import BookCover from "@/app/_components/BookCover";
-import BookSearchLink from "@/app/_components/BookSearchLink";
 import { LibraryHeader, LibraryReviewRow } from "@/app/_components/Library";
 import LikeButton from "@/app/_components/LikeButton";
 import { GitHubLoginButton } from "@/app/_components/LoginRequiredModal";
@@ -386,7 +385,9 @@ export default function Page() {
                 <strong>작성한 리뷰가 없습니다.</strong>
                 읽은 책을 찾아 첫 리뷰를 남겨 보세요.
                 <div>
-                  <BookSearchLink className="btn">도서 찾기</BookSearchLink>
+                  <Link className="btn" href="/books/search">
+                    도서 찾기
+                  </Link>
                 </div>
               </div>
             ) : (

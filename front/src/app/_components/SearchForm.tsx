@@ -1,10 +1,9 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 import { useState } from "react";
 
-import { goToBookSearch } from "@/lib/navigation/goToBookSearch";
 import { useToast } from "@/lib/toast/ToastProvider";
 
 export default function SearchForm({
@@ -16,7 +15,7 @@ export default function SearchForm({
   initialTerm?: string;
   autoFocus?: boolean;
 }) {
-  const pathname = usePathname();
+  const router = useRouter();
   const { showToast } = useToast();
   const [term, setTerm] = useState(initialTerm);
 
@@ -29,7 +28,7 @@ export default function SearchForm({
       return;
     }
 
-    goToBookSearch(pathname, trimmed);
+    router.push(`/books/search?searchTerm=${encodeURIComponent(trimmed)}`);
   };
 
   return (
