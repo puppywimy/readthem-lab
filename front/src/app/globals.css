@@ -485,6 +485,7 @@
   }
   .rv q {
     quotes: none;
+    overflow-wrap: anywhere;
     font-weight: 600;
     line-height: 1.5;
     font-size: 1.1rem;
@@ -810,6 +811,7 @@ body {
     padding: 0;
   }
   .tags li {
+    overflow-wrap: anywhere;
     padding: 2px 10px;
     border-radius: 999px;
     background: var(--surface);
@@ -1119,6 +1121,7 @@ body {
   .feature-review q {
     quotes: none;
     display: block;
+    overflow-wrap: anywhere;
     line-height: 1.6;
     max-width: 62ch;
   }
@@ -1206,6 +1209,7 @@ body {
   .my-row q {
     quotes: none;
     display: block;
+    overflow-wrap: anywhere;
     margin-top: 6px;
     max-width: 62ch;
   }
@@ -1435,6 +1439,7 @@ body {
   }
   .tag-chip {
     display: inline-flex;
+    overflow-wrap: anywhere;
     align-items: center;
     gap: 2px;
     padding: 2px 4px 2px 10px;
