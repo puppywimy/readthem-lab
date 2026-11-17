@@ -149,7 +149,12 @@ function SearchResultsContent({ searchTerm }: { searchTerm: string }) {
           {searchTerm ? `'${searchTerm}' 검색 결과` : "도서 검색"}
         </h1>
         {searchTerm && <p className="count">{count}</p>}
-        <SearchForm id="search-q" initialTerm={searchTerm} />
+        {/* 결과가 있는 주소에서는 모바일 키보드가 결과를 가리므로 포커스를 주지 않는다 */}
+        <SearchForm
+          id="search-q"
+          initialTerm={searchTerm}
+          autoFocus={searchTerm.length === 0}
+        />
       </div>
       <div aria-busy={isInitialLoading}>
         {searchTerm.length === 0 ? (

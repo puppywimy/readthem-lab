@@ -33,9 +33,18 @@ type ReviewWithBookImgUrl = NonNullable<
 };
 type LikedReview = ReviewWithBookImgUrl;
 
+const TABS = [
+  ["reviews", "작성한 리뷰"],
+  ["liked", "좋아요한 리뷰"],
+  ["wishes", "보고 싶어요"],
+] as const;
+
+const SECTION_STYLE = { paddingBlock: "clamp(40px,5vw,64px)" };
+
 function MyPageSkeleton() {
   return (
     <>
+      {/* 실제 화면과 같은 클래스를 써서 띠 높이와 탭·목록 위치를 맞춘다 */}
       <div className="band">
         <div className="wrap me" aria-busy="true">
           <span
@@ -43,23 +52,60 @@ function MyPageSkeleton() {
             style={{ width: 96, height: 96, borderRadius: 999 }}
           />
           <div>
-            <span
-              className="sk line"
-              style={{ height: "2.4rem", maxWidth: 280 }}
-            />
-            <span className="sk line" style={{ maxWidth: 160 }} />
+            <h1 className="page-title">
+              <span className="sk" style={{ maxWidth: 280 }}>
+                &nbsp;
+              </span>
+            </h1>
+            <span className="sk" style={{ maxWidth: 160, marginTop: 4 }}>
+              &nbsp;
+            </span>
           </div>
+          <dl className="me-stats" aria-hidden="true">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div key={index}>
+                <dt>
+                  <span className="sk" style={{ width: "5em" }}>
+                    &nbsp;
+                  </span>
+                </dt>
+                <dd>
+                  <span className="sk" style={{ width: "1.5em" }}>
+                    &nbsp;
+                  </span>
+                </dd>
+              </div>
+            ))}
+          </dl>
         </div>
       </div>
-      <div className="wrap">
-        {Array.from({ length: 3 }).map((_, index) => (
-          <span
-            key={index}
-            className="sk line"
-            style={{ height: 96, marginTop: 20 }}
-          />
-        ))}
-      </div>
+      {/* 탭 이름은 정해져 있으므로 회색 박스 대신 글자를 그대로 보여 준다 */}
+      <section className="wrap" style={SECTION_STYLE} aria-hidden="true">
+        <div className="tabs">
+          {TABS.map(([value, label]) => (
+            <span key={value} className="tab">
+              {label}
+            </span>
+          ))}
+        </div>
+        <div className="tab-body">
+          <ul className="rv-list">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <li key={index} className="my-row">
+                <span className="sk cover-sk" />
+                <div>
+                  <span
+                    className="sk line"
+                    style={{ marginTop: 4, maxWidth: 240 }}
+                  />
+                  <span className="sk line" style={{ maxWidth: 140 }} />
+                  <span className="sk line" style={{ maxWidth: "62ch" }} />
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
     </>
   );
 }
@@ -75,6 +121,8 @@ export default function Page() {
   const [tab, setTab] = useState<"reviews" | "liked" | "wishes">("reviews");
   const [editingReview, setEditingReview] =
     useState<ReviewWithBookImgUrl | null>(null);
+  // 탭 전환 등장 애니메이션은 탭을 바꾼 뒤에만 재생한다. 첫 렌더에서 재생하면 스켈레톤이 사라진 뒤 내용이 늦게 나타난다.
+  const [tabSwitched, setTabSwitched] = useState(false);
   const [copiedWidgetLink, setCopiedWidgetLink] = useState(false);
   const pageCacheRef = useRef<{
     reviews?: ReviewsByMemberDto;
@@ -95,6 +143,7 @@ export default function Page() {
       setLikedReviews(null);
       setEditingReview(null);
       setTab("reviews");
+      setTabSwitched(false);
       setCopiedWidgetLink(false);
     }
   }, [isLoginMemberPending, loginMember?.id]);
@@ -306,32 +355,30 @@ export default function Page() {
         ]}
       />
 
-      <section
-        className="wrap"
-        style={{ paddingBlock: "clamp(40px,5vw,64px)" }}
-      >
+      <section className="wrap" style={SECTION_STYLE}>
         <div className="tabs" role="tablist">
-          {(
-            [
-              ["reviews", "작성한 리뷰"],
-              ["liked", "좋아요한 리뷰"],
-              ["wishes", "보고 싶어요"],
-            ] as const
-          ).map(([value, label]) => (
+          {TABS.map(([value, label]) => (
             <button
               key={value}
               type="button"
               className="tab"
               role="tab"
               aria-selected={tab === value}
-              onClick={() => setTab(value)}
+              onClick={() => {
+                if (value !== tab) setTabSwitched(true);
+                setTab(value);
+              }}
             >
               {label}
             </button>
           ))}
         </div>
 
-        <div className="tab-body swap" role="tabpanel" key={tab}>
+        <div
+          className={tabSwitched ? "tab-body swap" : "tab-body"}
+          role="tabpanel"
+          key={tab}
+        >
           {tab === "reviews" &&
             (reviewResults.length === 0 ? (
               <div className="state">

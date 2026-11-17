@@ -9,9 +9,11 @@ import { useToast } from "@/lib/toast/ToastProvider";
 export default function SearchForm({
   id,
   initialTerm = "",
+  autoFocus = false,
 }: {
   id: string;
   initialTerm?: string;
+  autoFocus?: boolean;
 }) {
   const router = useRouter();
   const { showToast } = useToast();
@@ -38,6 +40,7 @@ export default function SearchForm({
           type="search"
           maxLength={100}
           placeholder="제목이나 저자를 입력하세요"
+          autoFocus={autoFocus}
           value={term}
           onChange={(e) => setTerm(e.target.value)}
         />
