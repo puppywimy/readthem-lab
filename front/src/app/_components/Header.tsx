@@ -51,11 +51,7 @@ export default function Header() {
           Readthem <em>Lab</em>
         </Link>
         <nav className="links" aria-label="주요 메뉴">
-          <Link
-            href={pathname === "/" ? "/" : "/books/search"}
-            aria-current={current("/books/search")}
-            onClick={scrollToTopOnHome}
-          >
+          <Link href="/books/search" aria-current={current("/books/search")}>
             도서 검색
           </Link>
           <Link href="/#home-rank">독서 트렌드</Link>

@@ -675,7 +675,7 @@ body { margin: 0; }
         return `<header class="nav"><div class="wrap">
           <a class="logo" href="#/">Readthem <em>Lab</em></a>
           <nav class="links" aria-label="주요 메뉴">
-            ${home ? `<button data-act="home-top">도서 검색</button>` : page("도서 검색", "search")}
+            ${page("도서 검색", "search")}
             ${jump("독서 트렌드", "home-rank")}
             ${jump("리뷰", "home-reviews")}
             ${isLogin() ? page("내 서재", "mypage") : ""}
@@ -968,6 +968,8 @@ body { margin: 0; }
           const target = params.get("to");
           if (target) document.getElementById(target)?.scrollIntoView();
         }
+        // 결과가 있는 주소에서는 모바일 키보드가 결과를 가리므로 검색어가 없을 때만 포커스를 준다.
+        if (path === "search" && !(params.get("term") || "").trim()) $("#search-q")?.focus();
       }
 
       /* ───────── 대화상자와 이벤트 ───────── */
@@ -993,7 +995,6 @@ body { margin: 0; }
           document.querySelectorAll(".home-a .tab").forEach((tab) => tab.setAttribute("aria-selected", tab === el));
           $("#home-panel").innerHTML = homeRankPanel(state.homeTab);
         },
-        "home-top"() { window.scrollTo({ top: 0, behavior: "smooth" }); },
         "home-jump"(el) { document.getElementById(el.dataset.target).scrollIntoView({ behavior: "smooth" }); },
         "home-scroll"(el) { $("#home-track").scrollBy({ left: Number(el.dataset.dir) * 400, behavior: "smooth" }); },
         theme() {
