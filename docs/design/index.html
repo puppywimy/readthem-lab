@@ -144,10 +144,18 @@
   /* 리뷰 */
   h2 { font-size: clamp(1.6rem, 3vw, 2.5rem); font-weight: 800; letter-spacing: -.035em; line-height: 1.2; }
   .reviews { display: grid; grid-template-columns: 7fr 5fr; gap: 16px; margin-top: 36px; }
-  .rv { border-radius: 16px; padding: clamp(20px, 2.5vw, 32px); display: flex; flex-direction: column; background: var(--surface); }
+  .rv { position: relative; border-radius: 16px; padding: clamp(20px, 2.5vw, 32px); display: flex; flex-direction: column; background: var(--surface); }
+  /* 카드 전체가 리뷰로 가는 링크: 링크의 ::after를 카드 크기로 늘리고, 좋아요 버튼만 그 위로 올린다 */
+  .rv-link { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; }
+  .rv-link::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+  .rv-link:focus-visible { outline: none; }
+  .rv:has(.rv-link:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .rv-link:hover strong { text-decoration: underline; text-underline-offset: 3px; }
+  .rv .like { position: relative; }
   .rv:first-child { grid-row: span 2; background: var(--feature); color: var(--on-feature); --muted: var(--on-feature); }
-  .rv q { quotes: none; font-weight: 600; line-height: 1.5; font-size: 1.1rem; }
-  .rv:first-child q { font-size: clamp(1.5rem, 2.8vw, 2.4rem); line-height: 1.32; letter-spacing: -.03em; font-weight: 700; }
+  /* 본문은 줄 수로 자르고 "…"를 붙인다. 전체 내용은 카드를 눌러 도서 상세에서 본다 */
+  .rv q { quotes: none; font-weight: 600; line-height: 1.5; font-size: 1.1rem; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; line-clamp: 4; overflow: hidden; }
+  .rv:first-child q { -webkit-line-clamp: 7; line-clamp: 7; font-size: clamp(1.5rem, 2.8vw, 2.4rem); line-height: 1.32; letter-spacing: -.03em; font-weight: 700; }
   .rv-foot { margin-top: auto; padding-top: 24px; display: flex; align-items: center; gap: 14px; }
   .rv-foot .cover { width: 44px; flex: none; box-shadow: none; }
   .rv-foot .cover > span { display: none; }
@@ -204,6 +212,7 @@
 body { margin: 0; }
 [data-theme=dark] .theme-light-only, [data-theme=light] .theme-dark-only { display: none; }
 @keyframes sk-pulse { 50% { opacity: .45; } }
+@keyframes rv-flash { 0%, 40% { background: color-mix(in srgb, var(--accent) 12%, transparent); } }
 @keyframes tag-shake { 25%, 75% { translate: -4px 0; } 50% { translate: 4px 0; } }
 
 .home-a {
@@ -300,6 +309,8 @@ body { margin: 0; }
   .sort [aria-pressed=true] { color: var(--ink); font-weight: 700; text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 6px; }
   .rv-list li + li { border-top: 1px solid var(--line); }
   .feature-review + .feature-review { margin-top: 16px; }
+  /* 홈 인기 리뷰에서 넘어오면 해당 리뷰를 잠깐 강조한다 */
+  .rv-flash { animation: rv-flash 2s var(--ease); }
   /* 리뷰 카드의 별점 줄: 왼쪽에 별과 점수, 오른쪽에 수정·삭제 */
   .rv-rating { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
   .rv-rating strong { font-size: 1.05rem; font-weight: 800; letter-spacing: -.02em; color: var(--accent); font-variant-numeric: tabular-nums; }
@@ -538,7 +549,7 @@ body { margin: 0; }
           const b = HOME_BOOKS[v.b];
           return `<article class="rv">
             <q>${esc(v.q)}</q>
-            <div class="rv-foot">${homeCover(b, { size: "M" })}<div><strong>${esc(b.t)}</strong><small>${esc(v.u)}<span class="rating">${icon("star", "h-3 w-3")}<span class="sr">별점 </span>${v.r.toFixed(1)}</span></small></div>${like(v.l, v.liked)}</div>
+            <div class="rv-foot"><a class="rv-link" href="${homeHref(b)}&to=review-${v.u}" aria-label="${esc(b.t)}, ${esc(v.u)}의 리뷰 전체 보기">${homeCover(b, { size: "M" })}<div><strong>${esc(b.t)}</strong><small>${esc(v.u)}<span class="rating">${icon("star", "h-3 w-3")}<span class="sr">별점 </span>${v.r.toFixed(1)}</span></small></div></a>${like(v.l, v.liked)}</div>
           </article>`;
         }).join("");
         const recent = HOME_RECENT.map(([k, when]) => {
@@ -781,10 +792,10 @@ body { margin: 0; }
               ${
                 empty
                   ? stateMsg("아직 리뷰가 없습니다.", "이 책을 읽었다면 첫 리뷰를 남겨 보세요.")
-                  : `${mine ? `<article class="feature-review">${who(mine, mine === reviews[0])}<q>${esc(mine.q)}</q>${tagList(mine.t)}</article>` : ""}
-                     ${best ? `<article class="feature-review">${who(best, true)}<q>${esc(best.q)}</q>${tagList(best.t)}</article>` : ""}
+                  : `${mine ? `<article class="feature-review" id="review-${mine.u}">${who(mine, mine === reviews[0])}<q>${esc(mine.q)}</q>${tagList(mine.t)}</article>` : ""}
+                     ${best ? `<article class="feature-review" id="review-${best.u}">${who(best, true)}<q>${esc(best.q)}</q>${tagList(best.t)}</article>` : ""}
                      ${rest.length > 1 ? `<div class="sort" role="group" aria-label="리뷰 정렬">${sortButton("latest", "최신순")}${sortButton("popular", "인기순")}</div>` : ""}
-                     <ul class="rv-list" id="review-list">${rest.map((v) => `<li class="rv-row" data-date="${v.d}">${who(v)}<q>${esc(v.q)}</q>${tagList(v.t)}</li>`).join("")}</ul>`
+                     <ul class="rv-list" id="review-list">${rest.map((v) => `<li class="rv-row" id="review-${v.u}" data-date="${v.d}">${who(v)}<q>${esc(v.q)}</q>${tagList(v.t)}</li>`).join("")}</ul>`
               }
             </div>
           </section>
@@ -968,6 +979,12 @@ body { margin: 0; }
           initHome();
           const target = params.get("to");
           if (target) document.getElementById(target)?.scrollIntoView();
+        }
+        // 홈 인기 리뷰에서 넘어오면 해당 리뷰로 스크롤하고 잠깐 강조한다 (front/는 #review-{id}, 시안은 해시 라우팅이라 to=review-{작성자})
+        if (path === "book" && params.get("to")) {
+          const review = document.getElementById(params.get("to"));
+          review?.scrollIntoView({ block: "center" });
+          review?.classList.add("rv-flash");
         }
         // 결과가 있는 주소에서는 모바일 키보드가 결과를 가리므로 검색어가 없을 때만 포커스를 준다.
         if (path === "search" && !(params.get("term") || "").trim()) $("#search-q")?.focus();
