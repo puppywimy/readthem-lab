@@ -148,6 +148,20 @@ class BookService {
 ReviewCreateRequest
 ```
 
+### 응답 DTO
+
+Service 반환 DTO를 그대로 내려주지 않고 HTTP 응답 형태를 따로 정할 때 씁니다(예: Spring `Page`에서 필요한 필드만 내려줄 때).
+
+| 항목 | 규칙                                                     |
+| ---- | -------------------------------------------------------- |
+| 위치 | `controller` 패키지 하위의 `response` 패키지             |
+| 이름 | 액션 메서드명에서 도메인명을 앞에 두고 `Response`를 붙임 |
+| 변환 | Controller가 Service 반환 DTO를 받아 응답 DTO로 변환     |
+
+```text
+BookSearchResponse
+```
+
 ### Service 반환 DTO
 
 | 항목      | 규칙                                                        |

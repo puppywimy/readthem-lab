@@ -86,7 +86,7 @@ class BookService(
         searchTerm: String,
         page: Int,
         size: Int
-    ): List<BookDto> {
+    ): Page<BookDto> {
 
         try {
             return bookQueryService.getBooksByFullTextSearch(searchTerm, page, size)

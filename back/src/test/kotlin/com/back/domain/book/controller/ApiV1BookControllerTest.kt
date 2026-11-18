@@ -2,13 +2,17 @@ package com.back.domain.book.controller
 
 import com.back.domain.book.repository.BookOperationalRepository
 import com.back.domain.book.repository.BookRepository
+import com.back.domain.book.service.BookQueryService
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.mockito.Mockito.doThrow
+import org.mockito.Mockito.verify
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
 import org.springframework.security.test.context.support.WithUserDetails
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
@@ -28,6 +32,8 @@ class ApiV1BookControllerTest {
     private lateinit var bookRepository: BookRepository
     @Autowired
     private lateinit var bookOperationalRepository: BookOperationalRepository
+    @MockitoSpyBean
+    private lateinit var bookQueryService: BookQueryService
 
     @Test
     @DisplayName("도서 단건 조회 - 비인증 사용자")
@@ -95,17 +101,20 @@ class ApiV1BookControllerTest {
 
         resultActions
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.length()").value(expectedBooks.size))
+            .andExpect(jsonPath("$.length()").value(3))
+            .andExpect(jsonPath("$.content.length()").value(expectedBooks.size))
+            .andExpect(jsonPath("$.last").value(true))
+            .andExpect(jsonPath("$.totalElements").value(expectedBooks.size))
 
         for (i in expectedBooks.indices) {
             val expected = expectedBooks[i]
             val expectedAvgRating =
                 bookOperationalRepository.findByIsbn(expected.isbn)?.averageRating ?: 0
             resultActions
-                .andExpect(jsonPath("$[$i].id").value(expected.id))
-                .andExpect(jsonPath("$[$i].title").value(expected.title))
-                .andExpect(jsonPath("$[$i].imgUrl").value(expected.imgUrl))
-                .andExpect(jsonPath("$[$i].averageRating").value(expectedAvgRating))
+                .andExpect(jsonPath("$.content[$i].id").value(expected.id))
+                .andExpect(jsonPath("$.content[$i].title").value(expected.title))
+                .andExpect(jsonPath("$.content[$i].imgUrl").value(expected.imgUrl))
+                .andExpect(jsonPath("$.content[$i].averageRating").value(expectedAvgRating))
         }
     }
 
@@ -124,8 +133,33 @@ class ApiV1BookControllerTest {
             )
             .andDo(print())
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.length()").value(2))
-            .andExpect(jsonPath("$[0].id").value(expected.id))
-            .andExpect(jsonPath("$[1].title").value("책제목2"))
+            .andExpect(jsonPath("$.content.length()").value(2))
+            .andExpect(jsonPath("$.content[0].id").value(expected.id))
+            .andExpect(jsonPath("$.content[1].title").value("책제목2"))
+            .andExpect(jsonPath("$.last").value(true))
+            .andExpect(jsonPath("$.totalElements").value(4))
+    }
+
+    @Test
+    @DisplayName("도서 검색 다건 조회 - FULLTEXT 검색이 실패하면 LIKE 검색 결과를 같은 형태로 반환")
+    @Throws(Exception::class)
+    fun t6() {
+        doThrow(RuntimeException("FULLTEXT 실패"))
+            .`when`(bookQueryService).getBooksByFullTextSearch("책제목", 0, 3)
+
+        mvc
+            .perform(
+                get("/api/v1/books/search")
+                    .param("searchTerm", "책제목")
+                    .param("size", "3")
+            )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(3))
+            .andExpect(jsonPath("$.content.length()").value(3))
+            .andExpect(jsonPath("$.last").value(false))
+            .andExpect(jsonPath("$.totalElements").value(4))
+
+        verify(bookQueryService).getBooksByLikeSearch("책제목", 0, 3)
     }
 }

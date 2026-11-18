@@ -4,6 +4,38 @@
 
 ## 도서
 
+### 도서 검색 다건 조회
+
+```text
+GET /api/v1/books/search?searchTerm={searchTerm}&page={page}&size={size}
+```
+
+로그인 없이 호출할 수 있습니다. 제목·저자에서 검색어를 찾습니다.
+
+| 파라미터 | 기본값 | 설명 |
+| --- | --- | --- |
+| `searchTerm` | 필수 | 검색어. 비어 있거나 공백뿐이면 `400` |
+| `page` | `0` | 0부터 시작하는 페이지 번호 |
+| `size` | `10` | 페이지 크기 |
+
+검색어를 전처리(`BookSearchTextNormalizer`)한 뒤 제목·저자 전처리 컬럼에서 구문 검색합니다. 정렬은 제목 완전 일치 → 제목 앞부분 일치 → 관련도 내림차순 → `id` 내림차순입니다. 전처리하면 비는 검색어(기호만 있는 검색어 등)는 빈 결과를 반환합니다. FULLTEXT 검색이 실패하면 제목 `LIKE` 검색으로 대신하며, 응답 형태는 같습니다.
+
+응답:
+
+```json
+{
+  "content": [{ "id": 1, "title": "책 제목", "imgUrl": "https://...", "averageRating": 4.5 }],
+  "last": true,
+  "totalElements": 1
+}
+```
+
+| 필드 | 설명 |
+| --- | --- |
+| `content` | 이번 페이지의 도서 목록(`id`, `title`, `imgUrl`, `averageRating`) |
+| `last` | 이번 페이지가 마지막 페이지인지 여부. 결과가 없으면 `true` |
+| `totalElements` | 검색 조건에 맞는 전체 도서 수. 페이지와 관계없이 같습니다 |
+
 ### 도서 순위 다건 조회
 
 ```text
