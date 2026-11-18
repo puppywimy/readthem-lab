@@ -471,11 +471,40 @@
     margin-top: 36px;
   }
   .rv {
+    position: relative;
     border-radius: 16px;
     padding: clamp(20px, 2.5vw, 32px);
     display: flex;
     flex-direction: column;
     background: var(--surface);
+  }
+  /* 카드 전체가 리뷰로 가는 링크: 링크의 ::after를 카드 크기로 늘리고, 좋아요 버튼만 그 위로 올린다 */
+  .rv-link {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex: 1;
+    min-width: 0;
+  }
+  .rv-link::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+  }
+  .rv-link:focus-visible {
+    outline: none;
+  }
+  .rv:has(.rv-link:focus-visible) {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .rv-link:hover strong {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .rv .like {
+    position: relative;
   }
   .rv:first-child {
     grid-row: span 2;
@@ -483,14 +512,22 @@
     color: var(--on-feature);
     --muted: var(--on-feature);
   }
+  /* 본문은 줄 수로 자르고 "…"를 붙인다. 전체 내용은 카드를 눌러 도서 상세에서 본다 */
   .rv q {
     quotes: none;
     overflow-wrap: anywhere;
     font-weight: 600;
     line-height: 1.5;
     font-size: 1.1rem;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+    overflow: hidden;
   }
   .rv:first-child q {
+    -webkit-line-clamp: 7;
+    line-clamp: 7;
     font-size: clamp(1.5rem, 2.8vw, 2.4rem);
     line-height: 1.32;
     letter-spacing: -0.03em;
@@ -721,6 +758,12 @@ body {
 [data-theme="dark"] .theme-light-only,
 [data-theme="light"] .theme-dark-only {
   display: none;
+}
+@keyframes rv-flash {
+  0%,
+  40% {
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+  }
 }
 @keyframes sk-pulse {
   50% {
@@ -1054,6 +1097,10 @@ body {
   }
   .feature-review + .feature-review {
     margin-top: 16px;
+  }
+  /* 홈 인기 리뷰에서 넘어오면 해당 리뷰를 잠깐 강조한다 */
+  .rv-flash {
+    animation: rv-flash 2s var(--ease);
   }
   /* 리뷰 카드의 별점 줄: 왼쪽에 별과 점수, 오른쪽에 수정·삭제 */
   .rv-rating {

@@ -38,6 +38,9 @@ const WALL_SIZE = 15;
 const RANK_SIZE = 6;
 
 const bookHref = (id?: number) => `/books/detail?id=${id}`;
+// 인기 리뷰가 상세 페이지의 베스트 칸에 있다는 보장이 없어(같은 책 리뷰 여럿, 좋아요 동점, 내 리뷰) 리뷰 id로 이동한다
+const reviewHref = (review: ReviewDto) =>
+  `${bookHref(review.bookId)}#review-${review.id}`;
 
 function extractListData<T>(data: unknown): T[] {
   if (Array.isArray(data)) return data;
@@ -289,24 +292,25 @@ export default function Page() {
               <article className="rv" key={review.id}>
                 <q>{review.content}</q>
                 <div className="rv-foot">
+                  {/* 링크를 카드 전체 크기로 늘려(.rv-link::after) 카드 어디를 눌러도 이 리뷰로 이동한다. 좋아요 버튼만 그 위에서 따로 눌린다. */}
                   <Link
-                    href={bookHref(review.bookId)}
-                    aria-label={`${review.bookTitle} 상세 보기`}
-                    className="contents"
+                    className="rv-link"
+                    href={reviewHref(review)}
+                    aria-label={`${review.bookTitle}, ${review.reviewer?.githubId ?? "탈퇴한 사용자"}의 리뷰 전체 보기`}
                   >
                     <BookCover
                       bookId={review.bookId}
                       imgUrl={review.bookImgUrl}
                       title={review.bookTitle}
                     />
+                    <div>
+                      <strong>{review.bookTitle}</strong>
+                      <small>
+                        {review.reviewer?.githubId ?? "탈퇴한 사용자"}
+                        <RatingValue rating={review.rating} inline />
+                      </small>
+                    </div>
                   </Link>
-                  <div>
-                    <strong>{review.bookTitle}</strong>
-                    <small>
-                      {review.reviewer?.githubId ?? "탈퇴한 사용자"}
-                      <RatingValue rating={review.rating} inline />
-                    </small>
-                  </div>
                   <LikeButton
                     count={review.likeCount}
                     liked={review.likedByMe ?? false}
