@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 
 import { apiFetch } from "@/lib/backend/client";
 
@@ -33,6 +33,8 @@ type BookDto = components["schemas"]["BookDto"];
 type ReviewDto = components["schemas"]["ReviewDto"];
 
 type ReviewSort = "latest" | "popular";
+
+const reviewElementId = (reviewId?: number) => `review-${reviewId}`;
 
 function BookDetailSkeleton() {
   return (
@@ -67,6 +69,7 @@ function BookDetail() {
   const [showWriteForm, setShowWriteForm] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [reviewSort, setReviewSort] = useState<ReviewSort>("latest");
+  const scrolledHashRef = useRef<string | null>(null);
 
   const loadBook = useCallback(() => {
     if (id == null) return;
@@ -104,6 +107,31 @@ function BookDetail() {
     loadBook();
     loadReviews();
   }, [id, loadBook, loadReviews]);
+
+  // 리뷰를 비동기로 불러와 브라우저 기본 해시 스크롤이 동작하지 않으므로,
+  // 리뷰가 그려진 뒤 주소의 #review-{id}로 직접 스크롤하고 잠깐 강조한다. 같은 주소에서는 한 번만 한다.
+  const hasContent = book != null && reviews != null;
+  useEffect(() => {
+    if (!hasContent) return;
+
+    const hash = window.location.hash;
+    const key = `${id}${hash}`;
+    if (!hash.startsWith("#review-") || scrolledHashRef.current === key) return;
+    scrolledHashRef.current = key;
+
+    const target = document.getElementById(decodeURIComponent(hash.slice(1)));
+    if (target == null) return;
+
+    target.scrollIntoView({ block: "center" });
+    target.classList.remove("rv-flash");
+    void target.offsetWidth; // 같은 리뷰로 다시 와도 애니메이션이 다시 돌게 한다
+    target.classList.add("rv-flash");
+    target.addEventListener(
+      "animationend",
+      () => target.classList.remove("rv-flash"),
+      { once: true },
+    );
+  }, [hasContent, id]);
 
   useEffect(() => {
     if (!isLogin) return;
@@ -410,12 +438,18 @@ function BookDetail() {
           ) : (
             <>
               {myReview && (
-                <article className="feature-review">
+                <article
+                  className="feature-review"
+                  id={reviewElementId(myReview.id)}
+                >
                   {renderReview(myReview, myReview === topReview)}
                 </article>
               )}
               {bestReview && (
-                <article className="feature-review">
+                <article
+                  className="feature-review"
+                  id={reviewElementId(bestReview.id)}
+                >
                   {renderReview(bestReview, true)}
                 </article>
               )}
@@ -441,7 +475,11 @@ function BookDetail() {
               )}
               <ul className="rv-list">
                 {sortedReviews.map((review) => (
-                  <li className="rv-row" key={review.id}>
+                  <li
+                    className="rv-row"
+                    key={review.id}
+                    id={reviewElementId(review.id)}
+                  >
                     {renderReview(review)}
                   </li>
                 ))}
