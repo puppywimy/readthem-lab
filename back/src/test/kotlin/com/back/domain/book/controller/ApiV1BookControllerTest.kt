@@ -4,6 +4,8 @@ import com.back.domain.book.repository.BookOperationalRepository
 import com.back.domain.book.repository.BookRepository
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
@@ -127,5 +129,36 @@ class ApiV1BookControllerTest {
             .andExpect(jsonPath("$.length()").value(2))
             .andExpect(jsonPath("$[0].id").value(expected.id))
             .andExpect(jsonPath("$[1].title").value("책제목2"))
+    }
+
+    @ParameterizedTest(name = "page={0}, size={1}")
+    @CsvSource("-1, 10", "0, 0", "0, -1", "0, 51")
+    @DisplayName("도서 검색 다건 조회 - page가 음수이거나 size가 1~50 밖이면 400-1")
+    @Throws(Exception::class)
+    fun t6(page: String, size: String) {
+        mvc
+            .perform(
+                get("/api/v1/books/search")
+                    .param("searchTerm", "책제목")
+                    .param("page", page)
+                    .param("size", size)
+            )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.resultCode").value("400-1"))
+    }
+
+    @Test
+    @DisplayName("도서 검색 다건 조회 - size 상한 50 허용")
+    @Throws(Exception::class)
+    fun t7() {
+        mvc
+            .perform(
+                get("/api/v1/books/search")
+                    .param("searchTerm", "책제목")
+                    .param("size", "50")
+            )
+            .andDo(print())
+            .andExpect(status().isOk())
     }
 }
