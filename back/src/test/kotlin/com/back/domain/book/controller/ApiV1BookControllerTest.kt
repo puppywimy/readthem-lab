@@ -134,7 +134,6 @@ class ApiV1BookControllerTest {
     @ParameterizedTest(name = "page={0}, size={1}")
     @CsvSource("-1, 10", "0, 0", "0, -1", "0, 51")
     @DisplayName("도서 검색 다건 조회 - page가 음수이거나 size가 1~50 밖이면 400-1")
-    @Throws(Exception::class)
     fun t6(page: String, size: String) {
         mvc
             .perform(
@@ -150,7 +149,6 @@ class ApiV1BookControllerTest {
 
     @Test
     @DisplayName("도서 검색 다건 조회 - size 상한 50 허용")
-    @Throws(Exception::class)
     fun t7() {
         mvc
             .perform(
