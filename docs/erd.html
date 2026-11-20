@@ -116,6 +116,7 @@
             <li><code>review_like</code>는 <code>(review_id, member_id)</code> 조합이 유일합니다.</li>
             <li><code>member</code>는 <code>deleted_date</code>로 탈퇴 여부를 표시합니다.</li>
             <li><code>book.search_text</code>는 도서 검색용 STORED 생성 컬럼입니다. 값은 <code>전처리한 제목 + 공백 + 전처리한 저자</code>이며 DB가 계산합니다. 전처리 규칙은 <code>V2__add_book_search_text.sql</code>과 <code>BookSearchTextNormalizer</code>에 있습니다.</li>
+            <li><code>book.search_title</code>, <code>book.search_author</code>는 <code>search_text</code>를 첫 공백에서 나눈 전처리한 제목·저자입니다. VIRTUAL 생성 컬럼이며 255자로 자릅니다.</li>
           </ul>
         </section>
         <section>
@@ -126,6 +127,8 @@
             <li><code>book_operational (review_count DESC, id DESC)</code></li>
             <li><code>book_operational (view_count DESC, id DESC)</code></li>
             <li><code>book (search_text)</code> FULLTEXT, ngram 파서</li>
+            <li><code>book (search_title)</code></li>
+            <li><code>book (search_author, search_title)</code></li>
           </ul>
         </section>
       </section>
@@ -149,6 +152,7 @@
           ["id", "bigint", "PK"], ["title", "longtext"], ["description", "longtext"], ["isbn", "varchar", "UK"],
           ["authors", "longtext"], ["published_date", "datetime"], ["publisher", "varchar"], ["img_url", "varchar"],
           ["img_url_fetched_at", "datetime"], ["fetched_page", "int"], ["search_text", "longtext"],
+          ["search_title", "varchar"], ["search_author", "varchar"],
         ] },
         book_operational: { x: 1060, y: 60, w: 260, tone: "book", ko: "책 운영 지표", cols: [
           ["id", "bigint", "PK"], ["isbn", "varchar", "UK"], ["view_count", "int"], ["average_rating", "double"],
