@@ -69,7 +69,10 @@ interface BookRepository : JpaRepository<Book, Long>, BookRepositoryCustom {
      * 한 쿼리로 정렬하면 매칭된 행 전부에 접근해야 해서 흔한 검색어가 수 초씩 걸린다(#73).
      * 그래서 단계마다 인덱스로 앞쪽 [phaseLimit](= offset + size)건만 고르고 UNION ALL로 이어 붙인 뒤 바깥에서 자른다.
      * 앞 단계에 걸린 행은 뒤 단계 조건에서 빼서 한 번만, 가장 앞 단계에서 나온다.
-     * - 1~3단계: search_title, search_author 인덱스(V3). 옵티마이저가 PK 역순 스캔을 고르면 느려져 인덱스를 강제한다.
+     * - 1~3단계: search_title, search_author 인덱스(V3)를 강제한다. 옵티마이저는 ORDER BY id DESC LIMIT을 보고
+     *   PK 역순 스캔을 고를 때가 있는데, 맞는 행이 오래된 id에 몰려 있으면 수십만 행을 읽는다(3단계 '한국': 17만 행, 1초).
+     *   인덱스 경로는 맞는 건수만큼만 읽어 응답 시간 상한이 정해진다. 1단계는 인덱스가 정렬까지 처리해 강제하지 않아도
+     *   같은 계획이지만 세 단계를 같은 모양으로 둔다.
      *   단계 안에서는 id 내림차순이다.
      * - 4단계: ORDER BY가 관련도 하나뿐이어야 FULLTEXT 인덱스 안에서 정렬된 순서로 읽는다(Ft_hints: sorted).
      *   이 순서에서 관련도가 같은 행은 FULLTEXT 문서 id 오름차순으로 나오므로, 바깥에서도 id 오름차순으로 맞춘다.
@@ -84,7 +87,7 @@ interface BookRepository : JpaRepository<Book, Long>, BookRepositoryCustom {
             SELECT b.*
             FROM (
                 (SELECT id, 1 AS phase, 0 AS score
-                 FROM book
+                 FROM book FORCE INDEX (idx_book_search_title)
                  WHERE search_title = :keyword
                  ORDER BY id DESC
                  LIMIT :phaseLimit)
