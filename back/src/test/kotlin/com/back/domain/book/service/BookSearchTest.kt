@@ -44,6 +44,14 @@ class BookSearchTest {
             "Clean Code" to "Robert C. Martin",
             "Node.js 교과서" to "조현영",
             "하얼빈" to "빈센트",
+            // 단계 정렬 확인용 (t13~t15). 주석은 '단계검색'으로 검색했을 때 걸리는 단계다.
+            "단계검색" to "가저자", // 1 제목 완전 일치
+            "단계검색 입문" to "나저자", // 2 제목 앞부분 일치
+            "단계검색" to "단계검색연구회", // 1 (저자 앞부분 일치이기도 함)
+            "알기 쉬운 책" to "단계검색 연구회", // 3 저자 앞부분 일치
+            "다시 보는 단계검색" to "다저자", // 4 나머지
+            "단계검색 실전" to "단계검색팀", // 2 (저자 앞부분 일치이기도 함)
+            "쉬운 책" to "단계검색팀", // 3
         ).forEachIndexed { i, (title, authors) ->
             books += bookRepository.save(
                 Book(title, "설명", "isbn-search-$i", authors, LocalDateTime.now(), "오렌지미디어", "")
@@ -58,6 +66,11 @@ class BookSearchTest {
 
     private fun search(searchTerm: String, page: Int = 0, size: Int = 100): List<String> =
         bookQueryService.getBooksByFullTextSearch(searchTerm, page, size).map { it.title }
+
+    private fun searchWithAuthors(searchTerm: String, page: Int = 0, size: Int = 100): List<String> =
+        bookQueryService.getBooksByFullTextSearch(searchTerm, page, size)
+            .map { dto -> books.first { it.id == dto.id } }
+            .map { "${it.title}/${it.authors}" }
 
     @Test
     @DisplayName("띄어쓰기를 무시한다")
@@ -142,7 +155,7 @@ class BookSearchTest {
     }
 
     @Test
-    @DisplayName("제목 완전 일치, 제목 앞부분 일치, 나머지 순으로 정렬한다")
+    @DisplayName("제목 완전 일치, 제목 앞부분 일치, 나머지 순으로 정렬한다 (띄어쓰기 무시)")
     fun t11() {
         val found = search("열혈C")
 
@@ -163,5 +176,37 @@ class BookSearchTest {
         assertThat(search("열혈C", page = 1, size = 2)).isEqualTo(all.subList(2, 4))
         assertThat(search("열혈C", page = 2, size = 2)).isEqualTo(all.subList(4, 5))
         assertThat(search("열혈C", page = 3, size = 2)).isEmpty()
+    }
+
+    @Test
+    @DisplayName("제목 완전 일치, 제목 앞부분 일치, 저자 앞부분 일치, 나머지 순으로, 단계 안에서는 최신순으로 정렬한다")
+    fun t13() {
+        assertThat(searchWithAuthors("단계검색")).containsExactly(
+            "단계검색/단계검색연구회", "단계검색/가저자",
+            "단계검색 실전/단계검색팀", "단계검색 입문/나저자",
+            "쉬운 책/단계검색팀", "알기 쉬운 책/단계검색 연구회",
+            "다시 보는 단계검색/다저자",
+        )
+    }
+
+    @Test
+    @DisplayName("여러 단계에 걸리는 도서는 가장 앞 단계에서 한 번만 나온다")
+    fun t14() {
+        val found = searchWithAuthors("단계검색")
+
+        assertThat(found).doesNotHaveDuplicates()
+        assertThat(found.indexOf("단계검색/단계검색연구회")).isLessThan(found.indexOf("단계검색 입문/나저자"))
+        assertThat(found.indexOf("단계검색 실전/단계검색팀")).isLessThan(found.indexOf("쉬운 책/단계검색팀"))
+    }
+
+    @Test
+    @DisplayName("단계 경계를 넘는 페이지에서 누락이나 중복이 없다")
+    fun t15() {
+        val all = searchWithAuthors("단계검색")
+
+        for (size in 1..4) {
+            val paged = (0..all.size / size).flatMap { searchWithAuthors("단계검색", page = it, size = size) }
+            assertThat(paged).`as`("size=$size").isEqualTo(all)
+        }
     }
 }

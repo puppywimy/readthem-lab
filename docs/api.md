@@ -32,3 +32,21 @@ GET /api/v1/books/rank?type={type}&size={size}
 3. 운영 정보가 없는 도서, 도서 `id` 내림차순
 
 응답은 도서 목록(`id`, `title`, `imgUrl`, `averageRating`)입니다.
+
+### 도서 검색 다건 조회
+
+```text
+GET /api/v1/books/search?searchTerm={searchTerm}&page={page}&size={size}
+```
+
+로그인 없이 호출할 수 있습니다.
+
+| 파라미터 | 기본값 | 허용 범위 | 설명 |
+| --- | --- | --- | --- |
+| `searchTerm` | 없음(필수) | 공백만으로 된 값 불가 | 검색어 |
+| `page` | `0` | `0` 이상 | 0부터 시작하는 페이지 번호 |
+| `size` | `10` | `1` ~ `50` | 한 페이지의 도서 수 |
+
+허용 범위를 벗어나면 `400`(`resultCode` `400-1`)을 반환합니다.
+
+응답은 도서 목록(`id`, `title`, `imgUrl`, `averageRating`)입니다.

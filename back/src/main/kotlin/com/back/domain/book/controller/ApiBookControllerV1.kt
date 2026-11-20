@@ -13,6 +13,8 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
+import jakarta.validation.constraints.Max
+import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -66,8 +68,8 @@ class ApiBookControllerV1(
     @Operation(summary = "도서 검색 다건 조회")
     fun getBooksBySearch(
         @RequestParam @NotBlank searchTerm: @NotBlank String,
-        @RequestParam(defaultValue = "0") page: Int,
-        @RequestParam(defaultValue = "10") size: Int
+        @RequestParam(defaultValue = "0") @Min(0) page: Int,
+        @RequestParam(defaultValue = "10") @Min(1) @Max(50) size: Int
     ) = bookService.getBooksBySearch(searchTerm, page, size)
 
     @GetMapping("/recommend")
