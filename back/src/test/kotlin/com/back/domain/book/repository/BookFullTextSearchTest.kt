@@ -6,7 +6,6 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.data.domain.PageRequest
 import org.springframework.test.context.ActiveProfiles
 import java.time.LocalDateTime
 
@@ -31,7 +30,7 @@ class BookFullTextSearchTest {
         )
 
         try {
-            val found = bookRepository.searchByKeyword("Java", PageRequest.of(0, 10)).toList()
+            val found = bookRepository.searchByKeyword("Java", 0, 10)
 
             assertThat(found.map { it.id }).containsExactly(book.id)
         } finally {
