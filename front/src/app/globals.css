@@ -1450,6 +1450,10 @@ body {
     outline-offset: 1px;
     border-color: var(--accent);
   }
+  .field input:disabled {
+    color: var(--muted);
+    cursor: not-allowed;
+  }
   .field small {
     font-weight: 400;
     color: var(--muted);
