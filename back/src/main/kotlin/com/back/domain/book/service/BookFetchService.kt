@@ -145,7 +145,7 @@ class BookFetchService(
             item.path("AUTHOR").asText(null),
             publishedDate!!,
             item.path("PUBLISHER").asText(null),
-            item.path("TITLE_URL").asText(null)
+            null // 표지는 카카오 썸네일로 통일한다(#60)
         )
 
         bookRepository.save(book)
