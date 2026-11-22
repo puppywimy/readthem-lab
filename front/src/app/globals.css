@@ -230,11 +230,12 @@
     /* 다 불러오면 스켈레톤 위로 서서히 나타난다 */
     transition: opacity 0.4s ease;
   }
-  .cover img.swap {
+  /* 탭 전환용 .swap과 겹치면 그 애니메이션까지 적용되므로 다른 이름을 쓴다 */
+  .cover img.fade-in {
     opacity: 0;
     transition: opacity 0.8s ease;
   }
-  .cover img.swap.in {
+  .cover img.fade-in.shown {
     opacity: 1;
   }
 
