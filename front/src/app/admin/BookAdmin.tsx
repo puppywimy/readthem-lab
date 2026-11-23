@@ -60,7 +60,6 @@ export default function BookAdmin() {
     const publisherInput = form.elements.namedItem(
       "publisher",
     ) as HTMLInputElement;
-    const imgUrlInput = form.elements.namedItem("imgUrl") as HTMLInputElement;
 
     apiFetch(`/api/v1/books/${editingId}`, {
       method: "PUT",
@@ -69,7 +68,8 @@ export default function BookAdmin() {
         description: descriptionInput.value,
         authors: authorsInput.value,
         publisher: publisherInput.value,
-        imgUrl: imgUrlInput.value,
+        // 표지는 카카오 썸네일로 채우므로 관리자가 바꾸지 않는다(docs/other_considerations.md)
+        imgUrl: editingBook?.imgUrl ?? null,
       }),
     })
       .then((data) => {
@@ -199,7 +199,15 @@ export default function BookAdmin() {
             </label>
             <label className="field">
               표지 이미지 URL
-              <input name="imgUrl" defaultValue={editingBook.imgUrl ?? ""} />
+              <input
+                name="imgUrl"
+                defaultValue={editingBook.imgUrl ?? ""}
+                disabled
+                aria-describedby="book-img-url-help"
+              />
+              <small id="book-img-url-help">
+                표지는 카카오 썸네일로 자동으로 채워집니다.
+              </small>
             </label>
             <div className="dlg-actions">
               <button type="button" className="btn line" onClick={cancelEdit}>

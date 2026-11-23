@@ -145,8 +145,8 @@ export default function BookCover({
             fallbackSrc == null
               ? undefined
               : thumbnailUrl === loadedUrl
-                ? "swap in"
-                : "swap"
+                ? "fade-in shown"
+                : "fade-in"
           }
           onLoad={() => setLoadedUrl(thumbnailUrl)}
           onError={() => setFailedUrl(thumbnailUrl)}
