@@ -202,7 +202,8 @@ class BookFetchServiceV2(
                         authors = it.AUTHOR,
                         publishedDate = publishedDate,
                         publisher = it.PUBLISHER,
-                        imgUrl = it.TITLE_URL,
+                        // 표지는 카카오 썸네일로 통일한다(#60). 원본 표지(TITLE_URL)는 해상도가 지나치게 큰 것이 섞여 있다.
+                        imgUrl = null,
                         fetchedPage = currentPageNumber,
                     )
                 }

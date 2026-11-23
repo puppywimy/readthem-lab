@@ -176,7 +176,9 @@ jobs:
           # 런타임 이미지에 curl이 없을 수 있어 호스트에서 컨테이너 IP로 확인한다
           GREEN_IP=$(docker inspect -f "{{(index .NetworkSettings.Networks \"${NET}\").IPAddress}}" "${GREEN}")
           echo "⏱ health-check: ${GREEN} (${GREEN_IP})"
-          TIMEOUT=180
+          # 임시: V4 마이그레이션(#78)이 book 전체의 표지 주소를 한 번에 비우는 동안 GREEN이 지워지지 않게 5시간으로 늘렸다.
+          # GitHub 잡 제한(6시간)보다 짧게 잡았다. 이 배포가 끝나면 다음 병합에서 180으로 되돌린다.
+          TIMEOUT=18000
           INTERVAL=3
           ELAPSED=0
           CODE=000
