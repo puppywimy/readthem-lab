@@ -1,3 +1,5 @@
+import localFont from "next/font/local";
+
 import type { Metadata } from "next";
 
 import { AuthProvider } from "@/lib/auth/AuthProvider";
@@ -9,6 +11,12 @@ import Header from "@/app/_components/Header";
 import SvgIcon from "@/app/_components/SvgIcon";
 
 import "./globals.css";
+
+const pretendard = localFont({
+  src: "../../node_modules/pretendard/dist/web/variable/woff2/PretendardVariable.woff2",
+  weight: "45 920",
+  variable: "--font-pretendard",
+});
 
 export const metadata: Metadata = {
   title: "Readthem Lab",
@@ -39,14 +47,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" data-scroll-behavior="smooth" suppressHydrationWarning>
+    <html
+      lang="ko"
+      className={pretendard.variable}
+      data-scroll-behavior="smooth"
+      suppressHydrationWarning
+    >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
-        <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-        <link
-          rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css"
-        />
       </head>
       <body className="home-a">
         <ThemeProvider>

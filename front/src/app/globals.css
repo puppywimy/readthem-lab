@@ -41,8 +41,7 @@
   background: var(--bg);
   color: var(--ink);
   font:
-    400 16px/1.6 "Pretendard Variable",
-    Pretendard,
+    400 16px/1.6 var(--font-pretendard),
     system-ui,
     sans-serif;
   word-break: keep-all;
