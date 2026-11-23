@@ -176,9 +176,7 @@ jobs:
           # 런타임 이미지에 curl이 없을 수 있어 호스트에서 컨테이너 IP로 확인한다
           GREEN_IP=$(docker inspect -f "{{(index .NetworkSettings.Networks \"${NET}\").IPAddress}}" "${GREEN}")
           echo "⏱ health-check: ${GREEN} (${GREEN_IP})"
-          # 임시: V2 마이그레이션(#40)이 약 590만 건 테이블을 다시 만드는 동안 GREEN이 지워지지 않게 5시간으로 늘렸다.
-          # GitHub 잡 제한(6시간)보다 짧게 잡았다. 이 배포가 끝나면 180으로 되돌린다.
-          TIMEOUT=18000
+          TIMEOUT=180
           INTERVAL=3
           ELAPSED=0
           CODE=000
