@@ -49,4 +49,6 @@ GET /api/v1/books/search?searchTerm={searchTerm}&page={page}&size={size}
 
 허용 범위를 벗어나면 `400`(`resultCode` `400-1`)을 반환합니다.
 
+FULLTEXT 검색(4단계, 제목·저자 중간 일치)을 실행할 자리가 1초 안에 나지 않거나 FULLTEXT 쿼리가 실패하면(메모리 상한 초과 등) 1~3단계(제목 완전 일치, 제목·저자 앞부분 일치) 결과만으로 응답합니다. 이때도 `200`이며 폴백 여부는 응답에 드러나지 않습니다.
+
 응답은 도서 목록(`id`, `title`, `imgUrl`, `averageRating`)입니다.
