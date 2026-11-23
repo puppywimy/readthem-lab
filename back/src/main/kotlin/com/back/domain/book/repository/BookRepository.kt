@@ -13,8 +13,6 @@ interface BookRepository : JpaRepository<Book, Long>, BookRepositoryCustom {
     fun findByIsbn(isbn: String): Book?
     fun findByIsbnIn(isbns: Collection<String>): List<Book>
 
-    fun findByTitleContaining(searchTerm: String, pageable: Pageable): Page<Book>
-
     @Query(
         """
             SELECT b
@@ -126,6 +124,50 @@ interface BookRepository : JpaRepository<Book, Long>, BookRepositoryCustom {
         nativeQuery = true
     )
     fun searchByKeyword(
+        @Param("keyword") keyword: String,
+        @Param("offset") offset: Long,
+        @Param("size") size: Int,
+        @Param("phaseLimit") phaseLimit: Long = offset + size
+    ): List<Book>
+
+    /**
+     * [searchByKeyword]에서 4단계(FULLTEXT 구문 검색)를 뺀 1~3단계만 조회한다.
+     *
+     * FULLTEXT 검색을 실행할 자리가 없거나 실패했을 때 대신 쓴다(#66).
+     * 1~3단계는 B-Tree 인덱스만 써서 메모리를 거의 쓰지 않는다.
+     * 단계 조건·정렬·페이지 계산은 [searchByKeyword]와 같으므로, 두 쿼리를 바꿀 때 함께 맞춘다.
+     */
+    @Query(
+        value = """
+            SELECT b.*
+            FROM (
+                (SELECT id, 1 AS phase
+                 FROM book
+                 WHERE search_title = :keyword
+                 ORDER BY id DESC
+                 LIMIT :phaseLimit)
+                UNION ALL
+                (SELECT id, 2
+                 FROM book FORCE INDEX (idx_book_search_title)
+                 WHERE search_title LIKE CONCAT(:keyword, '%')
+                   AND search_title <> :keyword
+                 ORDER BY id DESC
+                 LIMIT :phaseLimit)
+                UNION ALL
+                (SELECT id, 3
+                 FROM book FORCE INDEX (idx_book_search_author)
+                 WHERE search_author LIKE CONCAT(:keyword, '%')
+                   AND search_title NOT LIKE CONCAT(:keyword, '%')
+                 ORDER BY id DESC
+                 LIMIT :phaseLimit)
+            ) t
+            JOIN book b ON b.id = t.id
+            ORDER BY t.phase, t.id DESC
+            LIMIT :size OFFSET :offset
+        """,
+        nativeQuery = true
+    )
+    fun searchByKeywordPrefix(
         @Param("keyword") keyword: String,
         @Param("offset") offset: Long,
         @Param("size") size: Int,
