@@ -108,7 +108,9 @@ class BookService(
         val keyword = BookSearchTextNormalizer.normalize(searchTerm)
         if (keyword.isEmpty()) return emptyList()
 
-        if (!tryAcquireFullTextPermit()) {
+        // 얻은 자리만 finally에서 돌려주도록 try 밖에서 얻는다.
+        // 기다리는 중 interrupt되면(서버 종료 등) InterruptedException을 그대로 올린다.
+        if (!fullTextPermits.tryAcquire(fullTextAcquireTimeout.toMillis(), TimeUnit.MILLISECONDS)) {
             log.warn(
                 "FULLTEXT search skipped: no permit within {}ms. Falling back to prefix search. {}",
                 fullTextAcquireTimeout.toMillis(), describeKeyword(keyword)
@@ -126,14 +128,6 @@ class BookService(
 
         return bookQueryService.getBooksByPrefixSearch(searchTerm, page, size)
     }
-
-    private fun tryAcquireFullTextPermit(): Boolean =
-        try {
-            fullTextPermits.tryAcquire(fullTextAcquireTimeout.toMillis(), TimeUnit.MILLISECONDS)
-        } catch (e: InterruptedException) {
-            Thread.currentThread().interrupt()
-            false
-        }
 
     // ngram_token_size=2라 전처리한 검색어(공백 없음)의 토큰 수는 길이 - 1이다.
     private fun describeKeyword(keyword: String): String =
