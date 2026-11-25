@@ -28,7 +28,8 @@ class BookService(
 
     // FULLTEXT 검색은 검색어에 따라 쿼리 하나가 수백 MB~1GB 넘게 메모리를 쓴다(#66).
     // 동시에 도는 FULLTEXT 검색 수를 제한해 검색 전체가 쓰는 메모리를 묶는다.
-    private val fullTextPermits = Semaphore(fullTextMaxConcurrent)
+    // 자리를 쥐는 시간이 쿼리 시간(수백 ms)이라 unfair의 처리량 이득(µs)이 거의 없어, 먼저 기다린 요청이 먼저 받도록 fair로 둔다.
+    private val fullTextPermits = Semaphore(fullTextMaxConcurrent, true)
 
     companion object {
         private val log = LoggerFactory.getLogger(Companion::class.java)
