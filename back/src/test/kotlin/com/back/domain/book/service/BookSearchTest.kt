@@ -15,7 +15,7 @@ import java.time.LocalDateTime
 
 // InnoDB는 FULLTEXT 인덱스를 커밋 시점에 갱신해서, 같은 트랜잭션에서 넣은 행은 MATCH로 검색되지 않는다.
 // 그래서 @Transactional 없이 저장을 바로 커밋하고, 롤백이 없으니 넣은 데이터는 @AfterAll에서 직접 지운다.
-// 예외가 LIKE 검색으로 넘어가지 않고 드러나도록 BookService가 아니라 BookQueryService를 호출한다.
+// 예외가 1~3단계 폴백으로 넘어가지 않고 드러나도록 BookService가 아니라 BookQueryService를 호출한다.
 @ActiveProfiles("test")
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -208,5 +208,29 @@ class BookSearchTest {
             val paged = (0..all.size / size).flatMap { searchWithAuthors("단계검색", page = it, size = size) }
             assertThat(paged).`as`("size=$size").isEqualTo(all)
         }
+    }
+
+    @Test
+    @DisplayName("1~3단계 검색은 전체 검색에서 4단계(나머지)만 뺀 결과를 같은 순서로 돌려준다")
+    fun t16() {
+        val prefix = bookQueryService.getBooksByPrefixSearch("단계검색", 0, 100)
+            .map { dto -> books.first { it.id == dto.id } }
+            .map { "${it.title}/${it.authors}" }
+
+        assertThat(prefix).isEqualTo(searchWithAuthors("단계검색").filterNot { it == "다시 보는 단계검색/다저자" })
+    }
+
+    @Test
+    @DisplayName("1~3단계 검색도 page, size로 나눠 조회하고, 기호만 있는 검색어는 빈 결과를 돌려준다")
+    fun t17() {
+        fun prefixIds(page: Int, size: Int) =
+            bookQueryService.getBooksByPrefixSearch("단계검색", page, size).map { it.id }
+
+        val all = prefixIds(0, 100)
+        for (size in 1..4) {
+            val paged = (0..all.size / size).flatMap { prefixIds(it, size) }
+            assertThat(paged).`as`("size=$size").isEqualTo(all)
+        }
+        assertThat(bookQueryService.getBooksByPrefixSearch("!?~", 0, 10)).isEmpty()
     }
 }

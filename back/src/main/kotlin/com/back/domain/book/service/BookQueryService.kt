@@ -138,17 +138,17 @@ class BookQueryService(
         )
     }
 
-    fun getBooksByLikeSearch(
+    // FULLTEXT 검색(4단계)을 빼고 1~3단계(제목 완전 일치, 제목·저자 앞부분 일치)만 조회한다.
+    fun getBooksByPrefixSearch(
         searchTerm: String,
         page: Int,
         size: Int
     ): List<BookDto> {
-        val pageable = PageRequest.of(page, size)
+        val keyword = BookSearchTextNormalizer.normalize(searchTerm)
+        if (keyword.isEmpty()) return emptyList()
 
         return getBookDtos(
-            bookRepository
-                .findByTitleContaining(searchTerm, pageable)
-                .toList()
+            bookRepository.searchByKeywordPrefix(keyword, page.toLong() * size, size)
         )
     }
 

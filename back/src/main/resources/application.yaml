@@ -100,6 +100,11 @@ custom:
   widget:
     renderer:
       base-url: ${CUSTOM__WIDGET__RENDERER__BASE_URL:http://localhost:3001}
+  book-search:
+    full-text:
+      # FULLTEXT 검색(4단계) 동시 실행 수와 자리를 기다리는 최대 시간. 넘으면 1~3단계 결과로 응답한다(#66).
+      max-concurrent: 2
+      acquire-timeout: 1s
   kakao:
     api-key: ${CUSTOM__KAKAO__API_KEY:}
     base-url: https://dapi.kakao.com
