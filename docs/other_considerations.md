@@ -108,3 +108,11 @@ jsDelivr의 다이나믹 서브셋 CSS 대신 `next/font/local`로 `PretendardVa
 - 대신 첫 방문 전송량이 늘어납니다(홈 기준 약 280KB → 2MB). 느린 네트워크에서는 폰트가 늦게 도착해 시스템 폰트로 보이는 시간이 길어집니다. 이후 방문은 캐시를 씁니다.
 - `next/font`가 만드는 크기 보정 대체 폰트는 Arial 기반이라 한글에는 적용되지 않습니다. 한글은 교체 전까지 보정 없는 시스템 폰트로 보입니다.
 - Pretendard 글리프 목록(`subset_glyphs.txt`, 한글 2,780자)으로 서브셋을 만들면 약 630KB가 되지만 쓰지 않았습니다. 목록 밖의 글자(드문 한글 음절 등)가 시스템 폰트로 보이고, SIL OFL의 예약 글꼴명(Pretendard) 조항상 수정본을 같은 이름으로 배포할 수 있는지 확인이 필요합니다. 첫 방문 전송량이 문제가 되면 다시 검토합니다.
+
+## Terraform state는 OCI Object Storage backend로 관리한다
+
+`infra/prod/terraform`의 state는 로컬 파일이 아니라 `readthem-tfstate-1` 버킷에 둡니다. 작업한 머신에만 state가 남으면, 그 머신을 잃었을 때 Terraform이 기존 리소스를 관리할 수 없기 때문입니다.
+
+- tfstate 버킷은 Terraform 밖에서 만듭니다. state를 담을 버킷이 `terraform init`보다 먼저 있어야 하기 때문입니다.
+- 앱 자산 버킷과는 분리합니다. 지금 인스턴스 정책은 객체 이름까지 제한하므로 같은 버킷이어도 인스턴스가 state를 읽을 수는 없습니다. 다만 정책을 넓히는 실수에 대비하고, 버저닝을 state 버킷에만 켜기 위해 나눴습니다.
+- `backend` 블록에는 변수를 쓸 수 없어서 버킷 이름과 namespace를 `main.tf`에 직접 씁니다. namespace가 공개되지만 그 값만으로는 버킷에 접근할 수 없어서 받아들였습니다. 숨겨야 하면 `-backend-config` 파일로 분리합니다.
