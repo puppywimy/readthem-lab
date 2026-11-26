@@ -10,12 +10,13 @@ Terraform이 만들지 않고 조회만 하는 자원입니다. `apply` 전에 �
 | --- | --- | --- |
 | Reserved Public IP | `readthem-public-ip-1` | 인스턴스를 다시 만들어도 IP가 바뀌지 않도록 Terraform 밖에서 관리 |
 | Object Storage 버킷 | `readthem-bucket-1` | 부트스트랩이 내려받는 `compose.yaml`, `.env` 보관 |
+| Object Storage 버킷 | `readthem-tfstate-1` | Terraform state 보관. Object Versioning을 켭니다 |
 
 로컬에는 Terraform과 인증을 마친 OCI CLI가 필요합니다. Reserved Public IP 연결을 `local-exec`에서 OCI CLI로 실행합니다.
 
 ## 적용
 
-1. `prod/terraform/secrets.tf.example`을 `prod/terraform/secrets.tf`로 복사해 값을 채웁니다. `secrets.tf`와 state 파일은 커밋하지 않습니다.
+1. `prod/terraform/secrets.tf.example`을 `prod/terraform/secrets.tf`로 복사해 값을 채웁니다. `secrets.tf`는 커밋하지 않습니다. state는 `readthem-tfstate-1` 버킷의 `prod/terraform.tfstate`에 있고, `terraform init`을 하면 자동으로 연결됩니다.
 2. `prod/compose.yaml`과 운영용 `.env`를 버킷 최상위에 올립니다.
 3. `prod/terraform`에서 실행합니다.
 
