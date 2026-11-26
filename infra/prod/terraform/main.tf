@@ -1,4 +1,14 @@
 terraform {
+  required_version = ">= 1.12.0"
+
+  # 버킷은 Terraform 밖에서 만들고 버저닝을 켠 tfstate 전용 버킷이다. backend 블록에는 변수를 쓸 수 없다.
+  backend "oci" {
+    bucket    = "readthem-tfstate-1"
+    namespace = "nrb425tvrmk1"
+    key       = "prod/terraform.tfstate"
+    region    = "ap-tokyo-1"
+  }
+
   required_providers {
     oci = {
       source = "oracle/oci"
