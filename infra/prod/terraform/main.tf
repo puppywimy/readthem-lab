@@ -111,51 +111,38 @@ resource "oci_identity_policy" "policy_1" {
   description    = "${var.prefix} instance principal: read Vault secrets, read Object Storage assets"
 
   statements = [
-    "Allow dynamic-group ${oci_identity_dynamic_group.dg_1.name} to read secret-bundles in compartment id ${var.compartment_id} where target.vault.id = '${oci_kms_vault.vault_1.id}'",
+    "Allow dynamic-group ${oci_identity_dynamic_group.dg_1.name} to read secret-bundles in compartment id ${var.compartment_id} where target.vault.id = '${data.oci_kms_vaults.vault_1.vaults[0].id}'",
     "Allow dynamic-group ${oci_identity_dynamic_group.dg_1.name} to read objects in compartment id ${var.compartment_id} where all {target.bucket.name = '${var.bucket_name}', request.permission = 'OBJECT_READ', any {${local.read_object_cond}}}",
   ]
 }
 
-resource "oci_kms_vault" "vault_1" {
+# Vault, key, secret은 Terraform 밖에서 만든다. 삭제하면 1~30일 삭제 예약으로 남아 한도를 차지하므로 destroy·apply를 반복할 수 없다.
+data "oci_kms_vaults" "vault_1" {
   compartment_id = var.compartment_id
-  display_name   = "${var.prefix}-vault-1"
-  vault_type     = "DEFAULT"
-}
 
-resource "oci_kms_key" "key_1" {
-  compartment_id      = var.compartment_id
-  display_name        = "${var.prefix}-key-1"
-  management_endpoint = oci_kms_vault.vault_1.management_endpoint
-  protection_mode     = "SOFTWARE"
+  filter {
+    name   = "display_name"
+    values = ["${var.prefix}-vault-1"]
+  }
 
-  key_shape {
-    algorithm = "AES"
-    length    = 32
+  filter {
+    name   = "state"
+    values = ["ACTIVE"]
   }
 }
 
-resource "oci_vault_secret" "github_username" {
+data "oci_vault_secrets" "github_username" {
   compartment_id = var.compartment_id
-  vault_id       = oci_kms_vault.vault_1.id
-  key_id         = oci_kms_key.key_1.id
-  secret_name    = "${var.prefix}-github_username"
-
-  secret_content {
-    content_type = "BASE64"
-    content      = base64encode(var.github_username)
-  }
+  vault_id       = data.oci_kms_vaults.vault_1.vaults[0].id
+  name           = "${var.prefix}-github_username"
+  state          = "ACTIVE"
 }
 
-resource "oci_vault_secret" "github_access_token" {
+data "oci_vault_secrets" "github_access_token" {
   compartment_id = var.compartment_id
-  vault_id       = oci_kms_vault.vault_1.id
-  key_id         = oci_kms_key.key_1.id
-  secret_name    = "${var.prefix}-github_access_token"
-
-  secret_content {
-    content_type = "BASE64"
-    content      = base64encode(var.github_access_token)
-  }
+  vault_id       = data.oci_kms_vaults.vault_1.vaults[0].id
+  name           = "${var.prefix}-github_access_token"
+  state          = "ACTIVE"
 }
 
 data "oci_objectstorage_namespace" "ns" {}
@@ -215,7 +202,7 @@ locals {
   sudo iptables -D FORWARD -j REJECT --reject-with icmp-host-prohibited || true
   sudo netfilter-persistent save || true
 
-  sudo dd if=/dev/zero of=/swapfile bs=1M count=2048
+  sudo dd if=/dev/zero of=/swapfile bs=1M count=3072
   sudo chmod 600 /swapfile
   sudo mkswap /swapfile
   sudo swapon /swapfile
@@ -259,9 +246,9 @@ locals {
 
   echo "================ 3. Login to GHCR ================"
   set +x
-  GH_USERNAME=$(oci secrets secret-bundle get --secret-id "${oci_vault_secret.github_username.id}" \
+  GH_USERNAME=$(oci secrets secret-bundle get --secret-id "${data.oci_vault_secrets.github_username.secrets[0].id}" \
   --query 'data."secret-bundle-content".content' --raw-output | base64 -d)
-  GH_TOKEN=$(oci secrets secret-bundle get --secret-id "${oci_vault_secret.github_access_token.id}" \
+  GH_TOKEN=$(oci secrets secret-bundle get --secret-id "${data.oci_vault_secrets.github_access_token.secrets[0].id}" \
   --query 'data."secret-bundle-content".content' --raw-output | base64 -d)
   echo "$GH_TOKEN" | docker login ghcr.io -u "$GH_USERNAME" --password-stdin
   set -x
@@ -312,7 +299,7 @@ resource "oci_core_instance" "instance_1" {
 
   shape_config {
     ocpus         = 1
-    memory_in_gbs = 2
+    memory_in_gbs = 3
   }
 
   source_details {

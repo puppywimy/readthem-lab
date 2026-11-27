@@ -11,6 +11,10 @@ Terraform이 만들지 않고 조회만 하는 자원입니다. `apply` 전에 �
 | Reserved Public IP | `readthem-public-ip-1` | 인스턴스를 다시 만들어도 IP가 바뀌지 않도록 Terraform 밖에서 관리 |
 | Object Storage 버킷 | `readthem-bucket-1` | 부트스트랩이 내려받는 `compose.yaml`, `.env` 보관 |
 | Object Storage 버킷 | `readthem-tfstate-1` | Terraform state 보관. Object Versioning을 켭니다 |
+| Vault | `readthem-vault-1` | 부트스트랩이 읽는 시크릿 보관. 삭제하면 7~30일 삭제 예약으로 남아 vault 한도를 차지하므로 Terraform 밖에서 관리 |
+| Vault 키 | `readthem-key-1` | 위 vault 안에 만드는 소프트웨어 키. 시크릿 암호화용 |
+| Vault 시크릿 | `readthem-github_username` | `docker login ghcr.io`에 쓰는 GitHub 사용자 이름 |
+| Vault 시크릿 | `readthem-github_access_token` | `docker login ghcr.io`에 쓰는 GitHub 액세스 토큰(`read:packages`) |
 
 로컬에는 Terraform과 인증을 마친 OCI CLI가 필요합니다. Reserved Public IP 연결을 `local-exec`에서 OCI CLI로 실행합니다.
 
@@ -24,6 +28,10 @@ Terraform이 만들지 않고 조회만 하는 자원입니다. `apply` 전에 �
 terraform init
 terraform apply
 ```
+
+## 서버 사양
+
+인스턴스 한 대에 MySQL, Redis, Caddy, 백엔드 JVM이 함께 뜹니다. CPU·메모리는 `prod/terraform/main.tf`의 `oci_core_instance.instance_1` 리소스 `shape_config`에, swap 파일 크기는 이 리소스의 `user_data`로 들어가는 부트스트랩 스크립트(같은 파일의 `locals`)에 있습니다. swap 크기를 바꾸면 부트스트랩이 바뀌므로 `apply` 때 인스턴스가 교체됩니다.
 
 ## 부트스트랩
 
@@ -55,8 +63,6 @@ sudo docker exec readthem-caddy caddy reload --config /etc/caddy/Caddyfile
 DB 마이그레이션은 새 컨테이너가 기동할 때 Flyway가 실행합니다. 아직 적용되지 않은 `db/migration/` 파일을 순서대로 적용한 뒤 `validate`로 엔티티와 스키마를 대조하고, 어긋나면 기동이 실패해 헬스 체크를 통과하지 못합니다. 이때 이전 컨테이너는 이전 코드로 트래픽을 계속 받고 있고, 새 컨테이너가 지워져도 이미 적용된 마이그레이션은 되돌려지지 않습니다. 그래서 마이그레이션은 이전 버전 코드와 호환되게 씁니다(`docs/guardrails.md`).
 
 빌드와 배포 잡은 시작할 때 자기가 이 워크플로의 최신 실행인지 확인하고, 아니면 실패합니다. 예전 실행을 재시도해 옛 코드가 최신 배포를 덮어쓰는 것을 막기 위해서입니다. `dev`의 최신 커밋이 아니라 실행 ID로 비교하므로, `back`과 무관한 커밋이 뒤에 올라와도 배포는 그대로 진행됩니다. 그래서 예전 버전으로 되돌리려면 `dev`에 revert 커밋을 올립니다.
-
-도서 수집 스케줄(`BookScheduler.upsertBooks`)은 지금 꺼져 있어 새 컨테이너가 떠도 수집을 시작하지 않습니다.
 
 저장소 Actions 시크릿이 필요합니다.
 
