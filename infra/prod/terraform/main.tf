@@ -215,7 +215,7 @@ locals {
   sudo iptables -D FORWARD -j REJECT --reject-with icmp-host-prohibited || true
   sudo netfilter-persistent save || true
 
-  sudo dd if=/dev/zero of=/swapfile bs=1M count=2048
+  sudo dd if=/dev/zero of=/swapfile bs=1M count=3072
   sudo chmod 600 /swapfile
   sudo mkswap /swapfile
   sudo swapon /swapfile
@@ -312,7 +312,7 @@ resource "oci_core_instance" "instance_1" {
 
   shape_config {
     ocpus         = 1
-    memory_in_gbs = 2
+    memory_in_gbs = 3
   }
 
   source_details {

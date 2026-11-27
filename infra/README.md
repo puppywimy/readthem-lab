@@ -25,6 +25,10 @@ terraform init
 terraform apply
 ```
 
+## 서버 사양
+
+인스턴스 한 대에 MySQL, Redis, Caddy, 백엔드 JVM이 함께 뜹니다. CPU·메모리는 `prod/terraform/main.tf`의 `oci_core_instance.instance_1` 리소스 `shape_config`에, swap 파일 크기는 이 리소스의 `user_data`로 들어가는 부트스트랩 스크립트(같은 파일의 `locals`)에 있습니다. swap 크기를 바꾸면 부트스트랩이 바뀌므로 `apply` 때 인스턴스가 교체됩니다.
+
 ## 부트스트랩
 
 인스턴스는 처음 뜰 때 `user_data` 스크립트로 Docker와 OCI CLI를 설치하고, Vault에서 GHCR 계정을 읽어 로그인한 뒤 Caddy 설정을 쓰고 버킷의 `compose.yaml`로 컨테이너를 올립니다. 로그는 인스턴스의 `/var/log/bootstrap.log`에 남습니다.
